@@ -290,6 +290,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .ask p{margin:0 0 18px;font-size:15.5px;line-height:1.55;color:var(--ink)}
 .ask .btns{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
 .slot{border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;text-align:left;background:rgba(255,255,255,.55)}
+.cam{position:fixed;inset:0;background:#000;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam .kader{position:relative;width:min(92vw,720px);aspect-ratio:1.586;border:3px solid rgba(255,255,255,.9);border-radius:14px;box-shadow:0 0 0 200vmax rgba(0,0,0,.55)}
+.cam .kader.raak{border-color:#4ade80}
+.cam .cam-txt{position:absolute;left:0;right:0;bottom:118px;text-align:center;color:#fff;font-weight:700;font-size:16px;padding:0 20px;text-shadow:0 1px 3px #000}
+.cam .cam-knoppen{position:absolute;left:0;right:0;bottom:28px;display:flex;gap:10px;justify-content:center;padding:0 16px}
+.cam .cam-knoppen .btn{min-width:140px}
 .slot-h{font-weight:800;font-size:15px;letter-spacing:-.01em}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:#fff;padding:12px 20px;border-radius:99px;font-size:14.5px;font-weight:600;box-shadow:var(--sh);max-width:90vw}
 .banner{background:var(--gold-soft);color:var(--gold);border-radius:var(--rs);padding:11px 14px;font-size:13.5px;font-weight:600;margin-bottom:14px}
@@ -434,13 +441,20 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
             <div class="slot" style="margin-top:14px">
               <div class="slot-h" id="slotIdT"></div>
               <p class="fine" id="slotIdP" style="margin:2px 0 8px"></p>
-              <button class="btn" id="scanBtn" style="width:100%"></button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn" id="scanBtn" style="flex:1 1 45%"></button>
+                <button class="btn ghost" id="scanVoorBtn" style="flex:1 1 45%"></button>
+                <button class="btn ghost" id="camIdBtn" style="flex:1 1 100%"></button>
+              </div>
               <div class="docs" id="scanDocs"></div>
             </div>
             <div class="slot" style="margin-top:14px">
               <div class="slot-h" id="slotLicT"></div>
               <p class="fine" id="slotLicP" style="margin:2px 0 8px"></p>
-              <button class="btn ghost" id="scanLicBtn" style="width:100%"></button>
+              <div style="display:flex;gap:8px">
+                <button class="btn ghost" id="scanLicBtn" style="flex:1"></button>
+                <button class="btn ghost" id="camLicBtn" style="flex:1"></button>
+              </div>
               <div class="docs" id="scanLicDocs"></div>
               <div id="licUit" hidden style="margin-top:10px;text-align:left"></div>
             </div>
@@ -820,7 +834,17 @@ var TXT = {
   plakP:"Je telefoon leest tekst beter dan welke webpagina ook. iPhone: open de foto in Foto\u2019s, tik rechtsonder op het tekst-icoon, \u201cAlles selecteren\u201d, Kopieer. Android: Google Foto\u2019s \u2192 Lens \u2192 Tekst \u2192 Kopieer. Plak het hier en ik haal alles eruit. Staat de machineleesbare strook in de tekst, dan controleer ik hem met de controlecijfers \u2014 dan is het zeker juist.",
   plakGo:"Gegevens uit deze tekst halen",
   plakPlace:"Plak hier de tekst van de kaart\u2026",
+  fileWaarschuwing:"Je hebt Atlas als lokaal bestand geopend. Scannen, camera en tekstherkenning werken alleen via de website: xyousri-dot.github.io/atlas",
+  camKnop:"\ud83d\udcf7 Camera",
+  camZoek:"Houd de kaart in het kader. Bij de kant met \u00ab < \u00bb drukt de app zelf af zodra hij leesbaar is.",
+  camTip:"Nog niet leesbaar. Iets dichterbij, recht van boven, geen schaduw \u2014 of neem zelf de foto.",
+  camLicTip:"Rijbewijs of voorkant: houd de kaart in het kader en neem de foto.",
+  camRaak:"\u2713 Strook gelezen \u2014 foto genomen.",
+  camGenomen:"Foto genomen \u2014 aan het lezen\u2026",
+  camFoto:"Foto nemen",
+  camGeen:"Geen camera beschikbaar hier \u2014 kies een foto.",
   plakLeeg:"Plak eerst de tekst van de kaart hierboven.",
+  plakGelezen:"Dit is wat de tekstherkenner op de foto las. Er zat geen bruikbaar nummer of datum in. Verbeter hierboven wat fout gelezen is (vooral de regels met \u00ab < \u00bb) en druk op de knop.",
   plakNiets:"Hier kon ik geen nummer, datum of adres in herkennen. Staat de hele kaart erbij \u2014 ook de regels onderaan met \u00ab < \u00bb?",
   plakOk:function(w){ return "\u2713 Ingevuld: "+w+". Kijk het na tegen de kaart."; },
   pName:"naam", pBirth:"geboortedatum", pNat:"nationaliteit", pDoc:"documentnummer",
@@ -829,6 +853,8 @@ var TXT = {
   licWasId:"\u2713 Dit was een identiteitsbewijs, geen rijbewijs. Ik heb hem als identiteitsbewijs gelezen en de foto naar het eerste vak verplaatst. De rijbewijsvelden bleven leeg \u2014 die horen bij het rijbewijs zelf.",
   licWasIdGeen:"Dit lijkt een identiteitsbewijs, geen rijbewijs. Daarom staat er niets in de rijbewijsvelden. De strook was niet te lezen: kader hem hieronder, of zet de foto in het eerste vak.",
   licLeeg:"\u2014 geen leesbare regels gevonden \u2014",
+  licRegelOk:function(nr,d){ return "\u2713 Rijbewijsnummer "+nr+" gelezen uit de regel achterop \u2014 die heeft een controlecijfer, dus dit klopt. "+(d?"Vervaldatum "+d+" gelezen: kijk die even na tegen de foto.":"De vervaldatum (Fin de validit\u00e9) staat schuin rechtsonder op deze kant: typ die over van je foto."); },
+  licTipAchter:"Tip: de achterkant van het rijbewijs heeft een regel in machineschrift (D1MA\u2026) met controlecijfer. Een foto daarvan leest het nummer altijd goed.",
   licRap:"Waarom lukt dit niet? Toon rapport",
   licAchterDat:"\u2713 Foto bewaard \u2014 dit is de achterkant van het rijbewijs. De datum heb ik overgenomen, maar het rijbewijsnummer en de naam staan op de voorkant. Maak daar ook een foto van; beide mogen hier onder elkaar staan.",
   licAchter:"\u2713 Foto bewaard \u2014 maar dit lijkt de achterkant van het rijbewijs: daar staat alleen de tabel met categorie\u00ebn. Het nummer, de naam en de vervaldatum staan op de voorkant. Maak daar ook een foto van, dan vul ik ze in. Beide foto\u2019s mogen hier onder elkaar staan.",
@@ -861,8 +887,10 @@ var TXT = {
   secIdP:"CIN of paspoort — het nummer en de geldigheid van dít document.",
   secLicP:"Apart van het identiteitsbewijs: eigen nummer, eigen vervaldatum.",
   scanPick:"Wat heb je in handen?", docPick:["Identiteitskaart","Paspoort","Rijbewijs"],
-  slotIdT:"2. Foto identiteitskaart of paspoort", slotIdP:"Fotografeer de kant met de regels vol \u00ab < \u00bb \u2014 bij een kaart de achterkant, bij een paspoort de pagina met de pasfoto. De app ziet zelf of het een kaart of een paspoort is.",
-  slotIdB:"Foto of PDF kiezen",
+  slotIdT:"2. Foto identiteitskaart of paspoort", slotIdP:"Achterkant = de kant met de regels vol \u00ab < \u00bb (bij een paspoort: de pagina met de pasfoto). Die geeft naam, nummer en datums met zekerheid. Voorkant = voor het adres en als extra controle. Doe ze allebei; ze blijven samen bij de klant staan.",
+  slotIdB:"Achterkant (strook)", slotIdVoor:"Voorkant",
+  voorNiets:"\u2713 Voorkant bewaard. De tekst was niet leesbaar genoeg om over te nemen \u2014 typ naam, geboortedatum en adres over van de foto, of kader hieronder het stuk met de tekst.",
+  voorGeenLezer:"\u2713 Voorkant bewaard. De tekstlezer is hier niet beschikbaar (alleen via de website). Typ naam, geboortedatum en adres over van de foto.",
   slotLicT:"3. Foto rijbewijs", slotLicP:"Apart van het identiteitsbewijs. Een rijbewijs heeft geen machineleesbare strook; de foto wordt bewaard en je kan de gegevens er daarna uit laten lezen.",
   slotLicB:"Foto van het rijbewijs",
   scanPId:"Maak een foto van de kant met de regels vol « < » — bij een kaart de achterkant, bij een paspoort de pagina met de pasfoto. Houd het document dichtbij zodat het het beeld vult.",
@@ -872,6 +900,7 @@ var TXT = {
   cropP:"Sleep met je vinger of muis een kader om het document \u2014 of strak om de regels vol \u00ab < \u00bb.",
   cropP2:"Ik heb het document hier gevonden. Klopt het kader niet? Sleep er zelf een nieuw kader omheen \u2014 om de hele kaart, of strak om het stuk dat je gelezen wil hebben.",
   cropOk:"\u2713 Gelezen uit het aangeduide stuk. Kijk de velden na tegen de foto.",
+  cropStrook:"De datums zijn gelezen, maar het nummer of de naam nog niet zeker. Het kader staat op de strook \u2014 schuif hem strak om de regels met \u00ab < \u00bb en tik op de knop; dan leest hij die opnieuw, scherper.",
   cropGo:"Lees het aangeduide stuk", cropFail:"Daar kon ik de regels niet uit lezen. Probeer het kader strakker rond de regels te slepen, of maak een nieuwe, scherpere foto van dichtbij.",
   scanT:"Document bewaren bij de klant", scanP:"Maak een foto van de CIN, het paspoort of het rijbewijs. Die blijft bij deze klant staan. De velden hieronder vul je zelf in.",
   scanBtn:"Foto maken of kiezen", scanBusy:"Bezig met lezen…", scanNo:"Scannen is hier niet beschikbaar. Vul de velden in.",
@@ -1105,7 +1134,9 @@ var TXT = {
   secLicP:"Séparé de la pièce d'identité : son propre numéro, sa propre date d'expiration.",
   scanPick:"Qu'avez-vous en main ?", docPick:["Carte d'identité","Passeport","Permis"],
   slotIdT:"2. Photo carte d\u2019identit\u00e9 ou passeport", slotIdP:"Photographiez le c\u00f4t\u00e9 avec les lignes \u00ab < \u00bb \u2014 le dos pour une carte, la page photo pour un passeport. L\u2019application reconna\u00eet elle-m\u00eame de quoi il s\u2019agit.",
-  slotIdB:"Choisir une photo ou un PDF",
+  slotIdB:"Verso (bande)", slotIdVoor:"Recto",
+  voorNiets:"\u2713 Recto enregistr\u00e9. Texte pas assez lisible \u2014 recopiez nom, date de naissance et adresse depuis la photo, ou encadrez la zone de texte ci-dessous.",
+  voorGeenLezer:"\u2713 Recto enregistr\u00e9. Le lecteur de texte n\u2019est pas disponible ici (site web seulement). Recopiez nom, date de naissance et adresse.",
   slotLicT:"3. Photo permis de conduire", slotLicP:"S\u00e9par\u00e9 de la pi\u00e8ce d\u2019identit\u00e9. Un permis n\u2019a pas de zone lisible par machine ; la photo est conserv\u00e9e et vous pouvez ensuite en faire lire les donn\u00e9es.",
   slotLicB:"Photo du permis",
   scanPId:"Photographiez le côté avec les lignes remplies de « < » — le dos pour une carte, la page avec la photo pour un passeport. Tenez le document près de l'objectif.",
@@ -1115,6 +1146,7 @@ var TXT = {
   cropP:"Tracez un cadre autour du document \u2014 ou serr\u00e9 autour des lignes remplies de \u00ab < \u00bb.",
   cropP2:"J\u2019ai trouv\u00e9 le document ici. Le cadre ne convient pas ? Tracez-en un autre \u2014 autour de toute la carte, ou serr\u00e9 sur la partie \u00e0 lire.",
   cropOk:"\u2713 Lu dans la zone indiqu\u00e9e. V\u00e9rifiez les champs sur la photo.",
+  cropStrook:"Les dates sont lues, mais le num\u00e9ro ou le nom pas encore s\u00fbr. Le cadre est sur la bande \u2014 ajustez-le serr\u00e9 autour des lignes \u00ab < \u00bb et appuyez sur le bouton.",
   cropGo:"Lire la zone indiquée", cropFail:"Impossible d'y lire les lignes. Resserrez le cadre autour des lignes, ou reprenez une photo nette de plus près.",
   scanT:"Scanner un document", scanP:"CIN, passeport ou permis. Prenez une photo — les champs se remplissent.",
   scanBtn:"Prendre ou choisir une photo", scanBusy:"Lecture en cours…", scanNo:"Le scan n'est pas disponible ici. Remplissez les champs.",
@@ -1319,6 +1351,8 @@ var TXT = {
    zin in de verkeerde taal dan een leeg vak of een app die blijft hangen. */
 TXT.fr.licLees="Lecture du permis…";
 TXT.fr.licOk="✓ Permis lu. Vérifiez le numéro et la date sur la photo — corrigez ce qui ne va pas.";
+TXT.fr.licRegelOk=function(nr,d){ return "\u2713 Num\u00e9ro de permis "+nr+" lu dans la ligne au verso \u2014 elle a un chiffre de contr\u00f4le, donc c\u2019est juste. "+(d?"Date de validit\u00e9 "+d+" lue : v\u00e9rifiez-la sur la photo.":"La date de validit\u00e9 (Fin de validit\u00e9) est en bas \u00e0 droite de ce c\u00f4t\u00e9 : recopiez-la depuis votre photo."); };
+TXT.fr.licTipAchter="Astuce : le verso du permis porte une ligne en caract\u00e8res machine (D1MA\u2026) avec chiffre de contr\u00f4le. Une photo de ce c\u00f4t\u00e9 lit toujours bien le num\u00e9ro.";
 TXT.fr.licNiets="✓ Photo du permis enregistrée. Le texte n’était pas assez net. Recopiez le numéro et la date de validité, ou reprenez la photo : bien à plat, carte entière, sans ombre.";
 TXT.fr.licUitH="Ce que je lis sur le permis";
 TXT.fr.licUitP="Directement depuis la photo. Vérifiez — rien n’est rempli qui ne ressemble pas à un numéro ou à une date.";
@@ -1336,6 +1370,16 @@ TXT.fr.plakP="Votre t\u00e9l\u00e9phone lit le texte mieux que n\u2019importe qu
 TXT.fr.plakGo="Extraire les donn\u00e9es de ce texte";
 TXT.fr.plakPlace="Collez ici le texte de la carte\u2026";
 TXT.fr.plakLeeg="Collez d\u2019abord le texte de la carte ci-dessus.";
+TXT.fr.camKnop="\ud83d\udcf7 Cam\u00e9ra";
+TXT.fr.fileWaarschuwing="Atlas est ouvert comme fichier local. Le scan, la cam\u00e9ra et la reconnaissance de texte ne fonctionnent que via le site : xyousri-dot.github.io/atlas";
+TXT.fr.camZoek="Placez la carte dans le cadre. Pour le c\u00f4t\u00e9 avec \u00ab < \u00bb, la photo se prend seule d\u00e8s que c\u2019est lisible.";
+TXT.fr.camTip="Pas encore lisible. Un peu plus pr\u00e8s, bien \u00e0 plat, sans ombre \u2014 ou prenez la photo vous-m\u00eame.";
+TXT.fr.camLicTip="Permis ou recto : placez la carte dans le cadre et prenez la photo.";
+TXT.fr.camRaak="\u2713 Bande lue \u2014 photo prise.";
+TXT.fr.camGenomen="Photo prise \u2014 lecture\u2026";
+TXT.fr.camFoto="Prendre la photo";
+TXT.fr.camGeen="Pas de cam\u00e9ra ici \u2014 choisissez une photo.";
+TXT.fr.plakGelezen="Voici ce que le lecteur a lu sur la photo. Aucun num\u00e9ro ni date utilisable. Corrigez ci-dessus ce qui est mal lu (surtout les lignes avec \u00ab < \u00bb) et appuyez sur le bouton.";
 TXT.fr.plakNiets="Je n\u2019y reconnais ni num\u00e9ro, ni date, ni adresse. La carte enti\u00e8re est-elle incluse \u2014 y compris les lignes en bas avec \u00ab < \u00bb ?";
 TXT.fr.plakOk=function(w){ return "\u2713 Rempli : "+w+". V\u00e9rifiez sur la carte."; };
 TXT.fr.pName="nom"; TXT.fr.pBirth="date de naissance"; TXT.fr.pNat="nationalit\u00e9";
@@ -1444,6 +1488,16 @@ async function recheckScan(){
   LOCAL=!DB;
   try{ await reload(); }catch(e){ dbErr(e); }
   applyLang(); render();
+  /* Vanaf een lokaal bestand geopend? Dan werken de tekstlezer en de camera niet
+     (de browser blokkeert dat op file://). Dat moet de app zeggen, anders lijkt
+     het alsof de scanner stuk is terwijl alleen de plek verkeerd is. */
+  try{
+    if(location.protocol==="file:"){
+      var w=el("div"); w.style.cssText="position:fixed;left:0;right:0;top:0;z-index:70;background:#b45309;color:#fff;padding:10px 16px;font-weight:700;text-align:center;font-size:14px";
+      w.textContent=T().fileWaarschuwing;
+      document.body.appendChild(w);
+    }
+  }catch(e){}
 })();
 window.addEventListener("unhandledrejection",function(ev){ dbErr(ev.reason); });
 window.addEventListener("error",function(ev){ if(ev.error) dbErr(ev.error); });
@@ -1485,6 +1539,8 @@ function applyLang(){
   Array.prototype.forEach.call($("docPick").children,function(b,i){ b.textContent=t.docPick[i]; });
   if($("slotIdT")){
     $("slotIdT").textContent=t.slotIdT; $("slotIdP").textContent=t.slotIdP; $("scanBtn").textContent=t.slotIdB;
+    $("camIdBtn").textContent=t.camKnop; $("camLicBtn").textContent=t.camKnop;
+    $("scanVoorBtn").textContent=t.slotIdVoor;
     $("slotLicT").textContent=t.slotLicT; $("slotLicP").textContent=t.slotLicP; $("scanLicBtn").textContent=t.slotLicB;
     $("plakT").textContent=t.plakT; $("plakP").textContent=t.plakP;
     $("plakGo").textContent=t.plakGo; $("plakText").placeholder=t.plakPlace;
@@ -1749,6 +1805,43 @@ function renderClients(){
   box.appendChild(jobs);
 }
 $("clQ").addEventListener("input",renderClients);
+/* ============ WAT KOMT VAN DE SCANNER, WAT TYPT DE VERHUURDER ZELF ============
+   Twee documenten van dezelfde klant zijn normaal: een identiteitskaart én een
+   rijbewijs. Maar wat de vórige scan invulde mag niet blijven staan als de volgende
+   scan iets anders zegt of niets vindt — dan staat de geboortedatum van het ene
+   document naast de naam van het andere en klopt het formulier nergens meer.
+   Daarom onthoudt elk vakje of de app het zelf heeft ingevuld. Bij een nieuwe scan
+   worden alleen díe vakjes leeggemaakt; wat de verhuurder zelf typte blijft staan. */
+var IDVELDEN=["cvName","cvBirth","cvNat","cvDocNo","cvDocExp","cvAddr"];
+var LICVELDEN=["cvLic","cvLicExp","cvNat","cvBirth"];
+function wisAutoVelden(ids){
+  var was={};
+  ids.forEach(function(id){ var e=$(id); if(!e) return;
+    if(e.dataset && e.dataset.auto==="1"){ e.value=""; delete e.dataset.auto; e.classList.remove("check"); }
+    was[id]=e.value; });
+  return was;
+}
+function leesVelden(ids){
+  var was={}; ids.forEach(function(id){ var e=$(id); if(e) was[id]=e.value; }); return was;
+}
+function merkAuto(ids,was){
+  ids.forEach(function(id){ var e=$(id); if(!e) return;
+    if(e.value && !was[id] && e.dataset) e.dataset.auto="1"; });
+}
+function vergeetAuto(){
+  IDVELDEN.concat(LICVELDEN).forEach(function(id){ var e=$(id); if(e && e.dataset) delete e.dataset.auto; });
+}
+/* Zodra de verhuurder zelf in een vakje typt, is het van hem: geen enkele scan
+   mag het daarna nog weggooien. */
+var AUTOLUISTERT=false;
+function luisterAuto(){
+  if(AUTOLUISTERT) return;
+  AUTOLUISTERT=true;
+  IDVELDEN.concat(LICVELDEN).forEach(function(id){
+    var e=$(id); if(!e){ AUTOLUISTERT=false; return; }
+    e.addEventListener("input",function(){ if(e.dataset) delete e.dataset.auto; });
+  });
+}
 function openClient(c, afterSave){
   var t=T();
   clientEdit=c; clientDraft={ scans: c&&c.scans?Object.assign({},c.scans):{}, after:afterSave||null };
@@ -1758,6 +1851,7 @@ function openClient(c, afterSave){
   $("cvDocNo").value=c?(c.docNumber||""):""; $("cvBirth").value=c?(c.birth||""):""; $("cvDocExp").value=c?(c.docExpiry||""):"";
   $("cvLic").value=c?(c.licenceNumber||""):""; $("cvLicExp").value=c?(c.licenceExpiry||""):""; $("cvNat").value=c?(c.nationality||""):""; $("cvAddr").value=c?(c.address||""):"";
   $("cvNote").value=c?(c.note||""):"";
+  luisterAuto(); vergeetAuto();   /* alles wat er nu staat komt van de klantkaart, niet van een scan */
   Array.prototype.forEach.call($("cvFlag").children,function(b){ b.setAttribute("aria-pressed", b.dataset.v===((c&&c.flag)||"ok")); });
   $("scanbox").className="scanbox"; $("scanBtn").disabled=false; if($("scanLicBtn")) $("scanLicBtn").disabled=false;
   $("cropWrap").hidden=true; CROPIMG=null; cropSel=null;
@@ -1867,7 +1961,17 @@ function mrzSane(o){
   if(!(vj>=nu-15 && vj<=nu+20)) return null;
   /* Geldigheid ligt altijd na de geboorte, met een flinke marge. */
   if(vj-gj<14) return null;
-  if(o.nationality && !/^[A-Z]{3}$/.test(o.nationality)) return null;
+  /* Elke echte strook draagt een nationaliteit van drie letters. Staat er niets of
+     iets dat geen land is, dan is de lezing ruis die toevallig door de
+     controlecijfers kwam — en dan hoort er geen geboortedatum in het formulier. */
+  if(!o.nationality || !/^[A-Z]{3}$/.test(o.nationality)) return null;
+  if(typeof echtLand==="function" && !echtLand(o.nationality)) return null;
+  /* Een echte strook zit vol opvulling: minstens een handvol « < ». En de naamregel
+     bestaat uit letters, niet uit losse tekens. Een toevalstreffer op de voorkant
+     van een kaart — foto, Arabisch, guilloche — haalt dit niet. */
+  var ruw=String(o.docRaw||"")+String(o.nameRaw||"");
+  if(ruw && (ruw.match(/</g)||[]).length<6) return null;
+  if(o.fullName && o.fullName.replace(/[^A-Z]/g,"").length<3) return null;
   return o;
 }
 function mrzDate(yymmdd,future){
@@ -1896,11 +2000,35 @@ function nameTrust(raw,name){
   if(fill<3) return "";
   return name;
 }
+function licRegel(L){
+  var body=L.slice(0,29), lc=L[29], nr=L.slice(5,14), dat=L.slice(14,20), nm=L.slice(20,29);
+  /* Eén controlecijfer is dun: één op de tien verkeerde lezingen glipt erdoor.
+     Daarom eisen we ook de vaste kop (D1?MA), een echt gelezen cijfer als slot,
+     en verderop twee gelijke lezingen voordat het nummer wordt ingevuld. */
+  if(!/^D1[A-Z]MA$/.test(L.slice(0,5)) || !/^[0-9]$/.test(lc)) return null;
+  if(!/^[0-9]{2}<[0-9]{6}$/.test(nr) || !/^[0-9]{6}$/.test(dat) || !/^[A-Z<]{9}$/.test(nm)) return null;
+  if(!mrzOk(body,lc)) return null;
+  var jr=Number(dat.slice(4,6)), nuJ=new Date().getUTCFullYear()%100;
+  if(jr>nuJ && jr<90) return null;   /* een afgiftedatum in de toekomst bestaat niet */
+  /* de afgiftedatum staat hier als ddmmjj, niet als jjmmdd zoals in een strook */
+  var iso=mrzDate(dat.slice(4,6)+dat.slice(2,4)+dat.slice(0,2),false); if(!iso) return null;
+  var naam=mrzName(nm), letters=naam.replace(/[^A-Z]/g,"");
+  return { kind:"licence", docNumber:nr.replace("<","/"), issue:iso, licLine:true,
+           nationality: L.slice(3,5)==="MA" ? "MAR" : "",
+           fullName: letters.length>=3 ? naam : "", nameRaw:nm, docRaw:L };
+}
 /* Leest de losse regels; geeft null als niets betrouwbaar klopt. */
 function parseMRZ(text){
   var lines=String(text||"").toUpperCase().replace(/[^A-Z0-9<\n]/g,"").split("\n")
     .map(function(l){ return l.trim(); }).filter(function(l){ return l.length>=28; });
   for(var i=0;i<lines.length;i++){
+    /* Marokkaans rijbewijs, achterkant: één regel van 30 tekens in OCR-B —
+       "D1" + landcode + nummer (07<182101) + afgiftedatum (ddmmjj) + naam,
+       met als laatste teken een controlecijfer over de eerste 29. Dat cijfer
+       maakt deze regel net zo betrouwbaar als een paspoortstrook. */
+    if(lines[i].length>=30 && lines[i].slice(0,2)==="D1"){
+      var lic=licRegel(lines[i].slice(0,30)); if(lic) return lic;
+    }
     /* TD3 — paspoort: 2 regels van 44 */
     if(lines[i].length>=44 && lines[i][0]==="P" && lines[i+1] && lines[i+1].length>=44){
       var a=lines[i].slice(0,44), b=lines[i+1].slice(0,44);
@@ -2063,6 +2191,74 @@ function snijUit(img,rect,breed){
   c.getContext("2d").drawImage(img,rect.x,rect.y,rect.w,rect.h,0,0,c.width,c.height);
   return c;
 }
+/* ============ DE STROOK ZELF ZOEKEN ============
+   Kaart zoeken op helderheid mislukt zodra de kaart op een lichte broek ligt of in
+   een hand: dan is "het lichte vlak" broek plus kaart plus hand. Maar de strook
+   zelf heeft iets dat niets anders op de foto heeft: twee of drie brede, lage
+   banden vol scherpe verticale randen (dertig letters naast elkaar), recht boven
+   elkaar en even hoog. Daar zoeken we dus op — randdichtheid, niet helderheid.
+   Dit is wat professionele lezers als eerste stap doen. */
+function vindStrook(img){
+  var sw=Math.min(800,img.width), sh=Math.round(img.height*sw/img.width);
+  var c=document.createElement("canvas"); c.width=sw; c.height=sh;
+  var x=c.getContext("2d"); x.drawImage(img,0,0,sw,sh);
+  var d=x.getImageData(0,0,sw,sh).data, g=new Float32Array(sw*sh), i;
+  for(var k=0,q=0;k<d.length;k+=4,q++) g[q]=d[k]*0.299+d[k+1]*0.587+d[k+2]*0.114;
+  /* verticale randen: verschil tussen linker- en rechterbuur */
+  var e=new Float32Array(sw*sh), y, xx;
+  for(y=0;y<sh;y++) for(xx=1;xx<sw-1;xx++){ var v=g[y*sw+xx+1]-g[y*sw+xx-1]; e[y*sw+xx]=v<0?-v:v; }
+  /* uitsmeren: breed horizontaal, smal verticaal — zo wordt een regel tekst één
+     lange lichte balk en blijft de rest donker */
+  var I=new Float64Array((sw+1)*(sh+1));
+  for(y=1;y<=sh;y++){ var rij=0; for(xx=1;xx<=sw;xx++){ rij+=e[(y-1)*sw+xx-1]; I[y*(sw+1)+xx]=I[(y-1)*(sw+1)+xx]+rij; } }
+  var RX=15, RY=3, m=new Float32Array(sw*sh), som=0, som2=0;
+  for(y=0;y<sh;y++) for(xx=0;xx<sw;xx++){
+    var x0=Math.max(0,xx-RX), x1=Math.min(sw,xx+RX+1), y0=Math.max(0,y-RY), y1=Math.min(sh,y+RY+1);
+    var s2=I[y1*(sw+1)+x1]-I[y0*(sw+1)+x1]-I[y1*(sw+1)+x0]+I[y0*(sw+1)+x0];
+    var val=s2/((x1-x0)*(y1-y0)); m[y*sw+xx]=val; som+=val; som2+=val*val;
+  }
+  var N=sw*sh, gem=som/N, sd=Math.sqrt(Math.max(0,som2/N-gem*gem)), drempel=gem+sd*1.2;
+  var mask=new Uint8Array(N); for(i=0;i<N;i++) mask[i]=m[i]>drempel?1:0;
+  /* samenhangende vlekken */
+  var zicht=new Uint8Array(N), stapel=new Int32Array(N), vlekken=[];
+  for(var st=0;st<N;st++){
+    if(zicht[st]||!mask[st]) continue;
+    var top=0, opp=0, bx0=1e9,bx1=-1,by0=1e9,by1=-1; stapel[top++]=st; zicht[st]=1;
+    while(top>0){ var pp=stapel[--top]; opp++; var px=pp%sw, py=(pp-px)/sw;
+      if(px<bx0)bx0=px; if(px>bx1)bx1=px; if(py<by0)by0=py; if(py>by1)by1=py;
+      if(px>0){var a=pp-1; if(!zicht[a]&&mask[a]){zicht[a]=1;stapel[top++]=a;}}
+      if(px<sw-1){var b=pp+1; if(!zicht[b]&&mask[b]){zicht[b]=1;stapel[top++]=b;}}
+      if(py>0){var cc=pp-sw; if(!zicht[cc]&&mask[cc]){zicht[cc]=1;stapel[top++]=cc;}}
+      if(py<sh-1){var dd=pp+sw; if(!zicht[dd]&&mask[dd]){zicht[dd]=1;stapel[top++]=dd;}} }
+    var bw=bx1-bx0+1, bh=by1-by0+1;
+    if(bw<sw*0.28 || bh<5 || bh>sh*0.12 || bw/bh<4) continue;
+    if(opp<bw*bh*0.35) continue;
+    vlekken.push({x0:bx0,x1:bx1,y0:by0,y1:by1,w:bw,h:bh});
+  }
+  if(vlekken.length<2) return null;
+  vlekken.sort(function(a,b){ return a.y0-b.y0; });
+  /* groepen van 2 of 3 banden: even hoog, boven elkaar, zelfde breedte */
+  var beste=null, besteScore=0;
+  for(i=0;i<vlekken.length;i++){
+    var groep=[vlekken[i]];
+    for(var j=i+1;j<vlekken.length && groep.length<3;j++){
+      var a2=groep[groep.length-1], b2=vlekken[j];
+      var hOk=Math.max(a2.h,b2.h)/Math.min(a2.h,b2.h)<1.7;
+      var gap=b2.y0-a2.y1; var gapOk=gap>=-2 && gap<Math.max(a2.h,b2.h)*2.2;
+      var ov=Math.min(a2.x1,b2.x1)-Math.max(a2.x0,b2.x0); var xOk=ov>Math.min(a2.w,b2.w)*0.6;
+      if(hOk&&gapOk&&xOk) groep.push(b2); else if(b2.y0>a2.y1+Math.max(a2.h,b2.h)*2.2) break;
+    }
+    if(groep.length<2) continue;
+    var score=groep.length*groep.reduce(function(s3,v3){ return s3+v3.w; },0);
+    if(score>besteScore){ besteScore=score; beste=groep; }
+  }
+  if(!beste) return null;
+  var X0=Math.min.apply(null,beste.map(function(v){return v.x0;})), X1=Math.max.apply(null,beste.map(function(v){return v.x1;}));
+  var Y0=beste[0].y0, Y1=beste[beste.length-1].y1, H=Y1-Y0, f=img.width/sw;
+  var mx=Math.round((X1-X0)*0.05), my=Math.round(H*0.35);
+  return { x:Math.max(0,Math.round((X0-mx)*f)), y:Math.max(0,Math.round((Y0-my)*f)),
+           w:Math.min(img.width,Math.round((X1-X0+2*mx)*f)), h:Math.min(img.height,Math.round((H+2*my)*f)), regels:beste.length };
+}
 /* De vier uiterste punten van het lichte vlak zijn de hoeken van de kaart:
    linksboven ligt het verst in de richting -x-y, rechtsonder in +x+y, enzovoort. */
 function vindHoeken(img){
@@ -2085,6 +2281,11 @@ function vindHoeken(img){
   if(Math.min(boven,onder)<w*0.25 || Math.min(links,rechts)<h*0.15) return null;
   if(Math.max(boven,onder)/Math.min(boven,onder)>1.8) return null;
   if(Math.max(links,rechts)/Math.min(links,rechts)>1.8) return null;
+  /* Een kaart is 1,6 keer zo breed als hoog (of andersom, staand). Een vierhoek die
+     bijna vierkant is, is kaart-plus-hand of een blad papier: die plat trekken
+     levert een vervormd beeld op waar niets meer uit te lezen valt. */
+  var verh=((boven+onder)/2)/Math.max(1,(links+rechts)/2);
+  if(!((verh>1.15&&verh<2.1)||(verh>0.48&&verh<0.87))) return null;
   /* Een hand, een lamp of een glansplek trekt een hoek naar buiten. Dan zit er
      donkere ondergrond bínnen de vierhoek, of ligt het lichte vlak er grotendeels
      buiten. Zo'n vierhoek plat trekken levert een vervormde kaart met tafel erbij
@@ -2196,6 +2397,7 @@ function mrzCanvas(img,bottomOnly,angle,bias,rect,targetW,local){
      bovengrens af van hoe groot het stuk al is. */
   var grens = sw0>=1600 ? 1.5 : (sw0>=1000 ? 2.2 : 4.5);
   var scale=Math.min(grens,Math.max(1,(targetW||1800)/sw0));
+  if(sh*scale>3600) scale=Math.max(1,3600/sh);
   var c=document.createElement("canvas"); c.width=Math.round(sw0*scale); c.height=Math.round(sh*scale);
   var x=c.getContext("2d");
   if(angle){
@@ -2268,15 +2470,45 @@ function shapeOf(px,W,x0,x1,y0,y1,boxH){
     var sx=minX+Math.min(w-1,Math.floor(gx*w/GW)), sy=minY+Math.min(h-1,Math.floor(gy*h/GH));
     bits[gy*GW+gx]=px[sy*W+sx]?1:0;
   }
-  return { bits:bits, rh:h/boxH, rw:w/h, rc:((minY+maxY)/2-y0)/boxH };
+  return { bits:bits, w32:pakBits(bits), rh:h/boxH, rw:w/h, rc:((minY+maxY)/2-y0)/boxH };
 }
+/* De 280 vakjes van een vorm in negen woorden van 32 bits. Vergelijken wordt dan
+   negen XOR's en negen keer bits tellen, in plaats van 280 losse vergelijkingen. */
+function pakBits(bits){
+  var n=bits.length, w=new Uint32Array((n+31)>>5);
+  for(var i=0;i<n;i++) if(bits[i]) w[i>>5]|=(1<<(i&31));
+  return w;
+}
+function telBits(v){ v=v-((v>>>1)&0x55555555); v=(v&0x33333333)+((v>>>2)&0x33333333); return (((v+(v>>>4))&0x0F0F0F0F)*0x01010101)>>>24; }
 /* Sjablonen uit verschillende lettertypes: een paspoort drukt in OCR-B, een ID-kaart soms
    anders. Meerdere vormen per teken vangt dat verschil op. */
+/* Sjablonen geleerd van een echte Marokkaanse identiteitskaart. De strook is gedrukt in
+   OCR-B en dat lettertype zit niet op een telefoon: de 0 zonder streep, de M met rechte
+   benen, de 2 met platte voet. Courier ernaast leggen leest een 0 als D en een 2 als Z.
+   Deze vormen komen van een foto van de kaart zelf en van de OCR-B-regel achterop
+   een rijbewijs — 14×20 rasters, plus hoogte, breedte en plaatsing — en liggen
+   naast de gewone lettertypes. */
+var ECHT_GLYPHS=[["0","1f81ff07fe1c3cf071c0e703bc0e703dc0f701de07781ce07381ce071c1c7ff0ffc1fe",1.009,0.371,0.5],["0","0f00ff07fe1e7cf073c1ef03bc0ef03fc0ff03dc07701dc07781ce07381c78f1ff83fe",1.044,0.356,0.597],["1","03803f81fe0ff8ffe3e7871f007c01f003e00f803e00f803e007801f007c01f003c00f",1.014,0.262,0.525],["1","01001f81fe0ff87ff1f7c79f187c01f803e00f803e00f801f007c01f007c01f003c00f",1.018,0.259,0.522],["2","0400fe0ffc1ff800f001c007001c00f007807e03e01f007801c00e003800ff81ffc7ff",1.053,0.35,0.592],["2","7f81ff0ffe183c007001c007003c01f00f807c03e01f007803c00e003800fe01ffc7ff",1.045,0.365,0.518],["3","7e03ffcfff0ffc00e007803c00e007803f807f001e001c007001c007101c7bf1ff83fc",1.017,0.376,0.574],["3","ffe3ff8fff007801e00f007c01e00fc03fc00f800e001c007001c007303cfff3ff83fc",1.036,0.377,0.514],["4","07003c00e003801e007001c00f003800e3878e1e38f0e3ffffffdfff00f001c007001c",1.06,0.338,0.593],["4","02003c00f003801e007001c00f003c00f3878e1e3c70f1fff7ffdfff007001c007001c",1.022,0.331,0.615],["5","7fe3ffcfff3ff87001c00fc03ff07ff1ffe007800f003c007001c00f007c07f1ff87f8",1.052,0.319,0.597],["5","3043ffc7ff1ff87801c007801ff07ff0ffe007800f003c007001c00f007c07f1ff87f8",1.055,0.328,0.541],["6","01c00f007803c01e007803c00fe07fe1ffcf8fbc0ef01fc07f01de07383cfff1ff81fc",1.027,0.345,0.597],["6","01c00f007803c01e007803c00fe07fe1ffc78f9c0ef03fc07701de073c3c7fe1ff81f8",1.018,0.353,0.575],["7","7ffffff7ffc00f003c00f007803c00f007801e00f003c00f003c00f003c00f003c0070",1,0.33,0.496],["7","7fcbfff7ffc03f003c00f007803c00f007801e00f003c00f003c00e003c00f003c00f0",1.009,0.33,0.5],["9","06007f03ff1ffe7879c0ff01dc07781de0f3e7c7ff0ffc0fe007803c00f007803e01f0",1.067,0.357,0.59],["9","07007f07ff1ffc787bc0ef03fc0f701de0f3c7cfff1ff81fe007803c01e007803c01e0",1.064,0.362,0.619],["<","001000c007803e01f00f807c07e03f01f80f801f003e007c00f800f801f001f003c007",0.892,0.427,0.709],["<","0008006003c01f00f807e03f03f01f80fc07e03f007c01f803f003e007e00fc01f803f",0.844,0.467,0.729],["A","1c007803e00fc03f00fe03f80ee039c0e7039e0e787ff1ffc7ff1c1e7039c0e701fc07",1.049,0.361,0.539],["A","3c00f803e00f803f00fe03f81ee07bc1e7071e1e787ff1ffc7ff3c1ef03bc0ee01f807",1.038,0.352,0.524],["D","f803fc07f81ff071e1c3c78f8e0e383ce0f381ce07381c6071c3c70f1c7c7fe1ff03f8",0.964,0.349,0.477],["D","fe03fe07fc1cf871f1c3e7078c0f383ce07381ce07381cf073c3c71f1cf87fe1ff07f0",0.954,0.346,0.472],["E","ffe3ff87301c007001c007001ff83ff0ffc3fe0e003800e0038006001c007ff1ffc7ff",0.981,0.396,0.485],["E","fff3ffcf003c007001c007001ff87ff0ffc3800e003800e003800e003c00fff1ffc7ff",0.951,0.398,0.471],["F","7ff3fff7ffdfff7c01f007c00f003ff8fff3ffcff81e007801e007801f003c00f003c0",0.991,0.275,0.564],["F","7e03fffffffffff803e007801f007ff9fff7ffcff83e00f803e00f801e007801e007c0",0.991,0.259,0.537],["G","03003f03fe0ffc7879e007001c00f003c00f3f9cff79fce0f381cf071e1c3ff07fc0fe",1.037,0.363,0.633],["G","02007f03fe1ffc7871c007001c007003c0073f9cfe79fce0f381cf071e1c3ff07fc0fe",1.027,0.372,0.555],["H","0003000e1c3870e1c183060c183070c1ff87fe1ff830e0c183060e183870e1c387061c",1.027,0.46,0.518],["H","0003820e1c187060c183060c1c3070e1ff83fe0ff830e0c183060e18387061c187061c",1.018,0.473,0.505],["I","3003ff8ffe1ff80f003c007001c007801e003800e003800e003c00f003c07fe1ffc7ff",1,0.3,0.523],["I","ffe3ff83fc03c00f001c007001e007800e003800e003800e003800f003c07ff1ffc7ff",0.936,0.324,0.463],["L","e003c00f001c007001c007001c003800e003800e003800e003c007001c007ff1ffc7ff",0.99,0.402,0.49],["L","7003c007001c007001c003800e003800e003800e003800e003c007001c007ff1ffc7ff",0.971,0.41,0.481],["M","7043e3cf8f1f3e7df9f7e7ff9ffe7fd9df637d8cf7339cc67381ce07380ce03180c603",0.957,0.406,0.669],["M","70e1e3c78f1f3c7df1ffc7ff9ffe37f8dfe37d8ee63b98e67381ce07181c603180c603",0.97,0.423,0.481],["O","0e007e03fe0ff87871c1ef03bc0ef01fc07f01dc07701ce07381cf071e3c3fe07f80fc",1,0.364,0.495],["O","3fc0ff87cf1c1c707bc0ef03fc07f01fc07701dc07781ce073c1c7071e3c3fe07f80fc",0.981,0.386,0.485],["P","1203ff8fff3ffe707dc0f701de07783dfff3ff8ffc3c00f003c00f001c007001c00700",0.985,0.356,0.504],["P","7f03ff8fff1ffe707dc07781ce073c7cfff3ff8ff83c00f001c007001c007801e00780",0.982,0.361,0.505],["R","7c03fe07fc1ff870f1c3c7071c1c78f1ffc3fe0ff03bc0e7038e0e3c3c70f0e1c3c707",0.939,0.407,0.622],["R","fe03fe0ffe3ff8f0f1c1c7071c1c7ff0ffc3fe0ff039c0e7838e0e1c3c7870e1c3c707",0.991,0.38,0.491],["S","0600ff07fe3ffcf8f3c1c7001e003e007e00fe00fc00f800e003ce073c3cf9f1ff83fe",1.058,0.349,0.621],["S","00007e07fe1ffc7873c1c7001e003e007e007e00fc007800e003ce073c3c7ff1ff81fc",1.087,0.339,0.607],["T","3fc3fff7ffcfff03800f001c007001c007001c007001c003000e003800e0038006001c",1.049,0.352,0.549],["T","3c43fff7ffcfff03c007001c007001c007001c003800e003800e001c007001c007001c",1.038,0.352,0.524],["U","e039c0e7039c0e7039c0e7019c07781de07381ce07381ce071c1c7071e1c3ff0ffc1fe",0.99,0.412,0.49],["U","601380ee03bc0ef039c0e703dc07701dc07381ce07381ce07381c7071c1c7ff0ff81fe",1.049,0.38,0.626],["Y","4001e07783cf0f1e3879e0f781fc03f00fc01e007800e003800e0018007001c007001c",1.049,0.352,0.587],["Y","4003e07781cf0f1e3c38e0f781fe07f00f801e007800e003800e003800e00380060018",1.049,0.343,0.607],["0","0fe0ffc3019c06600d803600d803600d803e00f803600d803600d803700cc063cf87fc",0.962,0.634,0.476],["0","03f0e0e301d803600d803600d803e00f803e00f803e00f803600d803600cc0738387fc",0.821,0.674,0.585],["1","003803f07fc7ff7c3fc0f003c00f003c00f003c00f003c00f003c00f003c00f003c007",0.961,0.357,0.515],["1","003df0f703d80f003c00f003c00f003c00f003c00f003c00f003c00f003c00f003c00f",0.786,0.432,0.602],["2","1fc1ffcf078007000c003001c007003803c03c03e01e00f007001c0060018007ffdfff",0.99,0.559,0.49],["2","0780ffc7879006000c003000c007003801c03c01e01e006003001c0060018007001fff",1,0.549,0.495],["3","ffe800e00300380000000038018007e003c0018003000c003000c003000c0077878ff8",0.922,0.674,0.456],["3","f180002000000000000000000180008001400100010000000000000000000046030fa0",0.922,0.66,0.456],["6","006003001800c006003001c006003fe0ffc7039c07600f803600d803700ce061ef83f8",0.893,0.63,0.469],["7","7ff3fff001c003001800e007003801c006003800c0060018006003000c003000c00300",0.962,0.604,0.505],["7","003dfff1c7c007001800c007003801c00e003000c006001800e003000c003001c00300",0.951,0.622,0.519],["8","1fe0ffc3039c066018c0e38707f807c03f81c70e0e701d803e00f803600dc073c787fc",0.961,0.646,0.476],["8","03007f83ef0c0e7018c06383871c0fc01f01ef0e0e701d803e00f803e00dc073c787fc",0.99,0.608,0.49],["<","0004003001c00e00e007003803c01c00e00f000e001c003c00380078007000e001c001",0.825,0.753,0.437],["<","0004007003001c00800c001003001800c00e000c001c00100030006000000080000000",0.755,0.792,0.451],["A","04001c00f803600cc033008c063018606181060c0c3ff0ffc30388066019807600f803",0.913,0.67,0.51],["A","00800f007c01f006c01b80c60318086060c183060c1ff0ffe38f8c066019807600f003",0.867,0.648,0.476],["B","3e03ff8fffb00ec01d007401d0066079ffc7ff1806600d8036005803600d80777f9ffc",0.893,0.696,0.51],["B","7f81ff86079006401900740190066079ff87ff1806600d8036005801600d80761f9ffc",0.892,0.703,0.52],["D","7003f80e783878e07380c6019806600d803600d803600d803600d806603981c73e1fe0",0.892,0.582,0.51],["D","0061c7870f1c0e7039c07701dc07600d803600d803601f8077019c0e7071c38ffc3fe0",0.757,0.654,0.617],["I","0801ffc7ff01c007001c007000c003000c003800e003800e003800e003800e00381fff",0.913,0.5,0.481],["I","fff1ffc07001c007001c007000c003000e003800e003800e003800e003800e07fedfff",0.804,0.522,0.397],["L","6001800600180060018006003800e0018006001800e003800e003800e003800e003fff",0.804,0.659,0.593],["M","001de0f783df0f7c7db1b666d99b67cd9f3e38f8e3e38f843e00f803e00f803e00f803",0.854,0.682,0.568],["M","001de0f783df0f6c25909646599166c58f163858e16385861600580160058016005801",0.853,0.678,0.569],["O","01003f01ce0c0c3019806600d803600d803e00d803600d803600cc03301c70e0ef01f8",0.932,0.656,0.481],["O","03803f01870c042019802600d803400d001c0050014005803600c803300c6060c701f8",0.922,0.649,0.485],["U","400d803600d803600d803600d803600d803600d803600d803600d803300ce071e783fc",0.893,0.674,0.49]];
+function echteGlyphs(){
+  var out=[];
+  for(var i=0;i<ECHT_GLYPHS.length;i++){
+    var e=ECHT_GLYPHS[i], hex=e[1], bits=new Uint8Array(GW*GH), n=GW*GH;
+    /* hex → bitreeks (de hex-tekst staat links opgevuld; de laatste n bits tellen) */
+    var bin="";
+    for(var h=0;h<hex.length;h++){ var v=parseInt(hex.charAt(h),16); bin+=("0000"+v.toString(2)).slice(-4); }
+    bin=bin.slice(bin.length-n);
+    for(var k=0;k<n;k++) bits[k]= bin.charAt(k)==="1" ? 1 : 0;
+    out.push({ ch:e[0], bits:bits, w32:pakBits(bits), rh:e[2], rw:e[3], rc:e[4] });
+  }
+  return out;
+}
+var GLYPHS_FONT=null, GLYPHS_ECHT=null;
 function buildGlyphSet(){
   var fonts=['"Courier New",monospace','ui-monospace,monospace','"DejaVu Sans Mono",monospace',
              '"Liberation Mono",monospace','monospace'];
   var all=[];
   for(var f=0;f<fonts.length;f++) all=all.concat(buildGlyphs(fonts[f]));
+  GLYPHS_FONT=all; GLYPHS_ECHT=echteGlyphs();
   return all;
 }
 function buildGlyphs(font){
@@ -2298,11 +2530,11 @@ function buildGlyphs(font){
 }
 function matchGlyph(sh){
   if(!sh) return { ch:"<", score:0, margin:0, top:["<"] };
-  var per={};
+  var per={}, N=sh.bits.length, A=sh.w32;
   for(var i=0;i<GLYPHS.length;i++){
-    var g=GLYPHS[i], same=0;
-    for(var k=0;k<sh.bits.length;k++) if(sh.bits[k]===g.bits[k]) same++;
-    var sc=same/sh.bits.length;
+    var g=GLYPHS[i], B=g.w32, versch=0;
+    for(var k=0;k<A.length;k++) versch+=telBits(A[k]^B[k]);
+    var sc=(N-versch)/N;
     /* vorm telt zwaar, verhoudingen tellen mee als scheidsrechter */
     sc -= Math.min(0.25, Math.abs(sh.rh-g.rh)*0.35);
     sc -= Math.min(0.15, Math.abs(sh.rw-g.rw)*0.10);
@@ -2310,7 +2542,40 @@ function matchGlyph(sh){
     if(per[g.ch]===undefined || sc>per[g.ch]) per[g.ch]=sc;   /* beste variant per teken */
   }
   var rank=Object.keys(per).sort(function(a,b){ return per[b]-per[a]; });
+  /* Tweelingen: P/R, O/D, Z/2, S/5, B/8, I/1, G/6, U/V. Courier en OCR-B verschillen
+     precies dáár, en de naam heeft geen controlecijfer dat het verbetert. Voor zo'n
+     paar mogen de van een echte kaart geleerde vormen de knoop doorhakken — alleen
+     tussen die twee, dus een heel andere letter kan er niet uit komen. */
+  var ch=rank[0], alts=TWEELING[ch]||[];
+  if(alts.length && GLYPHS!==GLYPHS_ECHT && GLYPHS_ECHT && GLYPHS_ECHT.length){
+    var sA=echtScore(sh,ch);
+    for(var ti=0;ti<alts.length && sA!==null;ti++){
+      var alt=alts[ti], sB=echtScore(sh,alt);
+      /* alleen als de geleerde vorm het teken echt herkent: een Courier-S lijkt
+         vaag op een OCR-B-8 (rond 0.5), een echte OCR-B-letter haalt 0.65 of meer */
+      if(sB!==null && sB>=0.62 && sB>sA+0.04 && per[alt]!==undefined && per[alt]>per[ch]-0.12){
+        var r2=[alt].concat(rank.filter(function(c){ return c!==alt; }));
+        return { ch:alt, score:per[ch], margin:per[ch]-per[r2[1]], top:r2.slice(0,3), gewisseld:ch };
+      }
+    }
+  }
   return { ch:rank[0], score:per[rank[0]], margin:per[rank[0]]-per[rank[1]], top:rank.slice(0,3) };
+}
+var TWEELING={P:["R"],R:["P"],O:["D"],D:["O"],Z:["2"],"2":["Z"],S:["5"],"5":["S"],B:["8"],"8":["B"],I:["1"],"1":["I"],G:["6"],"6":["G"],U:["V"],V:["U"]};
+function glyphScore(sh,g){
+  var A=sh.w32, B=g.w32, N=sh.bits.length, versch=0;
+  for(var k=0;k<A.length;k++) versch+=telBits(A[k]^B[k]);
+  var sc=(N-versch)/N;
+  sc -= Math.min(0.25, Math.abs(sh.rh-g.rh)*0.35);
+  sc -= Math.min(0.15, Math.abs(sh.rw-g.rw)*0.10);
+  sc -= Math.min(0.20, Math.abs(sh.rc-g.rc)*0.40);
+  return sc;
+}
+function echtScore(sh,ch){
+  var best=null;
+  for(var i=0;i<GLYPHS_ECHT.length;i++){ var g=GLYPHS_ECHT[i]; if(g.ch!==ch) continue;
+    var sc=glyphScore(sh,g); if(best===null||sc>best) best=sc; }
+  return best;
 }
 /* Hoe scheef ligt de foto? Bij de juiste hoek liggen de regels het scherpst op elkaar,
    en dan is het verschil tussen inktrijen en witte rijen het grootst. */
@@ -2378,6 +2643,24 @@ function readLine(px,W,y0,y1,n,knipL,knipR){
     if(last-first<n*3) return null;
     if(!ch) break;
   }
+  /* Losse vlekken ver van de tekst (de rand van de tafel, een stipje): binnen een
+     strook zit nooit een witte kloof breder dan twee letterhoogtes, want de lege
+     plekken zijn met «<» gevuld. Alles voorbij zo'n kloof hoort er dus niet bij:
+     we houden het breedste stuk over. */
+  var kloof=(y1-y0), segs=[], segStart=-1, laatsteInkt=-1;
+  for(x=first;x<=last;x++){
+    if(!col[x]) continue;
+    if(segStart<0) segStart=x;
+    else if(x-laatsteInkt>kloof){ segs.push([segStart,laatsteInkt]); segStart=x; }
+    laatsteInkt=x;
+  }
+  if(segStart>=0) segs.push([segStart,laatsteInkt]);
+  /* alleen smalle stukjes aan de uiteinden vallen af (hooguit een paar tekens
+     breed); echte tekst met een gaatje erin blijft heel */
+  var klein=(y1-y0)*2.5;
+  while(segs.length>1 && segs[0][1]-segs[0][0]<klein) segs.shift();
+  while(segs.length>1 && segs[segs.length-1][1]-segs[segs.length-1][0]<klein) segs.pop();
+  if(segs.length){ first=segs[0][0]; last=segs[segs.length-1][1]; if(last-first<n*3) return null; }
   /* Staat er nog iets naast de strook — de andere bladzijde van een paspoort, de
      rand van een kaart — dan loopt de gemeten breedte door tot in die inkt en
      liggen alle vakjes verschoven. Daarom kunnen we links of rechts een paar
@@ -2401,10 +2684,50 @@ function readLine(px,W,y0,y1,n,knipL,knipR){
   var edges=[first];
   for(i=1;i<n;i++) edges.push(cut(first+i*span));
   edges.push(last+1);
+  /* Een scheve of licht gebogen regel (perspectief) ligt in een band die veel hoger
+     is dan de letters zelf: links zit de tekst bovenin, rechts onderin. Meten we elk
+     teken tegen die hele band, dan kloppen hoogte en plaatsing nergens meer. Daarom
+     volgen we de onderkant van de letters langs de regel: per vakje de eigen bodem,
+     gladgestreken over de buren, en de letterhoogte uit de meerderheid van de
+     tekens. Elk vakje krijgt zo zijn eigen, strakke kadertje. */
+  var top=new Array(n), bot=new Array(n), hs=[];
+  for(i=0;i<n;i++){
+    var a0=edges[i], a1=Math.max(a0+1,edges[i+1]), mn=1e9, mx=-1, yy, xx;
+    for(yy=y0;yy<y1;yy++) for(xx=a0;xx<a1;xx++) if(px[yy*W+xx]){ if(yy<mn) mn=yy; if(yy>mx) mx=yy; }
+    top[i]=mn; bot[i]=mx; if(mx>=0) hs.push(mx-mn+1);
+  }
+  var strak=false, hMed=boxH, bodem=null;
+  if(hs.length>=8){
+    hs.sort(function(a,b){ return a-b; });
+    /* de hoogte van de hoofdletters: het hoge deel van de verdeling, niet het midden —
+       een regel vol « < » zou anders een te lage letterhoogte geven */
+    var hMax=hs[hs.length-1]; hMed=hs[Math.floor(hs.length*0.85)];
+    /* alleen ingrijpen als de band duidelijk hoger is dan de letters */
+    if(hMed>=8 && boxH>hMed*1.25){
+      strak=true; bodem=new Array(n);
+      for(i=0;i<n;i++){
+        var buren=[];
+        for(var j=Math.max(0,i-4);j<=Math.min(n-1,i+4);j++) if(bot[j]>=0 && (bot[j]-top[j]+1)>=hMed*0.8) buren.push(bot[j]);
+        if(buren.length){ buren.sort(function(a,b){ return a-b; }); bodem[i]=buren[Math.floor(buren.length/2)]; }
+        else bodem[i]=null;
+      }
+      /* gaten opvullen met de dichtstbijzijnde bekende bodem */
+      var laatst=null;
+      for(i=0;i<n;i++){ if(bodem[i]===null) bodem[i]=laatst; else laatst=bodem[i]; }
+      laatst=null;
+      for(i=n-1;i>=0;i--){ if(bodem[i]===null) bodem[i]=laatst; else laatst=bodem[i]; }
+      if(bodem[0]===null) strak=false;
+    }
+  }
   var out="", weak=0, cand=[], weakAt=[];
   for(i=0;i<n;i++){
-    var cx0=edges[i], cx1=Math.max(cx0+1,edges[i+1]);
-    var m=matchGlyph(shapeOf(px,W,cx0,cx1,y0,y1,boxH));
+    var cx0=edges[i], cx1=Math.max(cx0+1,edges[i+1]), sh;
+    if(strak){
+      var b1=bodem[i], t1=Math.max(y0,Math.round(b1-hMed*1.15)), b2=Math.min(y1,Math.round(b1+hMed*0.15)+1);
+      sh=shapeOf(px,W,cx0,cx1,t1,b2,hMed);
+    } else sh=shapeOf(px,W,cx0,cx1,y0,y1,boxH);
+    var m=matchGlyph(sh);
+    if(typeof LEERVORMEN!=="undefined" && LEERVORMEN) LEERVORMEN.push(sh);   /* alleen voor het leren van sjablonen */
     out+=m.ch; cand.push(m.top||[m.ch]);
     var zw=m.margin<0.03; weakAt.push(zw); if(zw) weak++;
   }
@@ -2440,7 +2763,9 @@ var PAT={
   /* De naamregel kent geen enkel cijfer. Een "0" daar is altijd een O, een "1" een I.
      Zonder deze regel bleef er een cijfer in de naam staan en werd de hele naam
      geweigerd — dan kreeg de verhuurder een leeg naamveld zonder reden. */
-  name:new Array(45).join("a")
+  name:new Array(45).join("a"),
+  /* rijbewijs-achterkant: D1 + land + 07<182101 + ddmmjj + naam + slotcijfer */
+  lic:"*****dd*dddddddddddd"+"aaaaaaaaa"+"d"
 };
 function applyPattern(line,pat){
   var out="";
@@ -2652,7 +2977,7 @@ function mrzFromCanvas(canvas,D){
      of drie regels van vrijwel dezelfde hoogte, recht boven elkaar. Zo vallen
      combinaties als 192-14-173 meteen af. */
   var tail=lines.slice(lines.length>10 ? -18 : -6);
-  var counts=[[44,2],[36,2],[30,3]];   /* TD3 paspoort, TD2, TD1 identiteitskaart */
+  var counts=[[44,2],[36,2],[30,3],[30,1]];   /* TD3 paspoort, TD2, TD1 identiteitskaart, rijbewijsregel */
   /* Bij een rustige foto laten we alles door zoals voorheen; alleen bij een
      rommelig beeld met tientallen gevonden regels wordt de eis hard. */
   var streng = lines.length>24;
@@ -2667,12 +2992,37 @@ function mrzFromCanvas(canvas,D){
   var groups=[];
   for(var c=0;c<counts.length;c++){
     var need0=counts[c][1];
-    for(var st=tail.length-need0; st>=0; st--){
-      var g=tail.slice(st,st+need0);
+    /* De losse rijbewijsregel staat niet onderaan maar ergens op de kaart (na
+       draaien vaak bovenaan): daarvoor komen alle regels in aanmerking. */
+    var pool = need0===1 ? lines : tail;
+    for(var st=pool.length-need0; st>=0; st--){
+      var g=pool.slice(st,st+need0);
       if(past(g)) groups.push([counts[c][0],g]);
     }
   }
+  /* Twee sjabloonsets, na elkaar: eerst de gewone lettertypes (goed voor paspoorten
+     en scans), daarna de vormen die van een echte Marokkaanse kaart zijn geleerd.
+     Door elkaar gebruiken werkt niet — dan steelt de ene set treffers van de andere.
+     De controlecijfers beslissen welke lezing telt. */
+  var sets=[GLYPHS_FONT||GLYPHS]; if(GLYPHS_ECHT && GLYPHS_ECHT.length) sets.push(GLYPHS_ECHT);
+  var halveTreffer=null, strookAchtig={};
+  /* Dezelfde regel komt in tientallen groepen voor (drie regels, dan de drie
+     eronder, enzovoort). Elke lezing één keer doen en onthouden scheelt het
+     grootste deel van de tijd. */
+  var geheugen={};
+  function leesRegel(y0,y1,n,kL,kR){
+    var k=y0+"|"+y1+"|"+n+"|"+(kL||0)+"|"+(kR||0)+"|"+(GLYPHS===GLYPHS_ECHT?1:0);
+    if(!(k in geheugen)) geheugen[k]=readLine(px,W,y0,y1,n,kL,kR);
+    return geheugen[k];
+  }
+  function compleet(h){ return !!(h && h.fullName && (h.kind!=="id" || !h.altNumber || CINNR.test(h.altNumber))); }
+  for(var si=0;si<sets.length;si++){
+  GLYPHS=sets[si];
   for(var gi=0;gi<groups.length;gi++){
+    /* De geleerde set is een tweede kans, geen tweede volledige ronde: alleen voor
+       groepen waar de eerste set al een strook zág (veel « < ») maar de controle
+       niet haalde. Anders kost hij het dubbele en loopt de tijd om. */
+    if(si>0 && !strookAchtig[gi]) continue;
     var n=groups[gi][0], use=groups[gi][1];
     /* Eerst de volle breedte, daarna een paar varianten waarbij links of rechts
        wat wordt afgeknipt: dat redt een strook waar andere inkt naast staat. */
@@ -2680,13 +3030,19 @@ function mrzFromCanvas(canvas,D){
        strook (veel «<») maar de controle niet haalt. Dan ligt het aan de breedte,
        niet aan het beeld. */
     var knips=[[0,0]];
-    var eerste=readLine(px,W,use[use.length-1][0],use[use.length-1][1],n);
-    if(eerste && (eerste.text.match(/</g)||[]).length>=n*0.25) knips=[[0,0],[1,0],[2,0],[0,1],[1,1]];
+    var eerste=leesRegel(use[use.length-1][0],use[use.length-1][1],n);
+    if(eerste && (eerste.text.match(/</g)||[]).length>=n*0.25){ /* de brede knipvarianten (drie, vier vakjes) alleen bij de geleerde set: dat
+         is de rand-van-de-kaart-situatie waarvoor ze bedoeld zijn */
+      knips = si>0 ? [[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[3,1],[4,0],[4,1]] : [[0,0],[1,0],[2,0],[0,1],[1,1]];
+      strookAchtig[gi]=true; }
+    /* De losse rijbewijsregel heeft maar drie «<»; daar zijn de knipvarianten
+       altijd goedkoop (één regel) en vaak nodig (een vlek naast de regel). */
+    if(use.length===1 && eerste && /^[D0O][1IJL]/.test(eerste.text)){ knips=[[0,0],[1,0],[0,1],[1,1],[2,0],[2,1]]; strookAchtig[gi]=true; }
     var hitG=null;
     for(var ki=0;ki<knips.length && !hitG;ki++){
       var txt=[], ok=true;
       for(var li2=0;li2<use.length;li2++){
-        var r=readLine(px,W,use[li2][0],use[li2][1],n,knips[ki][0],knips[ki][1]);
+        var r=leesRegel(use[li2][0],use[li2][1],n,knips[ki][0],knips[ki][1]);
         if(!r){ ok=false; break; }
         txt.push(r.text);
       }
@@ -2696,13 +3052,36 @@ function mrzFromCanvas(canvas,D){
     if(n===44 && fixed.length===2){ fixed[1]=applyPattern(fixed[1],PAT.td3b); fixed[0]=fixed[0].slice(0,5)+applyPattern(fixed[0].slice(5),PAT.name); }
     if(n===30 && fixed.length===3){ fixed[0]=applyPattern(fixed[0],PAT.td1a); fixed[1]=applyPattern(fixed[1],PAT.td1b); fixed[2]=applyPattern(fixed[2],PAT.name); }
     if(n===36 && fixed.length===2) fixed[0]=fixed[0].slice(0,5)+applyPattern(fixed[0].slice(5),PAT.name);
+    if(n===30 && fixed.length===1){
+      if(!/^D1/.test(fixed[0]) && !/^[D0O][1IJL]/.test(fixed[0])) continue;
+      fixed[0]="D1"+applyPattern(fixed[0],PAT.lic).slice(2,7)+"<"+applyPattern(fixed[0],PAT.lic).slice(8);
+    }
     var hit=fixWithChecks(fixed);
+    /* Alleen de naamregel rechtgezet, de rest ruw: de cijfervelden herstelt
+       fixWithChecks zelf aan de hand van de controlecijfers (die proberen meer
+       kandidaten dan het vaste patroon), en de naam heeft geen cijfers. */
+    if(!hit){
+      var half=txt.slice();
+      if(n===44 && half.length===2) half[0]=half[0].slice(0,5)+applyPattern(half[0].slice(5),PAT.name);
+      if(n===30 && half.length===3) half[2]=applyPattern(half[2],PAT.name);
+      if(n===36 && half.length===2) half[0]=half[0].slice(0,5)+applyPattern(half[0].slice(5),PAT.name);
+      hit=fixWithChecks(half);
+    }
     if(!hit) hit=fixWithChecks(txt);
       if(hit) hitG=hit;
     }
-    if(hitG) return hitG;
+    if(hitG){
+      hitG.setIdx=si;
+      /* Een treffer met een twijfelachtig nummer of zonder naam: de andere set mag
+         het nog proberen; de vollediger lezing wint. */
+      if(compleet(hitG)){ GLYPHS=sets[0]; return hitG; }
+      if(!halveTreffer) halveTreffer=hitG;
+      break;
+    }
   }
-  return null;
+  }
+  GLYPHS=sets[0];
+  return halveTreffer;
 }
 
 /* Draai de hele foto recht, zonder verder iets te doen. Daarna ligt een schuin gehouden
@@ -2801,18 +3180,59 @@ function lijstConsensus(lijst,minAantal){
   return uit;
 }
 function keurAlt(hit,lijst){
-  if(!hit || !hit.altNumber || !lijst || lijst.length<2) return hit;
-  var c=lijstConsensus(lijst,2);
-  if(c && c!==hit.altNumber && CINNR.test(c)) hit.altNumber=c;
+  if(!hit || !hit.altNumber || !lijst || !lijst.length) return hit;
+  /* Alleen lezingen die de vorm van een CIN-nummer hebben tellen mee (letters,
+     dan cijfers). "GI45H9" is geen nummer, hoe vaak het ook gelezen is. */
+  var goed=lijst.filter(function(a){ return CINNR.test(a); });
+  if(!goed.length) return hit;
+  var tel={}, beste=goed[0];
+  goed.forEach(function(a){ tel[a]=(tel[a]||0)+1; if(tel[a]>tel[beste]) beste=a; });
+  var c=lijstConsensus(goed,2);
+  hit.altNumber = (c && CINNR.test(c)) ? c : beste;
   return hit;
 }
-function keurNaam(hit,namen,lijst){
+function keurNaam(hit,namen,lijst,sets,lijstFont){
   if(!hit || !hit.fullName) return hit;
-  if((namen[hit.fullName]||0)>=3) return hit;
-  var c=naamConsensus(lijst);
-  if(c && c.replace(/\s/g,"").length>=3){ hit.fullName=c; return hit; }
+  /* De geleerde vormen kennen sommige letters (T, Y) nog te weinig: die set alleen
+     mag nooit een naam invullen. Alleen de lettertype-set, of allebei samen. */
+  lijst = lijstFont || lijst;
+  /* Twee sjabloonsets die onafhankelijk exact dezelfde naam lezen: dat is geen
+     toeval. Drie keer dezelfde naam uit één set kan wél dezelfde systematische
+     leesfout zijn ("ELIIUTIT"), dus dat alleen is niet genoeg meer. */
+  var s=sets&&sets[hit.fullName], beide = s && Object.keys(s).length>=2;
+  if(beide && naamGeloofwaardig(hit.fullName)) return hit;
+  /* Anders per letter stemmen over álle lezingen die de controlecijfers haalden,
+     en elke letter moet een ruime meerderheid hebben. Exact drie keer dezelfde naam
+     was niet genoeg: dezelfde vervorming geeft drie keer dezelfde fout. */
+  var c=naamConsensusStreng(lijst,4,0.7);
+  if(c && naamGeloofwaardig(c)){ hit.fullName=c; return hit; }
   hit.fullName=""; hit.nameShaky=true;
   return hit;
+}
+function naamConsensusStreng(lijst,minAantal,drempel){
+  if(!lijst || lijst.length<minAantal) return "";
+  var perLen={};
+  lijst.forEach(function(n){ (perLen[n.length]=perLen[n.length]||[]).push(n); });
+  var L=Object.keys(perLen).sort(function(a,b){ return perLen[b].length-perLen[a].length; })[0];
+  var groep=perLen[L];
+  if(!groep || groep.length<minAantal) return "";
+  var uit="";
+  for(var i=0;i<Number(L);i++){
+    var tel={}, beste=null;
+    for(var j=0;j<groep.length;j++){ var ch=groep[j].charAt(i); tel[ch]=(tel[ch]||0)+1; if(!beste||tel[ch]>tel[beste]) beste=ch; }
+    if(tel[beste] < groep.length*drempel) return "";
+    uit+=beste;
+  }
+  return uit;
+}
+/* Een naam heeft klinkers, en niet drie keer dezelfde letter achter elkaar. */
+function naamGeloofwaardig(n){
+  var w=String(n||"").replace(/\s/g,"");
+  if(w.length<3) return false;
+  if(!/[AEIOUY]/.test(w)) return false;
+  if(/([A-Z])\1\1/.test(w)) return false;
+  var klink=(w.match(/[AEIOUY]/g)||[]).length;
+  return klink>=w.length*0.2;
 }
 /* Een document ligt vaak een kwartslag gedraaid in het beeld: een gescande PDF,
    een telefoon die zijwaarts werd gehouden, een pagina die staand is opgeslagen.
@@ -2988,7 +3408,45 @@ async function readMRZ(blob,opts){
      Pas als dat niets oplevert, de drie gedraaide standen — voor een gescande PDF,
      een zijwaarts gehouden telefoon of een staand opgeslagen bladzijde. Het beeld
      wordt pas gedraaid wanneer die poging aan de beurt komt. */
+  /* EERST: de strook zelf zoeken op randdichtheid. Vinden we hem, dan lezen we
+     dat stuk strak, met een korte hoekzwaai — dat is op een echte foto in de hand
+     de weg die in twee seconden raak is. Alles hierna is voor als dat niet lukt. */
+  var strook=null;
+  if(!opts.tight){ try{ strook=vindStrook(bron); }catch(e){ strook=null; } }
+  if(D) D.strook = strook ? (strook.w+"\u00d7"+strook.h+" ("+strook.regels+" banden)") : "niet gevonden";
+  if(strook){
+    var sk=null;
+    function strookBeeld(){ if(!sk) sk=snijUit(bron,strook,2200); return sk; }
+    [0,1,-1,2,-2,3,-3,4,-4].forEach(function(a3){
+      [-20,0].forEach(function(b7){
+        [2200,1800].forEach(function(w3){
+          cuts.push(function(){ return mrzCanvas(strookBeeld(),false,a3,b7,null,w3); });
+        });
+      });
+    });
+    [0,2,-2].forEach(function(a4){ cuts.push(function(){ return mrzCanvas(strookBeeld(),false,a4,0,null,2200,true); }); });
+  }
   planVoor(bron,0,1);
+  /* Een strak gekaderde strook (kader of camera): de hoek is dan het enige dat
+     nog telt. Alle hoeken van -6 tot +6 graden aflopen, op twee groottes, met
+     vaste drempel — dat is op een echte kaart in de hand wat de treffer geeft.
+     Dit komt vóór de dure grote uitsneden, anders is de tijd op voor we hier zijn. */
+  if(opts.tight){
+    /* Eerst de gemeten hoek, dan steeds verder daar vandaan — zo komt de juiste
+       hoek vroeg aan de beurt in plaats van als vijfentwintigste poging. */
+    var basisHoek=(ctx&&ctx.ang)||0, hoekLijst=[], gezien={};
+    [0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6].forEach(function(d){
+      var a=Math.round((basisHoek+d)*2)/2; if(Math.abs(a)>8) return;
+      if(!gezien[a]){ gezien[a]=1; hoekLijst.push(a); }
+    });
+    hoekLijst.forEach(function(a2){
+      [-20,0].forEach(function(b6){
+        [2200,1800].forEach(function(w2){
+          cuts.push(function(){ return mrzCanvas(bron,false,a2,b6,null,w2); });
+        });
+      });
+    });
+  }
   /* De gedraaide standen lazen altijd de héle foto, zonder het gevonden document
      en zonder lichtcorrectie. Op een donkere tafel is dat gedoemd: de achtergrond
      wordt één balk inkt. We draaien het gevonden kader mee en lezen daarbinnen,
@@ -3031,7 +3489,7 @@ async function readMRZ(blob,opts){
      verschillende pogingen exact dezelfde naam opleveren: een leesfout herhaalt
      zich vrijwel nooit letterlijk. Levert dat niets op, dan blijft het naamveld
      leeg en typt de verhuurder hem zelf — beter dan een fout op het contract. */
-  var votes={}, first={}, bestKey=null, namen={}, naamLijst=[], altLijst=[], klaar=null, klaarKey=null, extra=0;
+  var votes={}, first={}, bestKey=null, namen={}, naamLijst=[], naamFont=[], naamSets={}, altLijst=[], klaar=null, klaarKey=null, extra=0;
   for(var i=0;i<cuts.length;i++){
     /* Even ademen tussen pogingen: zo blijft het scherm leven, kan de teller
        meelopen en kunnen we netjes stoppen als het te lang duurt. */
@@ -3046,7 +3504,9 @@ async function readMRZ(blob,opts){
         if(!first[key]) first[key]=own;
         else if(!first[key].fullName && own.fullName) first[key]=own;
         if(!bestKey || votes[key]>votes[bestKey]) bestKey=key;
-        if(own.fullName){ namen[own.fullName]=(namen[own.fullName]||0)+1; naamLijst.push(own.fullName); }
+        if(own.fullName){ namen[own.fullName]=(namen[own.fullName]||0)+1; naamLijst.push(own.fullName);
+          if(!own.setIdx) naamFont.push(own.fullName);
+          (naamSets[own.fullName]=naamSets[own.fullName]||{})[own.setIdx||0]=1; }
         if(own.altNumber) altLijst.push(own.altNumber);
         if(votes[key]>=2 && !klaar){ first[key].sure=true; klaar=first[key]; klaarKey=key; }
       }
@@ -3060,8 +3520,11 @@ async function readMRZ(blob,opts){
        maken dezelfde fout makkelijk twee keer. Pas bij drie gelijke lezingen
        vullen we het nummer in. De datums hebben elk hun eigen cijfer plus de
        totaalcontrole en blijven wel staan. */
-    if((votes[klaarKey]||0)<3) klaar.docShaky=true;
-    return keurNaam(keurAlt(klaar,altLijst),namen,naamLijst);
+    /* Bij een paspoort zit het nummer óók in de totaalcontrole: twee gelijke
+       lezingen die beide door alle controles komen zijn dan genoeg. */
+    if((votes[klaarKey]||0)<3 && klaar.kind!=="passport" && klaar.kind!=="licence") klaar.docShaky=true;
+    if(klaar.kind==="passport" && klaar.docShaky){ klaar.docShaky=false; klaar.sure=false; }
+    return keurNaam(keurAlt(klaar,altLijst),namen,naamLijst,naamSets,naamFont);
   }
   /* Eén lezing die door alle controles komt is bruikbaar — we zeggen er wel bij
      dat het nummer nagekeken moet worden. */
@@ -3071,8 +3534,17 @@ async function readMRZ(blob,opts){
        op de tien verkeerde lezingen komt daar toevallig doorheen. Datums hebben
        elk hun eigen cijfer én zitten in de totaalcontrole, die vullen we wel in.
        Het nummer laten we over aan de verhuurder. */
+    /* De rijbewijsregel heeft maar één controlecijfer: één lezing is daar te
+       weinig. Twee gelijke of niets. */
+    if(first[bestKey].kind==="licence") return null;
+    /* Eén lezing die noch een naam noch een nummer van de juiste vorm oplevert, is
+       geen document maar ruis die door de controlecijfers heen kwam. Dan liever
+       niets dan een verzonnen geboortedatum in de klantenkaart. */
+    var los=first[bestKey];
+    if(!los.fullName && !(los.altNumber && CINNR.test(los.altNumber))
+       && !(los.docNumber && los.kind!=="id")) return null;
     first[bestKey].sure=false; first[bestKey].docShaky=true;
-    return keurNaam(keurAlt(first[bestKey],altLijst),namen,naamLijst);
+    return keurNaam(keurAlt(first[bestKey],altLijst),namen,naamLijst,naamSets,naamFont);
   }
   /* 2. Tekstherkenning die sommige browsers zelf hebben. */
   for(var j=0;j<cuts.length;j++){
@@ -3341,6 +3813,10 @@ function datumsUit(tekst){
   while((m=re.exec(tekst))){
     var dag=Number(m[1]), maand=Number(m[2]), jaar=Number(m[3]);
     if(dag<1||dag>31||maand<1||maand>12) continue;
+    /* Een dag van één cijfer met vlak ervoor een onleesbaar teken of een letter:
+       dat teken was waarschijnlijk het eerste cijfer van de dag ("?5/09/2032" is
+       eerder 15 dan 5). Liever geen datum dan een verkeerde. */
+    if(m[1].length===1 && /[?A-Z0-9]/.test(tekst.charAt(m.index-1))) continue;
     uit.push({ iso:jaar+"-"+("0"+maand).slice(-2)+"-"+("0"+dag).slice(-2), jaar:jaar });
   }
   return uit;
@@ -3351,9 +3827,17 @@ function datumsUit(tekst){
 /* Het nummer hoeft niet de hele regel te zijn. Op een echte kaart staat er van alles
    omheen — een veldcode, een streepje, wat ruis. We zoeken hem dus binnenin, maar
    eisen dat er links en rechts geen cijfer tegenaan plakt. */
-function nummerInRegel(s){
-  var m=s.match(/(^|[^0-9])([0-9]{1,3})\s*[\/?|]{1,2}\s*([0-9]{5,8})($|[^0-9])/);
-  return m ? m[2]+"/"+m[3] : "";
+function nummerInRegel(s,ruw){
+  /* De cijfers vóór de streep moeten écht als cijfers gelezen zijn — niet een
+     "Zz" die via de cijfertabel "22" werd. Daarom kijken we ook in de ruwe regel. */
+  var m=s.match(/(^|[^0-9A-Z])([0-9]{1,3})\s*\/\s*([0-9]{5,8})($|[^0-9A-Z])/);
+  if(!m) return "";
+  if(ruw!==undefined){
+    var r=String(ruw);
+    var mr=r.match(/(^|[^0-9A-Z])([0-9]{1,3})\s*\/\s*([0-9A-Z]{5,8})($|[^0-9A-Z])/);
+    if(!mr || mr[2]!==m[2]) return "";
+  }
+  return m[2]+"/"+m[3];
 }
 function licNummerUit(regels){
   var strak=[], los=[], cijfer=[], i;
@@ -3371,7 +3855,7 @@ function licNummerUit(regels){
       if(m){ strak.push(m[1]+m[2]); continue; }
     }
     /* tweede kans: het nummer staat ergens ín de regel, met ruis eromheen */
-    var n2=nummerInRegel(cijferig(s));
+    var n2=nummerInRegel(cijferig(s),s);
     if(n2) los.push(n2);
   }
   /* derde kans: de cijferlezing van dezelfde regel. Daarin kan een S geen 5 worden,
@@ -3380,7 +3864,7 @@ function licNummerUit(regels){
     for(i=0;i<regels.length;i++){
       var cc=regels[i].cijfers||"";
       if(!cc || datumsUit(cc).length) continue;
-      var n3=nummerInRegel(cc);
+      var n3=nummerInRegel(cc,regels[i].tekst);
       if(n3) cijfer.push(n3);
     }
   }
@@ -3416,6 +3900,65 @@ function rijbewijsUitRegels(regels){
   }).map(function(r){ return r.tekst.replace(/^[0-9]{1,2}\s*[\.\)]\s*/,"").trim(); });
   if(namen.length) o.namen=namen.slice(0,4);
   return o;
+}
+/* ============ DE OCR-B-REGEL OP DE ACHTERKANT VAN HET RIJBEWIJS ============
+   Het Marokkaanse rijbewijs draagt achterop, langs de lange rand, één regel in
+   OCR-B: D1 + land + nummer + afgiftedatum + naam + controlecijfer. Die regel is
+   het enige op de kaart met een controlecijfer, dus dáár halen we het nummer
+   vandaan. Hij staat altijd langs een lange rand; welke, en welke kant boven, weten
+   we niet — dus knippen we alle randstroken uit en lezen die in beide richtingen. */
+function licStroken(img){
+  var rect=null; try{ rect=vindKaart(img); }catch(e){ rect=null; }
+  var kaart = rect ? snijUit(img,rect,2200) : img;
+  var W=kaart.width, H=kaart.height, out=[];
+  function deel(x,y,w,h){ var c=document.createElement("canvas"); c.width=w; c.height=h;
+    c.getContext("2d").drawImage(kaart,x,y,w,h,0,0,w,h); return c; }
+  if(W>H*4){ out.push(kaart,turnImage(kaart,180)); return out; }   /* een strak kader om de regel zelf */
+  if(H>W){
+    var sw=Math.round(W*0.17), li=deel(0,0,sw,H), re=deel(W-sw,0,sw,H);
+    out.push(turnImage(li,90),turnImage(re,270),turnImage(li,270),turnImage(re,90));
+  } else {
+    var sh=Math.round(H*0.17), bo=deel(0,0,W,sh), on=deel(0,H-sh,W,sh);
+    out.push(on,turnImage(bo,180),bo,turnImage(on,180));
+  }
+  return out;
+}
+/* Een randstrook bevat behalve de regel ook de donkere tafel naast de kaart en de
+   lijnen van de tabel. Die zijn lange aaneengesloten zwarte banen; letters zijn
+   dat nooit. Wat te lang is halen we weg — daarna ziet de regelzoeker alleen tekst. */
+function zonderBanen(cv){
+  var W=cv.width, H=cv.height, x=cv.getContext("2d"), d=x.getImageData(0,0,W,H), a=d.data;
+  var maxH=Math.max(20,Math.round(W*0.02)), maxV=Math.max(24,Math.round(H*0.45)), xx, y, run, k;
+  for(y=0;y<H;y++){ run=0;
+    for(xx=0;xx<=W;xx++){ var ink = xx<W && a[(y*W+xx)*4]<128;
+      if(ink) run++; else { if(run>maxH) for(k=xx-run;k<xx;k++) a[(y*W+k)*4]=a[(y*W+k)*4+1]=a[(y*W+k)*4+2]=255; run=0; } } }
+  for(xx=0;xx<W;xx++){ run=0;
+    for(y=0;y<=H;y++){ var ink2 = y<H && a[(y*W+xx)*4]<128;
+      if(ink2) run++; else { if(run>maxV) for(k=y-run;k<y;k++) a[(k*W+xx)*4]=a[(k*W+xx)*4+1]=a[(k*W+xx)*4+2]=255; run=0; } } }
+  x.putImageData(d,0,0); return cv;
+}
+async function licRegelUitBeeld(img,budget,D){
+  var t0=Date.now(), max=budget||8000, stroken=licStroken(img), stem={}, eerste={}, n=0;
+  var combos=[[0,2200,false],[-20,2200,false],[0,2200,true],[10,1800,false]];
+  /* De kaart ligt zelden precies recht; een graad scheef over een hele kaartlengte
+     is al een halve letterhoogte. Per strook dus eerst de hoek bepalen. */
+  var hoeken=stroken.map(function(st){ try{ return deskewAngle(zonderBanen(mrzCanvas(st,false,0,0,null,1200,false))); }catch(e){ return 0; } });
+  for(var ci=0;ci<combos.length;ci++){
+    for(var si=0;si<stroken.length;si++){
+      if(Date.now()-t0>max) break;
+      await pauze(0); n++;
+      var hit=null;
+      try{ hit=mrzFromCanvas(zonderBanen(mrzCanvas(stroken[si],false,hoeken[si],combos[ci][0],null,combos[ci][1],combos[ci][2]))); }catch(e){ hit=null; }
+      if(!hit || hit.kind!=="licence") continue;
+      stem[hit.docNumber]=(stem[hit.docNumber]||0)+1;
+      if(!eerste[hit.docNumber]) eerste[hit.docNumber]=hit;
+      if(stem[hit.docNumber]>=2){ hit=eerste[hit.docNumber]; hit.sure=true; if(D) D.licRegel=n+" pogingen, 2× gelijk"; return hit; }
+    }
+  }
+  var k=Object.keys(stem);
+  if(D) D.licRegel=n+" pogingen, "+(k.length?"1× gelezen":"niets");
+  if(!k.length) return null;
+  return null;   /* één lezing is bij één controlecijfer niet genoeg */
 }
 /* Eén foto, meerdere lezingen. Het beeld wordt op verschillende manieren
    klaargemaakt — groter, anders belicht, rechtgedraaid — en elke lezing mag
@@ -3561,13 +4104,23 @@ var CINNR=/^[A-Z]{1,2}[0-9]{4,7}$/;
    Dat geldt onafhankelijk van welk tegeltje de verhuurder aantikte: het document
    zelf weet beter wat het is. */
 function usableDocNo(kind,num,alt,mrzKind){
-  var kaart = (kind==="cin") || (mrzKind==="id");
+  /* Een paspoortstrook (TD3) draagt het paspoortnummer zelf — ook als in de
+     app "identiteitskaart" gekozen stond. Dan is dat nummer bruikbaar. */
+  var kaart = (mrzKind==="id") || (kind==="cin" && mrzKind!=="passport");
   if(!kaart) return num||"";
   if(num && CINNR.test(num)) return num;
   if(alt && CINNR.test(alt)) return alt;
   return "";
 }
 function fillFromMRZ(hit,storedKey){
+  /* De regel achterop een rijbewijs: alleen het rijbewijsnummer (met controlecijfer)
+     en de nationaliteit. De naam erin is alleen de achternaam — die laten we aan de
+     identiteitskaart over. */
+  if(hit.kind==="licence"){
+    if(hit.docNumber) $("cvLic").value=hit.docNumber;
+    if(hit.nationality && echtLand(hit.nationality) && !$("cvNat").value) $("cvNat").value=hit.nationality;
+    renameScan(storedKey,"licence"); markCheck("cvLic"); hit.noNumber=false; return;
+  }
   /* Persoonsgegevens horen altijd bij de persoon; nummer en vervaldatum bij het gekozen document. */
   if(hit.fullName) $("cvName").value=hit.fullName;
   if(hit.birthDate) $("cvBirth").value=hit.birthDate;
@@ -3611,7 +4164,9 @@ function fillFromMRZ(hit,storedKey){
     renameScan(storedKey,soort);
   }
   hit.mismatch="";
-  if(!hit.fullName) $("cvName").value="";
+  /* Niets gelezen? Dan leegmaken wat een scan er eerder in zette — maar nooit wat
+     de verhuurder zelf getypt heeft. */
+  if(!hit.fullName && $("cvName").dataset && $("cvName").dataset.auto==="1") $("cvName").value="";
 }
 /* Als het lezen mislukt, moet de verhuurder niet raden en ik ook niet. Dit blok
    toont wat de lezer in de foto aantrof: hoe groot de foto was, of hij het
@@ -3623,11 +4178,14 @@ function showDiag(D){
   var r=[];
   r.push("foto        : "+D.img);
   r.push("document    : "+(D.rect||"-"));
+  r.push("strook      : "+(D.strook||"-"));
   r.push("scheefstand : "+(D.ang||0).toFixed(1)+" graden");
   r.push("draaistand  : "+(D.draai||0)+" graden");
   r.push("platgeslagen: "+(D.plat||"nee"));
   r.push("pogingen    : "+(D.tries||0));
   r.push("regels gezien: "+(D.maxLines||0)+(D.at?(" (bij "+D.at+")"):""));
+  r.push("tesseract   : "+(OCRFOUT||(window.Tesseract?"geladen":"niet geprobeerd")));
+  r.push("ocr.space   : "+(ocrSleutel()?"sleutel aanwezig":"geen sleutel"));
   (D.allLines||[]).forEach(function(x,i){ r.push("poging "+(i+1)+" : "+x); });
   (D.read||[]).forEach(function(x,i){
     r.push("");
@@ -3871,18 +4429,22 @@ function tekenKader(){
   s.style.width=(cropSel.w*f)+"px";
   s.style.height=(cropSel.h*f)+"px";
 }
-function showCrop(blob,storedKey,zelfKaderen){
+function showCrop(blob,storedKey,deel){
   var t=T(), u=URL.createObjectURL(blob), img=new Image();
   img.onload=function(){
     CROPIMG=img; CROPKEY=storedKey; cropSel=null;
     var cv=$("cropCv"), maxW=520, sc=Math.min(1,maxW/img.width);
     cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
     cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
-    /* kader alvast leggen waar de kaart lijkt te liggen */
+    /* kader alvast leggen waar de kaart lijkt te liggen — of, als de strook al half
+       gelezen is, op het onderste deel van de kaart waar de strook zit */
     var r=null; try{ r=vindKaart(img); }catch(e){ r=null; }
-    if(r && r.w>40 && r.h>20) cropSel={x:r.x,y:r.y,w:r.w,h:r.h};
+    /* een kleine vlek (een vinger, een lichte plek) is niet de kaart: dan de hele foto */
+    if(!r || r.w<40 || r.h<20 || r.w*r.h < img.width*img.height*0.45) r={x:0,y:0,w:img.width,h:img.height};
+    if(deel==="strook") cropSel={x:r.x,y:Math.round(r.y+r.h*0.4),w:r.w,h:Math.round(r.h*0.6)};
+    else cropSel={x:r.x,y:r.y,w:r.w,h:r.h};
     tekenKader();
-    $("cropP").textContent = cropSel ? t.cropP2 : t.cropP;
+    $("cropP").textContent = deel==="strook" ? t.cropStrook : t.cropP2;
     $("cropGo").textContent=t.cropGo; $("cropGo").disabled=!cropSel;
     $("cropWrap").hidden=false;
     URL.revokeObjectURL(u);
@@ -3923,15 +4485,25 @@ $("cropGo").addEventListener("click",async function(){
      Dus proberen we allebei. Het vakje waarin de foto terechtkwam mag nooit in de
      weg staan van wat er werkelijk op de kaart staat. */
   $("scanP").textContent=t.scanBusy;
-  var hit=null, D2={}; try{ hit=await readMRZ(blob,{ tight:true, budget:6000, diag:D2 }); }catch(e){ hit=null; }
+  var KGROEP = (pickedDoc()==="licence") ? LICVELDEN : IDVELDEN, KVOOR = leesVelden(KGROEP);
+  function kklaar(){ merkAuto(KGROEP,KVOOR); }
+  var hit=null, D2={}; try{ hit=await readMRZ(blob,{ tight:true, budget:42000, diag:D2, onStep:function(n,tot){ $("scanP").textContent=t.scanTry(n,tot); } }); }catch(e){ hit=null; }
   if(hit){
-    showDiag(null); fillFromMRZ(hit,CROPKEY); paintScans();
+    showDiag(null); fillFromMRZ(hit,CROPKEY); paintScans(); kklaar();
     b.textContent=t.cropGo; b.disabled=false;
     $("cropWrap").hidden=true; $("scanP").textContent=t.scanMrzOk; return;
   }
   b.textContent=t.licLees;
-  var res=null, D3={};
-  try{ res=await rijbewijsUitBeeld(await blobImg(blob),6000,D3,function(n,tot){
+  var res=null, D3={}, beeld2=null, regel2=null;
+  try{ beeld2=await blobImg(blob); }catch(e){ beeld2=null; }
+  /* Een kader om de regel achterop het rijbewijs: die lezer kent dat formaat. */
+  if(beeld2){ try{ regel2=await licRegelUitBeeld(beeld2,8000,D3); }catch(e){ regel2=null; } }
+  if(regel2){
+    fillFromMRZ(regel2,CROPKEY); paintScans(); kklaar();
+    b.textContent=t.cropGo; b.disabled=false;
+    $("cropWrap").hidden=true; $("scanP").textContent=t.licRegelOk(regel2.docNumber,$("cvLicExp").value); return;
+  }
+  try{ res=await rijbewijsUitBeeld(beeld2,6000,D3,function(n,tot){
         $("scanP").textContent=t.scanTry(n,tot); }); }catch(e){ res=null; }
   b.textContent=t.cropGo; b.disabled=false;
   var raak=0;
@@ -3961,6 +4533,7 @@ $("cropGo").addEventListener("click",async function(){
     }
     toonLicUit(res,D3);
   }
+  kklaar();
   if(raak){ showDiag(null); $("cropWrap").hidden=true; $("scanP").textContent=t.cropOk; }
   else { showDiag(D2); $("scanP").textContent=t.cropFail; }
 });
@@ -4017,16 +4590,93 @@ function applyDoc(r,storedKey){
    valt geen stand meer te vergeten en identiteitsbewijs en rijbewijs kunnen nooit
    meer door elkaar lopen. Bij een identiteitsbewijs leest de strook zelf of het een
    kaart of een paspoort is; dat hoeft de verhuurder niet te weten. */
-function kiesBestanden(soort){
+var ZIJDE="";
+function kiesBestanden(soort,zijde){
   var i=document.createElement("input"); i.type="file"; i.accept="image/*,.heic,.heif,application/pdf,.pdf"; i.multiple=true;
   i.addEventListener("change",async function(){
     var fs=i.files?Array.prototype.slice.call(i.files):[];
     setPick(soort);
-    for(var k=0;k<fs.length;k++){ setPick(soort); await scanDoc(fs[k],fs.length>1?(k+1)+"/"+fs.length:""); }
+    for(var k=0;k<fs.length;k++){ setPick(soort); ZIJDE=zijde||""; await scanDoc(fs[k],fs.length>1?(k+1)+"/"+fs.length:""); }
+    ZIJDE="";
   });
   i.click();
 }
-$("scanBtn").addEventListener("click",function(){ kiesBestanden("cin"); });
+$("scanBtn").addEventListener("click",function(){ kiesBestanden("cin","achter"); });
+$("scanVoorBtn").addEventListener("click",function(){ kiesBestanden("cin","voor"); });
+$("camIdBtn").addEventListener("click",function(){ cameraScan("cin"); });
+$("camLicBtn").addEventListener("click",function(){ cameraScan("licence"); });
+/* ============ LIVE CAMERA ============
+   Een foto uit het album is een gok: waar ligt de kaart, hoe gedraaid, hoe groot.
+   Met de camera in de app doet de verhuurder het kadreren zelf: kaart in het kader,
+   klaar. De app kijkt intussen elke halve seconde of de strook al leesbaar is en
+   drukt dan zelf af — de controlecijfers bepalen wanneer het goed is. Geen strook
+   (voorkant, rijbewijs)? Dan drukt de verhuurder zelf af en gaat de foto dezelfde
+   weg als een geüploade foto. */
+var CAM=null;
+async function cameraScan(soort){
+  var t=T();
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ toast(t.camGeen); kiesBestanden(soort); return; }
+  var w=el("div","cam"), v=document.createElement("video"), kader=el("div","kader");
+  v.setAttribute("playsinline",""); v.setAttribute("autoplay",""); v.muted=true;
+  var txt=el("div","cam-txt",t.camZoek);
+  var knoppen=el("div","cam-knoppen");
+  var foto=el("button","btn",t.camFoto), dicht=el("button","btn ghost",t.close);
+  foto.type="button"; dicht.type="button";
+  knoppen.appendChild(dicht); knoppen.appendChild(foto);
+  w.appendChild(v); w.appendChild(kader); w.appendChild(txt); w.appendChild(knoppen);
+  document.body.appendChild(w);
+  var stream=null, bezig=false, klaar=false, t0=Date.now();
+  function stop(){ klaar=true; try{ if(stream) stream.getTracks().forEach(function(tr){ tr.stop(); }); }catch(e){} w.remove(); CAM=null; }
+  dicht.addEventListener("click",stop);
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
+  }catch(e){ stop(); toast(t.camGeen); kiesBestanden(soort); return; }
+  v.srcObject=stream; CAM={stop:stop};
+  try{ await v.play(); }catch(e){}
+  /* het stuk video dat in het kader ligt, op ware grootte */
+  function grijp(){
+    var vw=v.videoWidth, vh=v.videoHeight; if(!vw||!vh) return null;
+    var r=kader.getBoundingClientRect(), vr=v.getBoundingClientRect();
+    /* object-fit: cover — schaal is de grootste van de twee */
+    var sc=Math.max(vr.width/vw, vr.height/vh);
+    var offX=(vr.width-vw*sc)/2, offY=(vr.height-vh*sc)/2;
+    var x=(r.left-vr.left-offX)/sc, y=(r.top-vr.top-offY)/sc, bw=r.width/sc, bh=r.height/sc;
+    x=Math.max(0,x); y=Math.max(0,y); bw=Math.min(vw-x,bw); bh=Math.min(vh-y,bh);
+    var c=document.createElement("canvas"); c.width=Math.round(bw); c.height=Math.round(bh);
+    c.getContext("2d").drawImage(v,x,y,bw,bh,0,0,c.width,c.height);
+    return c;
+  }
+  async function afdrukken(c,melding){
+    if(klaar) return; klaar=true;
+    txt.textContent=melding||t.camGenomen;
+    var blob=await new Promise(function(r){ c.toBlob(function(b){ r(b); },"image/jpeg",0.95); });
+    stop();
+    setPick(soort);
+    await scanDoc(new File([blob],"camera.jpg",{type:"image/jpeg"}));
+  }
+  foto.addEventListener("click",function(){ var c=grijp(); if(c) afdrukken(c,t.camGenomen); });
+  /* slimme sluiter: zodra de strook leesbaar is, zelf afdrukken */
+  async function kijk(){
+    if(klaar) return;
+    if(!bezig && v.videoWidth){
+      bezig=true;
+      var c=grijp();
+      if(c){
+        var hit=null;
+        try{
+          var bl=await new Promise(function(r){ c.toBlob(function(b){ r(b); },"image/jpeg",0.9); });
+          hit=await readMRZ(bl,{ budget:900 });
+        }catch(e){ hit=null; }
+        if(hit){ kader.classList.add("raak"); await afdrukken(c,t.camRaak); return; }
+      }
+      var sec=Math.round((Date.now()-t0)/1000);
+      txt.textContent = soort==="licence" ? t.camLicTip : (sec>6 ? t.camTip : t.camZoek);
+      bezig=false;
+    }
+    if(!klaar) setTimeout(kijk,500);
+  }
+  setTimeout(kijk,600);
+}
 $("scanLicBtn").addEventListener("click",function(){ kiesBestanden("licence"); });
 $("plakGo").addEventListener("click",function(){ plakVerwerken(); });
 $("stOcrKey").addEventListener("input",function(){
@@ -4041,7 +4691,16 @@ async function scanDoc(file,tag){
      en verbergt wat er nu gebeurt */
   if($("cropWrap")) $("cropWrap").hidden=true;
   showDiag(null);
+  /* Wat een vorige scan invulde gaat eraf vóór we opnieuw lezen — anders blijft er
+     iets van het vorige document staan als deze scan niets vindt. Alleen bij de
+     kant met de machineleesbare strook: dat is de lezing die alles bepaalt. Een
+     foto van de vóórkant of van het rijbewijs komt erbij en gooit nooit iets weg,
+     want die hoort bij hetzelfde dossier. */
+  var GROEP = (pickedDoc()==="licence") ? LICVELDEN : IDVELDEN;
+  var WIS = (pickedDoc()!=="licence" && ZIJDE!=="voor");
+  var VOOR = WIS ? wisAutoVelden(GROEP) : leesVelden(GROEP);
   function done(msg){
+    merkAuto(GROEP,VOOR);
     p.textContent=pre+msg; box.classList.remove("busy"); $("scanBtn").disabled=false; if($("scanLicBtn")) $("scanLicBtn").disabled=false;
     /* De uitkomst stond vaak buiten beeld omdat de verhuurder naar de vakjes
        gescrold was. Dan lijkt het alsof er niets gebeurt. */
@@ -4074,6 +4733,10 @@ async function scanDoc(file,tag){
   }catch(e){ done(t.scanSaveFail); return; }
   /* 2. Automatisch invullen alleen waar het echt kan. Kan het niet, dan is de foto
         bewaard en zijn we meteen klaar — nooit wachten, nooit een dode knop. */
+  /* Voorkant van een identiteitskaart: daar staat geen strook. Niet zoeken naar
+     wat er niet is; meteen de tekstlezer erop, en de foto komt sowieso bij de
+     klant te staan. */
+  if(ZIJDE==="voor" && pickedDoc()!=="licence"){ await voorkantLezen(file,storedKey,done); return; }
   /* Geen Claude? Dan leest de app het document zelf. */
   if(!SAMPLE || !CANSCAN){ p.textContent=pre+t.scanBusy; await mrzFallback(file,storedKey,done,""); return; }
   p.textContent=pre+t.scanBusy;
@@ -4120,8 +4783,17 @@ async function licLezen(blob,storedKey,done){
   var ex=await externLezen(bron,function(f,pc){ p.textContent=t.ocrExtern+(pc?" "+Math.round(pc*100)+"%":""); });
   if(ex.gedaan.length){ done(t.ocrExternOk(ex.gedaan.join(", "))); return; }
   p.textContent=t.licLees; await pauze(40);
-  var res=null, D={};
-  try{ res=await rijbewijsUitBeeld(await blobImg(bron),5000,D,function(n,tot){
+  var res=null, D={}, beeld=null, regel=null;
+  try{ beeld=await blobImg(bron); }catch(e){ beeld=null; }
+  /* Eerst de regel in machineschrift achterop: die heeft een controlecijfer en is
+     dus de enige plek op het rijbewijs waar het nummer gegarandeerd goed vandaan komt. */
+  if(beeld){ try{ regel=await licRegelUitBeeld(beeld,8000,D); }catch(e){ regel=null; } }
+  if(regel){
+    $("cvLic").value=regel.docNumber;
+    if(regel.nationality && !$("cvNat").value) $("cvNat").value=regel.nationality;
+    D.licNaam=regel.fullName||"";
+  }
+  try{ res=await rijbewijsUitBeeld(beeld,5000,D,function(n,tot){
         p.textContent=t.scanTry(n,tot); }); }catch(e){ res=null; D.fout=String(e&&e.message||e); }
   /* Eerst: wát ligt hier eigenlijk? */
   var soort=soortUitRegels(res&&res.regels);
@@ -4140,8 +4812,8 @@ async function licLezen(blob,storedKey,done){
   /* Het is geen rijbewijs én we weten niet wat het wél is? Dan schrijven we niets
      in de rijbewijsvelden. Wat gelezen is bieden we aan als knop. */
   if(res){
-    var magVullen = (soort==="licence") || !!res.number;
-    if(res.number && !$("cvLic").value) $("cvLic").value=res.number;
+    var magVullen = (soort==="licence") || !!res.number || !!regel;
+    if(res.number && (!$("cvLic").value || $("cvLic").dataset.auto==="1")) $("cvLic").value=res.number;
     if(res.expiry && !$("cvLicExp").value){
       if(magVullen) $("cvLicExp").value=res.expiry; else res.expiryGok=res.expiry;
     }
@@ -4154,10 +4826,11 @@ async function licLezen(blob,storedKey,done){
   /* Geen nummer gevonden? Dan leggen we het kader klaar over de foto. Eén tik en
      hij leest opnieuw, precies binnen het stuk dat jij aanwijst. */
   if(!$("cvLic").value && !achter) showCrop(bron,kk);
+  if(regel){ done(t.licRegelOk(regel.docNumber,$("cvLicExp").value)); return; }
   if(uitBar && uitBar.number) done(t.scanBarOk(uitBar.soort));
   else if(achter) done($("cvLicExp").value ? t.licAchterDat : t.licAchter);
   else if(iets) done(t.licOk);
-  else { toonLicLees(bron); done(t.licNiets); }
+  else { toonLicLees(bron); done(t.licNiets+" "+t.licTipAchter); }
 }
 /* De achterkant van een rijbewijs draagt de tabel met categorieën: A, A1, B, BE, C,
    D. Het nummer, de naam en de datums staan op de voorkant. Zien we vooral zulke
@@ -4182,6 +4855,8 @@ function mrzRegelsUit(tekst){
 }
 function plakMRZ(tekst){
   var regels=mrzRegelsUit(tekst);
+  /* de losse regel achterop een rijbewijs (D1…) is er maar één */
+  for(var ri=0;ri<regels.length;ri++) if(/^D1/.test(regels[ri]) && regels[ri].length>=30){ var lic=parseMRZ(regels[ri]); if(lic) return lic; }
   if(regels.length<2) return null;
   for(var n=3;n>=2;n--){
     for(var i=0;i+n<=regels.length;i++){
@@ -4202,7 +4877,7 @@ function adresUitPlak(regels){
   var gemerkt=regels.filter(function(r){ return /ADRE|ADDRESS|ADRESSE/i.test(r.tekst); })[0];
   if(gemerkt){
     var schoon=gemerkt.tekst.replace(/^.*?ADRE\w*\s*[:.]?\s*/i,"").trim();
-    if(schoon.length>=8) return schoon;
+    if(schoon.length>=8 && adresAchtig(schoon)) return schoon;
   }
   return adresUitRegels(regels);
 }
@@ -4232,6 +4907,16 @@ function verwerkTekst(tekst){
     markCheck("cvDocNo");
   }
   var regels=plakRegels(tekst), soort=soortUitRegels(regels);
+  /* De voorkant van een CIN: geen strook, wel "Né le", de naam erboven, het
+     gedrukte nummer en "Valable jusqu'au". Daar halen we uit wat er staat. */
+  if(!hit && soort==="id"){
+    var vk=voorkantUitRegels(regels);
+    if(vk.birth && !$("cvBirth").value){ $("cvBirth").value=vk.birth; gedaan.push(t.pBirth); }
+    if(vk.expiry && !$("cvDocExp").value){ $("cvDocExp").value=vk.expiry; gedaan.push(t.pExp); }
+    if(vk.number && !$("cvDocNo").value){ $("cvDocNo").value=vk.number; gedaan.push(t.pDoc); markCheck("cvDocNo"); }
+    if(vk.name && !$("cvName").value){ $("cvName").value=vk.name; gedaan.push(t.pName); }
+    if(pickedDoc()==="licence") setPick("cin");
+  }
   if(!hit && soort==="licence"){
     var g=rijbewijsUitRegels(regels);
     if(g.number){ $("cvLic").value=g.number; gedaan.push(t.pLic); }
@@ -4239,12 +4924,9 @@ function verwerkTekst(tekst){
     if(g.birth && !$("cvBirth").value){ $("cvBirth").value=g.birth; gedaan.push(t.pBirth); }
     if(g.namen && g.namen.length && !$("cvName").value){ $("cvName").value=g.namen.slice(0,2).join(" "); gedaan.push(t.pName); }
     markCheck("cvLic");
-  } else if(!hit && soort!=="id"){
-    /* Onbekend wat het is: alleen wat een eigen vorm heeft, en niets in de
-       rijbewijsvelden dat daar misschien niet hoort. */
-    var g2=rijbewijsUitRegels(regels);
-    if(g2.number){ $("cvLic").value=g2.number; gedaan.push(t.pLic); markCheck("cvLic"); }
   }
+  /* Weten we niet wat het is, dan vullen we níets in de rijbewijsvelden. Een
+     nummer dat uit ruis komt is erger dan een leeg vak. */
   /* Het adres staat nooit in de strook; wel vaak in de geplakte tekst. */
   if(!$("cvAddr").value && pickedDoc()!=="licence"){
     var adr=adresUitPlak(regels);
@@ -4273,6 +4955,30 @@ function kaartVoorOcr(img){
     if(!rect && img.height>img.width*1.15){ uit.push(turnImage(c,90)); uit.push(turnImage(c,270)); }
   }
   return uit;
+}
+/* Grijs maken en het contrast oprekken: het donkerste procent wordt zwart, het
+   lichtste wit. Tesseract houdt daarvan. */
+function contrastGrijs(c){
+  var k=document.createElement("canvas"); k.width=c.width; k.height=c.height;
+  var x=k.getContext("2d"); x.drawImage(c,0,0);
+  var d=x.getImageData(0,0,k.width,k.height), a=d.data, hist=new Array(256).fill(0), i, g;
+  for(i=0;i<a.length;i+=4){ g=(a[i]*0.299+a[i+1]*0.587+a[i+2]*0.114)|0; a[i]=g; hist[g]++; }
+  var N=k.width*k.height, lo=0, hi=255, tel=0;
+  for(i=0;i<256;i++){ tel+=hist[i]; if(tel>N*0.01){ lo=i; break; } }
+  tel=0; for(i=255;i>=0;i--){ tel+=hist[i]; if(tel>N*0.01){ hi=i; break; } }
+  var span=Math.max(1,hi-lo);
+  for(i=0;i<a.length;i+=4){ g=Math.max(0,Math.min(255,Math.round((a[i]-lo)*255/span))); a[i]=a[i+1]=a[i+2]=g; }
+  x.putImageData(d,0,0); return k;
+}
+/* Welke lezing is beter? Die met een strook of nummer erin; anders de langste. */
+function bruikbaarder(nieuw,oud){
+  if(!oud) return true;
+  var nS=!!plakMRZ(nieuw), oS=!!plakMRZ(oud);
+  if(nS!==oS) return nS;
+  var nR=plakRegels(nieuw), oR=plakRegels(oud);
+  var nN=!!(licNummerUit(nR)||voorkantUitRegels(nR).birth), oN=!!(licNummerUit(oR)||voorkantUitRegels(oR).birth);
+  if(nN!==oN) return nN;
+  return nieuw.replace(/\s/g,"").length>oud.replace(/\s/g,"").length;
 }
 async function tesseractTekst(canvas,melden){
   var tekst=await ocrLees(canvas,melden);
@@ -4303,17 +5009,26 @@ async function externLezen(blob,melden){
   var kandidaten=kaartVoorOcr(img), alles="";
   var heeftTess=await needLib("ocr");
   if(heeftTess){
-    for(var i=0;i<kandidaten.length;i++){
-      var tx=await tesseractTekst(kandidaten[i],melden);
-      if(tx && tx.replace(/\s/g,"").length>alles.replace(/\s/g,"").length) alles=tx;
+    /* Elke uitsnede twee keer: zoals hij is, en als contrastrijke grijsversie.
+       Een glanzende kaart met licht patroon leest vaak beter in die tweede. */
+    var lijst=[];
+    kandidaten.forEach(function(c){ lijst.push(c); lijst.push(contrastGrijs(c)); });
+    for(var i=0;i<lijst.length;i++){
+      var tx=await tesseractTekst(lijst[i],melden);
+      if(tx && bruikbaarder(tx,alles)) alles=tx;
       if(plakMRZ(alles) || licNummerUit(plakRegels(alles))) break;
     }
   }
   var gedaan = alles ? verwerkTekst(alles) : [];
+  if(heeftTess && !alles && !OCRFOUT) OCRFOUT="tesseract gaf geen tekst terug";
   if(!gedaan.length && ocrSleutel()){
     var tx2=await ocrSpaceTekst(kandidaten[0],melden);
     if(tx2){ alles=tx2; gedaan=verwerkTekst(tx2); }
   }
+  /* Wat de herkenner las, zetten we in het plakvak. Zo ziet de verhuurder het
+     — en kan hij een verkeerd teken verbeteren en het alsnog laten verwerken.
+     En als het misgaat, zie ik precies wat er gelezen werd. */
+  if(alles && $("plakText")){ $("plakText").value=alles; if(!gedaan.length && $("plakMsg")) $("plakMsg").textContent=T().plakGelezen; }
   return { gedaan:gedaan, tekst:alles, tess:heeftTess };
 }
 /* WELK DOCUMENT IS DIT?
@@ -4321,10 +5036,34 @@ async function externLezen(blob,melden){
    de kaart staat beslist waar de gegevens heen gaan. Anders komt de vervaldatum van
    een identiteitskaart in het rijbewijsvak terecht — en dat is erger dan een leeg
    veld, want de verhuurder ziet het niet en zet het zo op het contract. */
+function voorkantUitRegels(regels){
+  var o={}, lijst=regels.map(function(r){ return r.tekst; }), i;
+  var nu=new Date().getUTCFullYear();
+  for(i=0;i<lijst.length;i++){
+    var r=lijst[i];
+    var m=r.match(/N[EÉ6È]E?\s*LE\s*[:.]?\s*([0-3]?\d[\.\/\-][01]?\d[\.\/\-](?:19|20)\d\d)/i);
+    if(m && !o.birth){ var d=datumsUit(m[1])[0]; if(d && d.jaar<=nu-16) o.birth=d.iso;
+      /* de naam staat op de regels erboven: hoofdletters, geen cijfers */
+      var namen=[];
+      for(var k=i-1;k>=0 && namen.length<2;k--){
+        var q=lijst[k].replace(/[^A-Z\s\-]/g,"").replace(/\s+/g," ").trim();
+        if(q.length>=3 && q.length<=30 && !/ROYAUME|MAROC|CARTE|NATIONAL|IDENTIT|CNIE/.test(q)) namen.unshift(q);
+        else if(namen.length) break;
+      }
+      if(namen.length) o.name=namen.join(" ");
+    }
+    var v=r.match(/VALABLE\s*JUSQU.{0,4}\s*([0-3]?\d[\.\/\-][01]?\d[\.\/\-](?:19|20)\d\d)/i);
+    if(v && !o.expiry){ var d2=datumsUit(v[1])[0]; if(d2 && d2.jaar>=nu-1) o.expiry=d2.iso; }
+    var n=r.match(/\b([A-Z]{1,2}[0-9]{4,7})\b/);
+    if(n && !o.number && CINNR.test(n[1])) o.number=n[1];
+  }
+  return o;
+}
 function soortUitRegels(regels){
   var t=(regels||[]).map(function(r){ return r.tekst; }).join(" ").toUpperCase();
   if(!t) return "";
   var lic=0, id=0;
+  if(/N[EÉ6È]E?\s*LE\b|VALABLE\s*JUSQU/.test(t)) id+=3;
   if(/PERMIS|CONDUIRE|DRIVING|LICEN[CS]E/.test(t)) lic+=3;
   if(/CATEGOR|CLASSE/.test(t)) lic+=1;
   if(/CARTE\s*NATIONAL|IDENTIT|CNIE|BITAQA|PASSEPORT|PASSPORT/.test(t)) id+=3;
@@ -4363,7 +5102,10 @@ function toonLicUit(res,D){
     reg.push("foto     : "+(D.img||"-"));
     reg.push("hoeken   : "+(D.hoeken||"-"));
     reg.push("kaart    : "+(D.kaart||"-"));
+    reg.push("tesseract: "+(OCRFOUT||(window.Tesseract?"geladen":"niet geprobeerd")));
+    reg.push("ocr.space: "+(ocrSleutel()?"sleutel aanwezig":"geen sleutel"));
     reg.push("scheef   : "+(D.scheef||"0")+" graden");
+    if(D.licRegel) reg.push("D1-regel : "+D.licRegel+(D.licNaam?" naam="+D.licNaam:""));
     if(D.fout) reg.push("fout     : "+D.fout);
     (D.stappen||[]).forEach(function(s){ reg.push("  "+s); });
     reg.push("gelezen  : nr="+(res.number||"-")+" geldig="+(res.expiry||"-")+" geboren="+(res.birth||"-"));
@@ -4401,6 +5143,18 @@ function toonLicUit(res,D){
     w.appendChild(b);
   });
 }
+async function voorkantLezen(blob,storedKey,done){
+  var t=T(), p=$("scanP"), bron=CROPSRC||blob;
+  var kk=renameScan(storedKey,"cin"); paintScans(); showDiag(null);
+  p.textContent=t.ocrExtern;
+  var ex=await externLezen(bron,function(f,pc){ p.textContent=t.ocrExtern+(pc?" "+Math.round(pc*100)+"%":""); });
+  if(ex.gedaan.length){ done(t.ocrExternOk(ex.gedaan.join(", "))); return; }
+  /* Niets leesbaars: het adres-stukje tonen zodat overtypen makkelijk is, en het
+     kader klaarzetten. */
+  try{ var bnd=await adresBand(bron); if(bnd) toonAdresBand(bnd,""); }catch(e){}
+  showCrop(bron,kk);
+  done(ex.tess ? t.voorNiets : t.voorGeenLezer);
+}
 /* Claude kon de foto niet lezen: één snelle poging met de herkenning die in de browser
    zelf zit (kost niets, duurt geen seconde). Lukt dat niet, dan is de foto gewoon bewaard. */
 async function mrzFallback(blob,storedKey,done,code){
@@ -4417,7 +5171,7 @@ async function mrzFallback(blob,storedKey,done,code){
      tel later wél klaar was. Nu krijgt de lezer echt de tijd, laat hij zien hoever
      hij is, en stopt hij zichzelf netjes met het beste dat hij tot dan vond. */
   try{
-    hit=await readMRZ(blob,{ budget:isLic?4000:16000, diag:D, onStep:function(n,tot){ p.textContent=t.scanTry(n,tot); } });
+    hit=await readMRZ(blob,{ budget:isLic?4000:42000, diag:D, onStep:function(n,tot){ p.textContent=t.scanTry(n,tot); } });
   }catch(e){ hit=null; }
   if(!hit){
     var kk=renameScan(storedKey,pickedDoc()); paintScans();
@@ -4467,6 +5221,10 @@ async function mrzFallback(blob,storedKey,done,code){
   }
   var m = hit.noNumber ? t.scanNoNum : (hit.sure?t.scanMrzOk:t.scanMrzMaybe);
   if(hit.mismatch) m = t.scanMismatch[hit.mismatch] + " " + m;
+  /* Datums gelezen maar nummer of naam nog niet zeker: het kader klaarzetten op
+     de strook. Eén tik en hij leest die strak opnieuw — dat haalt op een foto van
+     de hele kaart vaak wél het nummer en de naam binnen. */
+  if(hit.noNumber || hit.nameShaky) showCrop(CROPSRC||blob,storedKey,"strook");
   done(m);
 }
 async function storeScan(blob){
@@ -4761,7 +5519,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="80";
+var ATLASVER="90";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -5157,17 +5915,24 @@ async function pdfPages(file,max){
    bij. Die wordt pas gedownload als de verhuurder erom vraagt, want het is een flink
    bestand; daarna zit hij in de browser en gaat het snel. Lukt het laden niet, dan
    zeggen we dat en blijft het veld gewoon leeg. */
-var OCRW=null, OCRBEZIG=false;
+var OCRW=null, OCRBEZIG=false, OCRFOUT="";
 async function ocrWorker(melden){
   if(OCRW) return OCRW;
-  if(!await needLib("ocr")) return null;
+  if(!await needLib("ocr")){ OCRFOUT="tesseract niet geladen"; return null; }
+  var T=window.Tesseract;
+  var opt={ logger:function(m){ if(melden && m && m.status) melden(m.status, m.progress||0); } };
+  /* Tesseract 5: createWorker(taal, motor, opties). De oude vorm createWorker(opties)
+     bestaat nog in versie 4 — daarom proberen we eerst de nieuwe en dan de oude.
+     (Op function.length afgaan werkt niet: standaardwaarden tellen niet mee.) */
+  /* Frans erbij: de opdruk op een Marokkaanse kaart is Frans ("Né le", "Valable
+     jusqu'au"). Lukt dat pakket niet te laden, dan alleen Engels. */
+  try{ OCRW=await T.createWorker("fra+eng",1,opt); return OCRW; }catch(e0){}
+  try{ OCRW=await T.createWorker("eng",1,opt); return OCRW; }catch(e1){}
   try{
-    var T=window.Tesseract;
-    var opt={ logger:function(m){ if(melden && m && m.status) melden(m.status, m.progress||0); } };
-    OCRW = (T.createWorker.length>=2) ? await T.createWorker("eng",1,opt) : await T.createWorker(opt);
-    if(OCRW.loadLanguage){ try{ await OCRW.loadLanguage("eng"); await OCRW.initialize("eng"); }catch(e){} }
+    OCRW=await T.createWorker(opt);
+    await OCRW.loadLanguage("eng"); await OCRW.initialize("eng");
     return OCRW;
-  }catch(e){ return null; }
+  }catch(e2){ OCRFOUT="tesseract start mislukt: "+String((e2&&e2.message)||e2); OCRW=null; return null; }
 }
 async function ocrLees(canvas,melden,witlijst){
   var w=await ocrWorker(melden); if(!w) return null;
@@ -5175,14 +5940,28 @@ async function ocrLees(canvas,melden,witlijst){
     if(witlijst && w.setParameters) { try{ await w.setParameters({ tessedit_char_whitelist:witlijst }); }catch(e){} }
     var r=await w.recognize(canvas);
     return (r&&r.data&&typeof r.data.text==="string") ? r.data.text : "";
-  }catch(e){ return null; }
+  }catch(e){ OCRFOUT="tesseract lezen mislukt: "+String((e&&e.message)||e); return null; }
 }
 /* Hetzelfde voor de regels die onze eigen lezer vond: welke regel lijkt op een adres? */
 /* Een adres is straatnaam plus nummer. Losse letters, streepjes en vraagtekens zijn
    geen adres — dat vullen we dus niet in. */
+var ADRESSTERK=/\b(RUE|AV|AVENUE|BD|BOULEVARD|LOT|IMM|APPT|APT|RES|RTE|ZNK|LOTISSEMENT|HAY|QUARTIER|RESIDENCE|IMMEUBLE|APPARTEMENT|ETAGE|DOUAR|BLOC|SECTEUR|CITE|VILLA|DERB|ZANKAT|CHARIA|TARIK|ROUTE|MEDINA|OPERATION|ANGLE|PLACE|CENTRE)\b/;
+var ADRESWOORD=/\b(RUE|AV|AVENUE|BD|BOULEVARD|LOT|LOTISSEMENT|LOTS|HAY|QUARTIER|QU|RESIDENCE|RES|IMM|IMMEUBLE|APPT|APT|APPARTEMENT|ETAGE|ETG|N[°O]?|NR|DOUAR|BLOC|SECTEUR|CITE|VILLA|DERB|ZANKAT|CHARIA|TARIK|ROUTE|RTE|KM|CENTRE|VILLE|MEDINA|OPERATION|OP|ANGLE|PLACE|PL)\b/;
 function adresAchtig(t){
   if(!t) return false;
-  var s=String(t).trim();
+  var s=String(t).trim().toUpperCase();
+  /* een adres bevat vrijwel altijd een straat- of wijkwoord; zonder dat is het
+     losse tekst die toevallig een cijfer bevat */
+  if(!ADRESWOORD.test(s)) return false;
+  /* "N°", "NR", "KM" en dergelijke zijn te kort om op zichzelf een adres te
+     bewijzen — die staan zo in elke verkeerd gelezen regel. Er moet minstens één
+     écht adreswoord bij staan. */
+  if(!ADRESSTERK.test(s)) return false;
+  /* Losse letters tussen de woorden ("= G 76 IG I MOINS") zijn leesfouten, geen
+     adres. Het grootste deel van de tekst moet uit echte woorden bestaan. */
+  var los=(s.match(/(^|\s)[A-Z0-9](\s|$)/g)||[]).length;
+  if(los>2) return false;
+  if(/[=_|\\\/]/.test(s)) return false;
   if(s.length<10 || s.length>70) return false;
   var vraag=(s.match(/\?/g)||[]).length; if(vraag>s.length*0.08) return false;
   var letters=(s.match(/[A-Z]/g)||[]).length; if(letters<8) return false;
@@ -5190,6 +5969,9 @@ function adresAchtig(t){
   if(!/\d/.test(s)) return false;                 /* en een huisnummer */
   var woorden=s.split(/\s+/).filter(function(w){ return /^[A-Z]{3,}$/.test(w); });
   if(woorden.length<2) return false;
+  /* en minstens twee woorden van vier letters: drieletterige stukjes zijn net zo
+     goed toevallige ruis */
+  if(s.split(/\s+/).filter(function(w){ return /^[A-Z]{4,}$/.test(w); }).length<2) return false;
   var rommel=(s.match(/[^A-Z0-9 ]/g)||[]).length;
   if(rommel>s.length*0.15) return false;
   return true;
