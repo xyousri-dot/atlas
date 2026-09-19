@@ -1817,10 +1817,14 @@ var LICVELDEN=["cvLic","cvLicExp","cvNat","cvBirth"];
 function wisAutoVelden(ids){
   var was={};
   ids.forEach(function(id){ var e=$(id); if(!e) return;
-    if(e.dataset && e.dataset.auto==="1"){ e.value=""; delete e.dataset.auto; e.classList.remove("check"); }
+    if(e.dataset && e.dataset.auto==="1"){ e.value=""; delete e.dataset.auto; delete e.dataset.vast; e.classList.remove("check"); }
     was[id]=e.value; });
   return was;
 }
+/* Een nummer dat door een controlecijfer is bevestigd, is het enige harde getal op
+   de kaart. Zodra dat er staat mag geen enkele tekstherkenning het nog overschrijven. */
+function zetVast(id){ var e=$(id); if(e && e.dataset) e.dataset.vast="1"; }
+function isVast(id){ var e=$(id); return !!(e && e.dataset && e.dataset.vast==="1" && e.value); }
 function leesVelden(ids){
   var was={}; ids.forEach(function(id){ var e=$(id); if(e) was[id]=e.value; }); return was;
 }
@@ -1829,7 +1833,7 @@ function merkAuto(ids,was){
     if(e.value && !was[id] && e.dataset) e.dataset.auto="1"; });
 }
 function vergeetAuto(){
-  IDVELDEN.concat(LICVELDEN).forEach(function(id){ var e=$(id); if(e && e.dataset) delete e.dataset.auto; });
+  IDVELDEN.concat(LICVELDEN).forEach(function(id){ var e=$(id); if(e && e.dataset){ delete e.dataset.auto; delete e.dataset.vast; } });
 }
 /* Zodra de verhuurder zelf in een vakje typt, is het van hem: geen enkele scan
    mag het daarna nog weggooien. */
@@ -3889,14 +3893,24 @@ function rijbewijsUitRegels(regels){
   var zien={}; ds=ds.filter(function(d){ if(zien[d.iso]) return false; zien[d.iso]=1; return true; });
   var later=ds.filter(function(d){ return d.jaar>=nu-1 && d.jaar<=nu+40; });
   var vroeg=ds.filter(function(d){ return d.jaar<=nu-16 && d.jaar>=nu-100; });
+  /* Een rijbewijs of kaart is hooguit een jaar of vijftien geldig. Een "vervaldatum"
+     verder weg komt van een verkeerd gelezen cijfer (26/07/2018 wordt zo 2048) en
+     hoort niet op het contract. Liever leeg dan fout. */
+  later=later.filter(function(d){ return d.jaar<=nu+15; });
   if(later.length) o.expiry=later.sort(function(a,b){ return b.jaar-a.jaar; })[0].iso;
   if(vroeg.length) o.birth=vroeg.sort(function(a,b){ return a.jaar-b.jaar; })[0].iso;
   /* Namen op een permis staan bij 1. en 2.; verder staat er vooral opdruk van de
      staat. Die woorden kennen we, dus die vallen af. */
-  var stop=/ROYAUME|MAROC|MAROCAIN|PERMIS|CONDUIRE|CARTE|NATIONALE|IDENTITE|KINGDOM|DRIVING|LICENCE|LICENSE|MINISTERE|TRANSPORT/;
+  /* De opdruk van de kaart is geen naam. Vooral de achterkant staat er vol mee:
+     "Catégories", "Date de délivrance", "Fin de validité", "Duplicata",
+     "Restrictions". Zonder deze lijst belandt zo'n kop in het naamveld. */
+  var stop=/ROYAUME|MAROC|MAROCAIN|PERMIS|CONDUIRE|CARTE|NATIONALE|IDENTITE|KINGDOM|DRIVING|LICENCE|LICENSE|MINISTERE|TRANSPORT|CATEGOR|DELIVRANCE|VALIDITE|VALIDIT|DUPLICATA|RESTRICTION|NAISSANCE|PRENOM|SIGNE|DIRECTEUR|AGENCE|SECURITE|ROUTIERE|NATIONAL/;
   var namen=regels.filter(function(r){
     var s=r.tekst.replace(/^[0-9]{1,2}\s*[\.\)]\s*/,"").trim();
-    return /^[A-Z][A-Z\s\-]{2,28}$/.test(s) && !stop.test(s) && s.replace(/\s/g,"").length>=3;
+    /* Een naam op een rijbewijs staat op zijn eigen regel en is één of twee
+       woorden. Een regel van vier woorden is een kop of een zin, geen naam. */
+    return /^[A-Z][A-Z\s\-]{2,28}$/.test(s) && !stop.test(s) && s.replace(/\s/g,"").length>=3
+           && s.split(/\s+/).length<=2;
   }).map(function(r){ return r.tekst.replace(/^[0-9]{1,2}\s*[\.\)]\s*/,"").trim(); });
   if(namen.length) o.namen=namen.slice(0,4);
   return o;
@@ -4117,7 +4131,7 @@ function fillFromMRZ(hit,storedKey){
      en de nationaliteit. De naam erin is alleen de achternaam — die laten we aan de
      identiteitskaart over. */
   if(hit.kind==="licence"){
-    if(hit.docNumber) $("cvLic").value=hit.docNumber;
+    if(hit.docNumber){ $("cvLic").value=hit.docNumber; zetVast("cvLic"); }
     if(hit.nationality && echtLand(hit.nationality) && !$("cvNat").value) $("cvNat").value=hit.nationality;
     renameScan(storedKey,"licence"); markCheck("cvLic"); hit.noNumber=false; return;
   }
@@ -4778,10 +4792,6 @@ async function licLezen(blob,storedKey,done){
     if(uitBar.number) $("cvLic").value=uitBar.number;
     if(uitBar.expiry) $("cvLicExp").value=uitBar.expiry;
   }
-  /* Eerst de echte herkenners, als ze bereikbaar zijn. */
-  p.textContent=t.ocrExtern;
-  var ex=await externLezen(bron,function(f,pc){ p.textContent=t.ocrExtern+(pc?" "+Math.round(pc*100)+"%":""); });
-  if(ex.gedaan.length){ done(t.ocrExternOk(ex.gedaan.join(", "))); return; }
   p.textContent=t.licLees; await pauze(40);
   var res=null, D={}, beeld=null, regel=null;
   try{ beeld=await blobImg(bron); }catch(e){ beeld=null; }
@@ -4789,7 +4799,7 @@ async function licLezen(blob,storedKey,done){
      dus de enige plek op het rijbewijs waar het nummer gegarandeerd goed vandaan komt. */
   if(beeld){ try{ regel=await licRegelUitBeeld(beeld,8000,D); }catch(e){ regel=null; } }
   if(regel){
-    $("cvLic").value=regel.docNumber;
+    $("cvLic").value=regel.docNumber; zetVast("cvLic");
     if(regel.nationality && !$("cvNat").value) $("cvNat").value=regel.nationality;
     D.licNaam=regel.fullName||"";
   }
@@ -4819,6 +4829,23 @@ async function licLezen(blob,storedKey,done){
     }
     if(res.birth && !$("cvBirth").value && magVullen) $("cvBirth").value=res.birth;
   }
+  /* Pas nu de tekstherkenning van buiten (Tesseract, OCR.space). Die leest geen
+     controlecijfer en kan een 1 voor een 4 aanzien — hij mag dus alleen invullen
+     wat na onze eigen lezers nog leeg is, en nooit een nummer overschrijven dat
+     uit de regel met controlecijfer kwam. Vroeger draaide hij als eerste; dan won
+     zijn gok het van een lezing die wél nagerekend was. */
+  if(!$("cvLic").value || !$("cvLicExp").value){
+    p.textContent=t.ocrExtern;
+    var ex=await externLezen(bron,function(f,pc){ p.textContent=t.ocrExtern+(pc?" "+Math.round(pc*100)+"%":""); });
+    if(ex.gedaan.length){
+      toonLicUit(res,D); markCheck("cvLic");
+      /* Het nummer uit de regel met controlecijfer blijft de kop van de melding:
+         dat is het enige dat zeker klopt. */
+      done(regel ? t.licRegelOk(regel.docNumber,$("cvLicExp").value)
+                 : t.ocrExternOk(ex.gedaan.join(", "))+(isVast("cvLic")?"":" "+t.licTipAchter));
+      return;
+    }
+  }
   toonLicUit(res,D);
   markCheck("cvLic");
   var iets = $("cvLic").value || $("cvLicExp").value;
@@ -4829,7 +4856,7 @@ async function licLezen(blob,storedKey,done){
   if(regel){ done(t.licRegelOk(regel.docNumber,$("cvLicExp").value)); return; }
   if(uitBar && uitBar.number) done(t.scanBarOk(uitBar.soort));
   else if(achter) done($("cvLicExp").value ? t.licAchterDat : t.licAchter);
-  else if(iets) done(t.licOk);
+  else if(iets) done(isVast("cvLic") ? t.licOk : t.licOk+" "+t.licTipAchter);
   else { toonLicLees(bron); done(t.licNiets+" "+t.licTipAchter); }
 }
 /* De achterkant van een rijbewijs draagt de tabel met categorieën: A, A1, B, BE, C,
@@ -4893,7 +4920,18 @@ async function plakVerwerken(){
    controles, dezelfde regels over wat waar mag landen. */
 function verwerkTekst(tekst){
   var t=T(), gedaan=[];
+  /* Deze tekst komt van een herkenner zonder controlecijfer. Wat al door een
+     controlecijfer bevestigd is, blijft staan. */
+  var vastLic=isVast("cvLic"), vastDoc=isVast("cvDocNo");
   var hit=plakMRZ(tekst);
+  /* De regel achterop een rijbewijs is geen identiteitsstrook: daar staat alleen
+     het rijbewijsnummer in. Die hoort dus nooit in het vakje van de CIN of het
+     paspoort terecht te komen. */
+  if(hit && hit.kind==="licence"){
+    if(!vastLic){ $("cvLic").value=hit.docNumber; zetVast("cvLic"); markCheck("cvLic"); gedaan.push(t.pLic); }
+    if(hit.nationality && echtLand(hit.nationality) && !$("cvNat").value) $("cvNat").value=hit.nationality;
+    hit=null;
+  }
   if(hit){
     /* De strook draagt zijn eigen controlecijfers: wat hier binnenkomt is juist. */
     var was=pickedDoc();
@@ -4902,7 +4940,7 @@ function verwerkTekst(tekst){
     if(hit.birthDate){ $("cvBirth").value=hit.birthDate; gedaan.push(t.pBirth); }
     if(hit.nationality && echtLand(hit.nationality)){ $("cvNat").value=hit.nationality; gedaan.push(t.pNat); }
     var no=usableDocNo(pickedDoc(),hit.docNumber,hit.altNumber,hit.kind);
-    if(no){ $("cvDocNo").value=no; gedaan.push(t.pDoc); }
+    if(no && !vastDoc){ $("cvDocNo").value=no; zetVast("cvDocNo"); gedaan.push(t.pDoc); }
     if(hit.expiry){ $("cvDocExp").value=hit.expiry; gedaan.push(t.pExp); }
     markCheck("cvDocNo");
   }
@@ -4919,8 +4957,10 @@ function verwerkTekst(tekst){
   }
   if(!hit && soort==="licence"){
     var g=rijbewijsUitRegels(regels);
-    if(g.number){ $("cvLic").value=g.number; gedaan.push(t.pLic); }
-    if(g.expiry){ $("cvLicExp").value=g.expiry; gedaan.push(t.pLicExp); }
+    if(g.number && !vastLic){ $("cvLic").value=g.number; gedaan.push(t.pLic); }
+    /* De vergrendeling geldt alleen voor het nummer: de vervaldatum staat niet in
+       de regel met controlecijfer en mag hier dus wél ingevuld worden. */
+    if(g.expiry && !$("cvLicExp").value){ $("cvLicExp").value=g.expiry; gedaan.push(t.pLicExp); }
     if(g.birth && !$("cvBirth").value){ $("cvBirth").value=g.birth; gedaan.push(t.pBirth); }
     if(g.namen && g.namen.length && !$("cvName").value){ $("cvName").value=g.namen.slice(0,2).join(" "); gedaan.push(t.pName); }
     markCheck("cvLic");
@@ -5519,7 +5559,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="90";
+var ATLASVER="91";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
