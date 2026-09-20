@@ -298,6 +298,25 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .cam .cam-knoppen{position:absolute;left:0;right:0;bottom:28px;display:flex;gap:10px;justify-content:center;padding:0 16px}
 .cam .cam-knoppen .btn{min-width:140px}
 .slot-h{font-weight:800;font-size:15px;letter-spacing:-.01em}
+/* Neerzetvak: één groot, duidelijk doel per document. Dat is wat de scanners van
+   de grote aanbieders ook doen — niet vier knopjes naast elkaar, maar één vlak
+   waar de foto heen moet. */
+.dz{border:2px dashed var(--line);border-radius:14px;padding:18px 14px;text-align:center;
+    background:rgba(255,255,255,.45);transition:border-color .15s,background .15s}
+.dz.over{border-color:var(--acc);background:rgba(16,122,87,.07)}
+.dz-t{font-weight:700;font-size:14px;color:var(--ink2);margin:0 0 10px}
+.dz-k{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.dz-k .btn{min-width:140px}
+.stap{display:flex;align-items:center;gap:8px;margin:0 0 2px}
+.stap b{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.stapnr{flex:0 0 22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;
+        font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+details.meer{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.4)}
+details.meer>summary{cursor:pointer;padding:10px 12px;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.meer>summary::-webkit-details-marker{display:none}
+details.meer>summary:before{content:"\25B8 ";color:var(--acc)}
+details.meer[open]>summary:before{content:"\25BE "}
+details.meer>div{padding:0 12px 12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:#fff;padding:12px 20px;border-radius:99px;font-size:14.5px;font-weight:600;box-shadow:var(--sh);max-width:90vw}
 .banner{background:var(--gold-soft);color:var(--gold);border-radius:var(--rs);padding:11px 14px;font-size:13.5px;font-weight:600;margin-bottom:14px}
 .fine{margin-top:22px;font-size:13px;color:var(--ink3);line-height:1.55}
@@ -430,37 +449,49 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
               <button type="button" data-v="passport" aria-pressed="false"></button>
               <button type="button" data-v="licence" aria-pressed="false"></button>
             </div>
-            <div class="slot" id="plakSlot" style="margin-top:12px">
-              <div class="slot-h" id="plakT"></div>
-              <p class="fine" id="plakP" style="margin:2px 0 8px"></p>
-              <textarea id="plakText" rows="3" spellcheck="false" autocomplete="off"
-                style="font-family:'JetBrains Mono',monospace;font-size:13px;min-height:74px"></textarea>
-              <button class="btn" id="plakGo" style="width:100%;margin-top:8px"></button>
-              <p class="fine" id="plakMsg" style="margin:8px 0 0"></p>
-            </div>
-            <div class="slot" style="margin-top:14px">
-              <div class="slot-h" id="slotIdT"></div>
-              <p class="fine" id="slotIdP" style="margin:2px 0 8px"></p>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn" id="scanBtn" style="flex:1 1 45%"></button>
-                <button class="btn ghost" id="scanVoorBtn" style="flex:1 1 45%"></button>
-                <input type="file" id="fileAchter" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
-                <input type="file" id="fileVoor" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
-                <button class="btn ghost" id="camIdBtn" style="flex:1 1 100%"></button>
+            <div class="slot" style="margin-top:12px">
+              <div class="stap"><span class="stapnr">1</span><b id="stap1T"></b></div>
+              <p class="fine" id="stap1P" style="margin:2px 0 10px"></p>
+              <div class="dz" id="dzId">
+                <p class="dz-t" id="dzIdT"></p>
+                <div class="dz-k">
+                  <button class="btn" id="scanBtn"></button>
+                  <button class="btn ghost" id="camIdBtn"></button>
+                </div>
               </div>
+              <input type="file" id="fileAchter" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
+              <input type="file" id="fileVoor" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
               <div class="docs" id="scanDocs"></div>
             </div>
             <div class="slot" style="margin-top:14px">
-              <div class="slot-h" id="slotLicT"></div>
-              <p class="fine" id="slotLicP" style="margin:2px 0 8px"></p>
-              <div style="display:flex;gap:8px">
-                <button class="btn ghost" id="scanLicBtn" style="flex:1"></button>
-                <input type="file" id="fileLic" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
-                <button class="btn ghost" id="camLicBtn" style="flex:1"></button>
+              <div class="stap"><span class="stapnr">2</span><b id="stap2T"></b></div>
+              <p class="fine" id="stap2P" style="margin:2px 0 10px"></p>
+              <div class="dz" id="dzLic">
+                <p class="dz-t" id="dzLicT"></p>
+                <div class="dz-k">
+                  <button class="btn" id="scanLicBtn"></button>
+                  <button class="btn ghost" id="camLicBtn"></button>
+                </div>
               </div>
+              <input type="file" id="fileLic" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
               <div class="docs" id="scanLicDocs"></div>
               <div id="licUit" hidden style="margin-top:10px;text-align:left"></div>
             </div>
+            <details class="meer">
+              <summary id="meerT"></summary>
+              <div>
+                <p class="fine" id="meerP" style="margin:0 0 10px"></p>
+                <button class="btn ghost" id="scanVoorBtn" style="width:100%"></button>
+                <div class="slot" id="plakSlot" style="margin-top:12px">
+                  <div class="slot-h" id="plakT"></div>
+                  <p class="fine" id="plakP" style="margin:2px 0 8px"></p>
+                  <textarea id="plakText" rows="3" spellcheck="false" autocomplete="off"
+                    style="font-family:'JetBrains Mono',monospace;font-size:13px;min-height:74px"></textarea>
+                  <button class="btn" id="plakGo" style="width:100%;margin-top:8px"></button>
+                  <p class="fine" id="plakMsg" style="margin:8px 0 0"></p>
+                </div>
+              </div>
+            </details>
             <p id="scanP" style="margin-top:12px"></p>
             <div id="diagWrap" hidden style="margin-top:12px;text-align:left"></div>
             <div id="cropWrap" hidden style="margin-top:12px">
@@ -890,6 +921,15 @@ var TXT = {
   secIdP:"CIN of paspoort — het nummer en de geldigheid van dít document.",
   secLicP:"Apart van het identiteitsbewijs: eigen nummer, eigen vervaldatum.",
   scanPick:"Wat heb je in handen?", docPick:["Identiteitskaart","Paspoort","Rijbewijs"],
+  stap1T:"Identiteitsbewijs \u2014 achterkant",
+  stap1P:"De kant met de regels vol \u00ab < \u00bb (bij een paspoort: de pagina met de pasfoto). Aan die ene foto heb ik genoeg: nummer, geboortedatum, geldigheid, nationaliteit \u00e9n het adres staan daar allemaal op.",
+  stap2T:"Rijbewijs \u2014 achterkant",
+  stap2P:"De kant met de tabel en de lange regel die begint met D1MA. Die regel heeft een controlecijfer, dus het nummer dat daaruit komt klopt zeker.",
+  dzIdT:"Sleep de foto hierheen \u2014 of:",
+  dzLicT:"Sleep de foto hierheen \u2014 of:",
+  dzKies:"Foto kiezen",
+  meerT:"Meer: voorkant en tekst plakken",
+  meerP:"Niet nodig voor een gewone verhuur. De voorkant bewaart de pasfoto en kan het adres bevestigen; tekst plakken is handig als een foto niet leesbaar is.",
   slotIdT:"2. Foto identiteitskaart of paspoort", slotIdP:"Achterkant = de kant met de regels vol \u00ab < \u00bb (bij een paspoort: de pagina met de pasfoto). Die geeft naam, nummer en datums met zekerheid. Voorkant = voor het adres en als extra controle. Doe ze allebei; ze blijven samen bij de klant staan.",
   slotIdB:"Achterkant (strook)", slotIdVoor:"Voorkant",
   voorNiets:"\u2713 Voorkant bewaard. De tekst was niet leesbaar genoeg om over te nemen \u2014 typ naam, geboortedatum en adres over van de foto, of kader hieronder het stuk met de tekst.",
@@ -1136,6 +1176,15 @@ var TXT = {
   secIdP:"CIN ou passeport — le numéro et la validité de CE document.",
   secLicP:"Séparé de la pièce d'identité : son propre numéro, sa propre date d'expiration.",
   scanPick:"Qu'avez-vous en main ?", docPick:["Carte d'identité","Passeport","Permis"],
+  stap1T:"Pi\u00e8ce d\u2019identit\u00e9 \u2014 verso",
+  stap1P:"Le c\u00f4t\u00e9 avec les lignes \u00ab < \u00bb (pour un passeport : la page photo). Cette seule photo suffit : num\u00e9ro, date de naissance, validit\u00e9, nationalit\u00e9 et adresse s\u2019y trouvent.",
+  stap2T:"Permis de conduire \u2014 verso",
+  stap2P:"Le c\u00f4t\u00e9 avec le tableau et la longue ligne qui commence par D1MA. Cette ligne a un chiffre de contr\u00f4le : le num\u00e9ro qui en sort est s\u00fbr.",
+  dzIdT:"D\u00e9posez la photo ici \u2014 ou :",
+  dzLicT:"D\u00e9posez la photo ici \u2014 ou :",
+  dzKies:"Choisir une photo",
+  meerT:"Plus : recto et coller du texte",
+  meerP:"Pas n\u00e9cessaire pour une location normale. Le recto conserve la photo d\u2019identit\u00e9 et peut confirmer l\u2019adresse ; coller du texte d\u00e9panne si une photo n\u2019est pas lisible.",
   slotIdT:"2. Photo carte d\u2019identit\u00e9 ou passeport", slotIdP:"Photographiez le c\u00f4t\u00e9 avec les lignes \u00ab < \u00bb \u2014 le dos pour une carte, la page photo pour un passeport. L\u2019application reconna\u00eet elle-m\u00eame de quoi il s\u2019agit.",
   slotIdB:"Verso (bande)", slotIdVoor:"Recto",
   voorNiets:"\u2713 Recto enregistr\u00e9. Texte pas assez lisible \u2014 recopiez nom, date de naissance et adresse depuis la photo, ou encadrez la zone de texte ci-dessous.",
@@ -1540,11 +1589,14 @@ function applyLang(){
   Array.prototype.forEach.call($("kinds").children,function(b,i){ b.textContent=t.kinds[i]; });
   Array.prototype.forEach.call($("cvFlag").children,function(b,i){ b.textContent=t.flags[i]; });
   Array.prototype.forEach.call($("docPick").children,function(b,i){ b.textContent=t.docPick[i]; });
-  if($("slotIdT")){
-    $("slotIdT").textContent=t.slotIdT; $("slotIdP").textContent=t.slotIdP; $("scanBtn").textContent=t.slotIdB;
+  if($("stap1T")){
+    $("stap1T").textContent=t.stap1T; $("stap1P").textContent=t.stap1P;
+    $("stap2T").textContent=t.stap2T; $("stap2P").textContent=t.stap2P;
+    $("dzIdT").textContent=t.dzIdT; $("dzLicT").textContent=t.dzLicT;
+    $("scanBtn").textContent=t.dzKies; $("scanLicBtn").textContent=t.dzKies;
     $("camIdBtn").textContent=t.camKnop; $("camLicBtn").textContent=t.camKnop;
     $("scanVoorBtn").textContent=t.slotIdVoor;
-    $("slotLicT").textContent=t.slotLicT; $("slotLicP").textContent=t.slotLicP; $("scanLicBtn").textContent=t.slotLicB;
+    $("meerT").textContent=t.meerT; $("meerP").textContent=t.meerP;
     $("plakT").textContent=t.plakT; $("plakP").textContent=t.plakP;
     $("plakGo").textContent=t.plakGo; $("plakText").placeholder=t.plakPlace;
   }
@@ -3439,6 +3491,11 @@ async function readMRZ(blob,opts){
      de weg die in twee seconden raak is. Alles hierna is voor als dat niet lukt. */
   var strook=null;
   if(!opts.tight){ try{ strook=vindStrook(bron); }catch(e){ strook=null; } }
+  /* De strook is het anker van de kaart: hij ligt altijd onderaan en is bijna even
+     breed als de kaart zelf. Wie de strook heeft, weet dus ook waar de gedrukte
+     regels erboven staan — daar staat op de Marokkaanse kaart het adres. Zo werken
+     de professionele lezers ook: eerst de strook vinden, dan de rest daaraan ophangen. */
+  ANKER = strook ? { bron:bron, strook:strook } : null;
   if(D) D.strook = strook ? (strook.w+"\u00d7"+strook.h+" ("+strook.regels+" banden)") : "niet gevonden";
   if(strook){
     var sk=null;
@@ -4338,7 +4395,61 @@ function showDiag(D){
    en uitvergroot onder het adresveld zetten. Dan lees je het af zonder te wisselen.
    Sommige browsers kunnen losse tekst zelf herkennen; kan dat, dan bieden we het
    als voorstel aan. */
+var ANKER=null;
+/* Het adres uit de band boven de strook halen. Eerst rechtzetten — een kaart ligt
+   zelden recht en een schuine regel leest niemand goed — dan onze eigen lezer, en
+   als die niets bruikbaars geeft de echte tekstherkenning. Wat eruit komt moet er
+   als een adres uitzien; anders blijft het vakje leeg en staat de uitsnede er als
+   voorstel naast. */
+async function adresUitBand(bnd){
+  if(!bnd) return "";
+  var hoek=0; try{ hoek=deskewAngle(mrzCanvas(bnd,false,0,0,null,900,true)); }catch(e){ hoek=0; }
+  if(Math.abs(hoek)<0.5) hoek=0;
+  var varianten=[[hoek,-18,false],[hoek,0,true],[hoek,10,false],[0,-18,false]];
+  for(var i=0;i<varianten.length;i++){
+    var v=varianten[i], adr="";
+    try{ adr=adresUitRegels(kaartRegels(mrzCanvas(bnd,false,v[0],v[1],null,1600,v[2]))); }catch(e){ adr=""; }
+    if(adr) return adr;
+  }
+  /* de tekstherkenning van de browser zelf (Android) */
+  try{ var t1=adresUitTekst(await leesTekst(bnd)); if(t1) return t1; }catch(e){}
+  /* en tot slot Tesseract, als die er is: die leest gedrukte tekst veel beter dan wij */
+  try{
+    if(await needLib("ocr")){
+      var recht = hoek ? rotatedSource(bnd,hoek) : bnd;
+      var tx=await ocrLees(recht,null);
+      var t2=adresUitTekst(tx||"");
+      if(t2) return t2;
+      var t3=adresUitTekst(await ocrLees(contrastGrijs(recht),null)||"");
+      if(t3) return t3;
+    }
+  }catch(e){}
+  return "";
+}
+/* De band met gedrukte tekst boven de strook: daar staat het adres. De hoogte
+   van de strook zegt hoe groot de kaart is (de strook is ongeveer een vijfde van
+   de kaarthoogte), dus we kunnen precies uitrekenen hoe ver we omhoog moeten. */
+function adresBandUitAnker(){
+  if(!ANKER || !ANKER.strook) return null;
+  var st=ANKER.strook, bron=ANKER.bron;
+  var hoog=Math.max(20,st.h);
+  /* De adresregel staat vlak boven de strook. De strookzoeker begint zijn vlak een
+     klein stukje boven de eerste letterrij, dus we lopen iets door in de strook en
+     nemen daarboven één kaarthoogte mee: daar valt de adresregel altijd in. */
+  var y1=Math.round(st.y+hoog*0.30), y0=Math.round(st.y-hoog*0.85);
+  if(y0<0) y0=0;
+  if(y1-y0<20) return null;
+  var x0=Math.max(0,Math.round(st.x-st.w*0.04)), x1=Math.min(bron.width,Math.round(st.x+st.w*1.04));
+  var bw=1800, sc=bw/(x1-x0);
+  var c=document.createElement("canvas");
+  c.width=bw; c.height=Math.max(60,Math.round((y1-y0)*sc));
+  var x=c.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
+  x.drawImage(bron,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);
+  return c;
+}
 async function adresBand(blob){
+  var uitAnker=null; try{ uitAnker=adresBandUitAnker(); }catch(e){ uitAnker=null; }
+  if(uitAnker) return uitAnker;
   try{
     var img=await new Promise(function(res,rej){
       var u=URL.createObjectURL(blob), m=new Image();
@@ -4738,6 +4849,28 @@ function kiesBestanden(soort,zijde){
   i.click();
 }
 ["achter","voor","licence"].forEach(luisterVeld);
+/* Een foto in het vak slepen doet precies hetzelfde als hem kiezen. Dat is op een
+   laptop de snelste weg: foto uit de map naar het vak, klaar. */
+function sleepVak(vakId,sleutel){
+  var vak=$(vakId); if(!vak) return;
+  ["dragenter","dragover"].forEach(function(n){
+    vak.addEventListener(n,function(e){ e.preventDefault(); e.stopPropagation(); vak.classList.add("over"); });
+  });
+  ["dragleave","dragend"].forEach(function(n){
+    vak.addEventListener(n,function(e){ e.preventDefault(); vak.classList.remove("over"); });
+  });
+  vak.addEventListener("drop",function(e){
+    e.preventDefault(); e.stopPropagation(); vak.classList.remove("over");
+    var fs=e.dataTransfer && e.dataTransfer.files;
+    if(!fs || !fs.length) return;
+    var i=luisterVeld(sleutel); if(!i) return;
+    try{ i.files=fs; }catch(err){}
+    verwerkKeuze({ files:Array.prototype.slice.call(fs), value:"" }, sleutel==="licence"?"licence":"cin",
+                 sleutel==="licence"?"":sleutel);
+  });
+}
+sleepVak("dzId","achter");
+sleepVak("dzLic","licence");
 $("scanBtn").addEventListener("click",function(){ kiesBestanden("cin","achter"); });
 $("scanVoorBtn").addEventListener("click",function(){ kiesBestanden("cin","voor"); });
 $("camIdBtn").addEventListener("click",function(){ cameraScan("cin"); });
@@ -5382,9 +5515,8 @@ async function mrzFallback(blob,storedKey,done,code){
         /* Eerst de lezer die in de app zelf zit: die is er altijd. Levert die niets
            op, dan nog de herkenning van de browser zelf. Wat eruit komt is een
            voorstel naast de uitsnede — de verhuurder ziet zelf of het klopt. */
-        var voor=adresUitRegels(kaartRegels(mrzCanvas(bnd,false,0,-18,null,1600,false)));
-        if(!voor) voor=adresUitRegels(kaartRegels(mrzCanvas(bnd,false,0,0,null,1600,true)));
-        if(!voor) voor=adresUitTekst(await leesTekst(bnd));
+        var voor=await adresUitBand(bnd);
+        if(voor){ $("cvAddr").value=voor; markCheck("cvAddr"); }
         toonAdresBand(bnd, voor);
       }
     }catch(e){}
@@ -5689,7 +5821,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="96";
+var ATLASVER="97";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
