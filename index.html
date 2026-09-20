@@ -4414,7 +4414,12 @@ async function naamUitStrook(hit){
     c.width=bw; c.height=Math.max(40,Math.round((y1-y0)*sc));
     var x=c.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
     x.drawImage(bron,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);
+    /* Twee lezingen: één met alleen de tekens die in een strook voorkomen, en één
+       zonder beperking. De eerste is strenger, de tweede leest soms scherper omdat
+       de herkenner zijn eigen woordkennis mag gebruiken. */
     var tekst=await ocrLees(c,null,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<");
+    var tekst2=await ocrLees(contrastGrijs(c),null,"");
+    tekst=(tekst||"")+"\n"+(tekst2||"").toUpperCase().replace(/[«»]/g,"<");
     /* Eerst de mooiste uitkomst: haalt de hele strook de controlecijfers, dan is
        alles eruit juist — ook de naam. */
     var uit=plakMRZ(tekst||"");
@@ -5876,7 +5881,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="101";
+var ATLASVER="102";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
