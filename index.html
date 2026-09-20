@@ -5821,7 +5821,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="97";
+var ATLASVER="98";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6279,6 +6279,10 @@ function adresAchtig(t){
   return true;
 }
 function adresUitRegels(regels){
+  var ruw=adresUitRegelsRuw(regels);
+  return ruw?adresOpschonen(ruw):"";
+}
+function adresUitRegelsRuw(regels){
   if(!regels || !regels.length) return "";
   var goed=regels.filter(function(r){ return r.score>=0.6 && r.tekst.replace(/[^A-Z0-9]/g,"").length>=6; });
   var gemerkt=goed.filter(function(r){ return /ADRE|ADDRESS/i.test(r.tekst); })[0];
@@ -6288,15 +6292,47 @@ function adresUitRegels(regels){
   return kand?kand.tekst.trim():"";
 }
 /* Uit de herkende tekst halen we de regel die er als een adres uitziet. */
+/* Een tekstherkenner leest de Arabische opdruk en het woord "Adresse" ervoor als
+   rommel mee ("Jarsss LOTSSEMENT..."), en laat in een lang woord wel eens een
+   letter vallen. Beide zijn te herstellen zonder te gokken: we beginnen het adres
+   bij het eerste echte adreswoord, en een woord dat op één letter na een bekend
+   adreswoord is, zetten we recht. Verzinnen doen we niets — wat we niet herkennen
+   laten we staan zoals het gelezen is. */
+var ADRESLIJST=["LOTISSEMENT","RESIDENCE","IMMEUBLE","APPARTEMENT","QUARTIER","BOULEVARD",
+  "AVENUE","SECTEUR","OPERATION","MEDINA","ZANKAT","CHARIA","DOUAR","ROUTE","ANGLE","PLACE",
+  "CENTRE","VILLA","DERB","TARIK","BLOC","CITE","ETAGE","RUE","HAY"];
+function afstand1(a,b){
+  if(Math.abs(a.length-b.length)>1) return false;
+  var i=0,j=0,fout=0;
+  while(i<a.length && j<b.length){
+    if(a[i]===b[j]){ i++; j++; continue; }
+    if(++fout>1) return false;
+    if(a.length>b.length) i++; else if(b.length>a.length) j++; else { i++; j++; }
+  }
+  if(i<a.length || j<b.length) fout++;
+  return fout<=1;
+}
+function adresOpschonen(s){
+  if(!s) return "";
+  var t=String(s).toUpperCase().replace(/[^A-Z0-9°\/\-\s]/g," ").replace(/\s+/g," ").trim();
+  var w=t.split(" ").map(function(x){
+    if(x.length<4) return x;
+    for(var i=0;i<ADRESLIJST.length;i++) if(x!==ADRESLIJST[i] && afstand1(x,ADRESLIJST[i])) return ADRESLIJST[i];
+    return x;
+  });
+  /* alles vóór het eerste echte adreswoord weggooien: dat is de opdruk van de kaart */
+  for(var k=0;k<w.length;k++) if(ADRESSTERK.test(w[k])){ w=w.slice(k); break; }
+  return w.join(" ").replace(/\s+/g," ").trim();
+}
 function adresUitTekst(tekst){
   if(!tekst) return "";
   var regels=tekst.split("\n").map(function(r){ return r.replace(/\s+/g," ").trim(); }).filter(function(r){ return r.length>6; });
   var gemerkt=regels.filter(function(r){ return /ADRE|ADRESS|ADDRESS/i.test(r); })[0];
-  if(gemerkt) return gemerkt.replace(/^.*?ADRE\w*\s*[:.]?\s*/i,"").trim();
+  if(gemerkt) return adresOpschonen(gemerkt.replace(/^.*?ADRE\w*\s*[:.]?\s*/i,"").trim());
   /* anders: de langste regel met letters én een huisnummer */
   var kandidaat=regels.filter(function(r){ return /[A-Za-z]{4,}/.test(r) && /\d/.test(r); })
                       .sort(function(a,b){ return b.length-a.length; })[0];
-  return kandidaat||"";
+  return kandidaat?adresOpschonen(kandidaat):"";
 }
 /* En uit een rijbewijs: het nummer en de datums. */
 function rijbewijsUitTekst(tekst){
