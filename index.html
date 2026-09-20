@@ -2077,7 +2077,11 @@ function parseMRZ(text){
                  /* Op de Marokkaanse CNIE staat in het losse veld van regel 1 het nummer
                     dat ook op de voorkant gedrukt staat (N° / رقم). Het veld daarvoor
                     bevat een intern nummer dat de verhuurder niets zegt. */
-                 altNumber:l1.slice(15,30).replace(/</g,""),
+                 /* Het veld is links uitgelijnd en met « < » opgevuld. Alles ná het
+                    eerste opvulteken is opvulling — of ruis van de kaartrand, en die
+                    maakte het nummer onbruikbaar ("GI4599<<<<<YYVY"). Dus: nemen tot
+                    het eerste opvulteken. */
+                 altNumber:l1.slice(15,30).split("<")[0],
                  birthDate:mrzDate(b1,false), expiry:mrzDate(e1,true), sex:sx,
                  fullName:nameTrust(l3,mrzName(l3)), nameRaw:l3, docRaw:l1 });
         if(got1) return got1;
@@ -5580,7 +5584,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="92";
+var ATLASVER="93";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
