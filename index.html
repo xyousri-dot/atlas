@@ -3437,6 +3437,25 @@ async function readMRZ(blob,opts){
     });
     [0,2,-2].forEach(function(a4){ cuts.push(function(){ return mrzCanvas(strookBeeld(),false,a4,0,null,2200,true); }); });
   }
+  /* Daarna de kaart platleggen. Lukt dat, dan weten we waar de strook staat —
+     onderaan — en zijn een paar gerichte lezingen genoeg. */
+  var vlak=null;
+  if(!opts.tight){ try{ vlak=kaartVlak(bron,1800); }catch(e){ vlak=null; } }
+  if(D) D.vlak = vlak ? (vlak.width+"\u00d7"+vlak.height) : "niet platgelegd";
+  if(vlak){
+    var band=null, bandKlein=null;
+    function bandBeeld(){ if(!band) band=kaartBand(vlak,0.58,1.0,2400); return band; }
+    function bandKl(){ if(!bandKlein) bandKlein=kaartBand(vlak,0.58,1.0,1800); return bandKlein; }
+    /* vier gerichte lezingen op de band waar de strook hoort te staan: dat is
+       genoeg als de kaart eenmaal recht ligt. Lukt het niet, dan draait het
+       gewone plan er daarna nog overheen. */
+    [0,-18].forEach(function(b8){
+      cuts.push(function(){ return mrzCanvas(bandBeeld(),false,0,b8,null,2400); });
+    });
+    cuts.push(function(){ return mrzCanvas(bandBeeld(),false,0,0,null,2400,true); });
+    cuts.push(function(){ return mrzCanvas(bandKl(),false,0,-18,null,1800); });
+  }
+
   planVoor(bron,0,1);
   /* Een strak gekaderde strook (kader of camera): de hoek is dan het enige dat
      nog telt. Alle hoeken van -6 tot +6 graden aflopen, op twee groottes, met
@@ -3922,19 +3941,76 @@ function rijbewijsUitRegels(regels){
   if(namen.length) o.namen=namen.slice(0,4);
   return o;
 }
+/* ============ DE KAART PLATLEGGEN ============
+   Zo werken de professionele lezers: eerst het document vinden, dan het scheve
+   vlak rechttrekken naar een vaste maat, en pas daarna lezen. Een kaart die plat
+   en op ware verhouding voor je ligt heeft zijn regels altijd op dezelfde plek —
+   onderaan. Dan hoeft de lezer niet meer tientallen varianten te proberen: hij
+   kijkt gewoon op de juiste plek. Dat is sneller én betrouwbaarder dan raden.
+   Een identiteitskaart en een rijbewijs hebben dezelfde maat als een bankpas
+   (85,6 × 54 mm, verhouding 1,585). Die verhouding is de controle: komt het
+   gevonden vlak daar niet in de buurt, dan was het de kaart niet. */
+var KAARTVERH=85.6/54;
+function kaartVlak(img,bw){
+  bw=bw||1800;
+  var hk=null; try{ hk=vindHoeken(img); }catch(e){ hk=null; }
+  if(!hk) return null;
+  var cv=null; try{ cv=vlakTrekken(img,hk,bw); }catch(e){ cv=null; }
+  if(!cv) return null;
+  /* Staand gevonden? Dan ligt de kaart gekanteld in beeld; rechtop zetten. */
+  if(cv.height>cv.width) cv=turnImage(cv,90);
+  var v=cv.width/Math.max(1,cv.height);
+  if(v<KAARTVERH*0.80 || v>KAARTVERH*1.20) return null;
+  return cv;
+}
+/* Een band uit de platgelegde kaart: van boven- tot onderkant in delen van de
+   hoogte. De strook van een identiteitskaart zit onderaan, de regel van een
+   rijbewijs ook. */
+function kaartBand(cv,van,tot,bw){
+  var y0=Math.round(cv.height*van), y1=Math.round(cv.height*tot);
+  var h=Math.max(20,y1-y0), sc=(bw||2200)/cv.width;
+  var c=document.createElement("canvas");
+  c.width=Math.round(cv.width*sc); c.height=Math.round(h*sc);
+  var x=c.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
+  x.drawImage(cv,0,y0,cv.width,h,0,0,c.width,c.height);
+  return c;
+}
 /* ============ DE OCR-B-REGEL OP DE ACHTERKANT VAN HET RIJBEWIJS ============
    Het Marokkaanse rijbewijs draagt achterop, langs de lange rand, één regel in
    OCR-B: D1 + land + nummer + afgiftedatum + naam + controlecijfer. Die regel is
    het enige op de kaart met een controlecijfer, dus dáár halen we het nummer
    vandaan. Hij staat altijd langs een lange rand; welke, en welke kant boven, weten
    we niet — dus knippen we alle randstroken uit en lezen die in beide richtingen. */
+/* Een telefoonfoto is vier keer zo groot als nodig. De regel achterop beslaat twee
+   derde van de kaartbreedte: op een beeld van tweeduizend punten breed is elk
+   lettertje nog ruim veertig punten hoog — meer dan genoeg. Kleiner werken maakt
+   elke stap vier keer zo goedkoop, en dát is het verschil tussen "leest hem" en
+   "tijd op" op een gewone laptop. */
+function kleinerBeeld(img,maxB){
+  var b=maxB||2000;
+  if(img.width<=b) return img;
+  var c=document.createElement("canvas"), sc=b/img.width;
+  c.width=b; c.height=Math.round(img.height*sc);
+  var x=c.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
+  x.drawImage(img,0,0,c.width,c.height);
+  return c;
+}
 function licStroken(img){
+  img=kleinerBeeld(img,2000);
+  var uitVlak=[];
+  /* De regel staat op de achterkant langs de onderrand. Ligt de kaart eenmaal
+     plat, dan is dat één vaste band — twee lezingen in plaats van zestien. */
+  var pv=null; try{ pv=kaartVlak(img,1800); }catch(e){ pv=null; }
+  if(pv){
+    var ond=kaartBand(pv,0.78,1.0,2200);
+    uitVlak.push(ond, turnImage(ond,180));
+  }
   var rect=null; try{ rect=vindKaart(img); }catch(e){ rect=null; }
   var kaart = rect ? snijUit(img,rect,2200) : img;
   var W=kaart.width, H=kaart.height, out=[];
   function deel(x,y,w,h){ var c=document.createElement("canvas"); c.width=w; c.height=h;
     c.getContext("2d").drawImage(kaart,x,y,w,h,0,0,w,h); return c; }
-  if(W>H*4){ out.push(kaart,turnImage(kaart,180)); return out; }   /* een strak kader om de regel zelf */
+  if(W>H*4){ return uitVlak.concat([kaart,turnImage(kaart,180)]); }   /* een strak kader om de regel zelf */
   if(H>W){
     var sw=Math.round(W*0.17), li=deel(0,0,sw,H), re=deel(W-sw,0,sw,H);
     out.push(turnImage(li,90),turnImage(re,270),turnImage(li,270),turnImage(re,90));
@@ -3942,7 +4018,7 @@ function licStroken(img){
     var sh=Math.round(H*0.17), bo=deel(0,0,W,sh), on=deel(0,H-sh,W,sh);
     out.push(on,turnImage(bo,180),bo,turnImage(on,180));
   }
-  return out;
+  return uitVlak.concat(out);
 }
 /* Een randstrook bevat behalve de regel ook de donkere tafel naast de kaart en de
    lijnen van de tabel. Die zijn lange aaneengesloten zwarte banen; letters zijn
@@ -3959,17 +4035,23 @@ function zonderBanen(cv){
   x.putImageData(d,0,0); return cv;
 }
 async function licRegelUitBeeld(img,budget,D){
-  var t0=Date.now(), max=budget||8000, stroken=licStroken(img), stem={}, eerste={}, n=0;
+  var t0=Date.now(), max=budget||20000, stroken=licStroken(img), stem={}, eerste={}, n=0;
   var combos=[[0,2200,false],[-20,2200,false],[0,2200,true],[10,1800,false]];
   /* De kaart ligt zelden precies recht; een graad scheef over een hele kaartlengte
      is al een halve letterhoogte. Per strook dus eerst de hoek bepalen. */
-  var hoeken=stroken.map(function(st){ try{ return deskewAngle(zonderBanen(mrzCanvas(st,false,0,0,null,1200,false))); }catch(e){ return 0; } });
+  var hoeken=[];
+  function hoekVan(si){
+    if(hoeken[si]===undefined){
+      try{ hoeken[si]=deskewAngle(zonderBanen(mrzCanvas(stroken[si],false,0,0,null,900,false))); }catch(e){ hoeken[si]=0; }
+    }
+    return hoeken[si];
+  }
   for(var ci=0;ci<combos.length;ci++){
     for(var si=0;si<stroken.length;si++){
       if(Date.now()-t0>max) break;
       await pauze(0); n++;
       var hit=null;
-      try{ hit=mrzFromCanvas(zonderBanen(mrzCanvas(stroken[si],false,hoeken[si],combos[ci][0],null,combos[ci][1],combos[ci][2]))); }catch(e){ hit=null; }
+      try{ hit=mrzFromCanvas(zonderBanen(mrzCanvas(stroken[si],false,hoekVan(si),combos[ci][0],null,combos[ci][1],combos[ci][2]))); }catch(e){ hit=null; }
       if(!hit || hit.kind!=="licence") continue;
       stem[hit.docNumber]=(stem[hit.docNumber]||0)+1;
       if(!eerste[hit.docNumber]) eerste[hit.docNumber]=hit;
@@ -4518,7 +4600,7 @@ $("cropGo").addEventListener("click",async function(){
   var res=null, D3={}, beeld2=null, regel2=null;
   try{ beeld2=await blobImg(blob); }catch(e){ beeld2=null; }
   /* Een kader om de regel achterop het rijbewijs: die lezer kent dat formaat. */
-  if(beeld2){ try{ regel2=await licRegelUitBeeld(beeld2,8000,D3); }catch(e){ regel2=null; } }
+  if(beeld2){ try{ regel2=await licRegelUitBeeld(beeld2,20000,D3); }catch(e){ regel2=null; } }
   if(regel2){
     fillFromMRZ(regel2,CROPKEY); paintScans(); kklaar();
     b.textContent=t.cropGo; b.disabled=false;
@@ -4822,7 +4904,7 @@ async function licLezen(blob,storedKey,done){
   try{ beeld=await blobImg(bron); }catch(e){ beeld=null; }
   /* Eerst de regel in machineschrift achterop: die heeft een controlecijfer en is
      dus de enige plek op het rijbewijs waar het nummer gegarandeerd goed vandaan komt. */
-  if(beeld){ try{ regel=await licRegelUitBeeld(beeld,8000,D); }catch(e){ regel=null; } }
+  if(beeld){ try{ regel=await licRegelUitBeeld(beeld,20000,D); }catch(e){ regel=null; } }
   if(regel){
     $("cvLic").value=regel.docNumber; zetVast("cvLic");
     if(regel.nationality && !$("cvNat").value) $("cvNat").value=regel.nationality;
@@ -5584,7 +5666,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="93";
+var ATLASVER="94";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
