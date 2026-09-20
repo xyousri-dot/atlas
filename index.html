@@ -5876,7 +5876,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="100";
+var ATLASVER="101";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6294,7 +6294,11 @@ async function ocrWorker(melden){
 async function ocrLees(canvas,melden,witlijst){
   var w=await ocrWorker(melden); if(!w) return null;
   try{
-    if(witlijst && w.setParameters) { try{ await w.setParameters({ tessedit_char_whitelist:witlijst }); }catch(e){} }
+    /* De tekenlijst geldt voor de hele werker en blijft staan tot je hem weghaalt.
+       Zetten we hem voor de strook (alleen hoofdletters en « < »), dan leest de
+       volgende oproep — het adres — ineens zonder spaties. Dus: elke keer expliciet
+       zetten, ook als we hem niet nodig hebben. */
+    if(w.setParameters) { try{ await w.setParameters({ tessedit_char_whitelist: witlijst||"" }); }catch(e){} }
     var r=await w.recognize(canvas);
     return (r&&r.data&&typeof r.data.text==="string") ? r.data.text : "";
   }catch(e){ OCRFOUT="tesseract lezen mislukt: "+String((e&&e.message)||e); return null; }
