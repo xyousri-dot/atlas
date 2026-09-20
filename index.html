@@ -3144,6 +3144,21 @@ function bandRect(img,rect,ang){
 
 /* Probeer de MRZ van de foto te lezen: eerst de onderrand, dan de hele foto. Snel; faalt stil. */
 function tick(){ return new Promise(function(r){ setTimeout(r,0); }); }
+/* Tussen twee pogingen even het scherm teruggeven houdt de app levend. Maar een
+   browser rekt zo'n pauze op tot een hele seconde zodra het tabblad naar de
+   achtergrond gaat — dan duurt een scan van honderd pogingen ineens minuten.
+   Dus: alleen ademhalen als er echt iets te tonen is (het tabblad staat vooraan)
+   en hoogstens een paar keer per seconde, ongeacht hoeveel pogingen er zijn. */
+function ademHaler(){
+  var laatst=0;
+  return async function(){
+    try{ if(document.hidden) return; }catch(e){}
+    var nu=Date.now();
+    if(nu-laatst<140) return;
+    laatst=nu;
+    await tick();
+  };
+}
 /* De naam heeft geen controlecijfer, dus komt de zekerheid van herhaling. Eisen dat
    drie pogingen exact dezelfde naam opleveren is streng: één letter verschil en alles
    valt af. Daarom kijken we ook per letter. Bij "OUARPAT / OUARRAT / OUARRAT" is de
@@ -3520,10 +3535,11 @@ async function readMRZ(blob,opts){
      zich vrijwel nooit letterlijk. Levert dat niets op, dan blijft het naamveld
      leeg en typt de verhuurder hem zelf — beter dan een fout op het contract. */
   var votes={}, first={}, bestKey=null, namen={}, naamLijst=[], naamFont=[], naamSets={}, altLijst=[], klaar=null, klaarKey=null, extra=0;
+  var adem=ademHaler();
   for(var i=0;i<cuts.length;i++){
     /* Even ademen tussen pogingen: zo blijft het scherm leven, kan de teller
        meelopen en kunnen we netjes stoppen als het te lang duurt. */
-    onStep(i+1,cuts.length); await tick();
+    onStep(i+1,cuts.length); await adem();
     if(D) D.tries=i+1;
     if(Date.now()-t0>budget) break;
     try{
@@ -4035,7 +4051,7 @@ function zonderBanen(cv){
   x.putImageData(d,0,0); return cv;
 }
 async function licRegelUitBeeld(img,budget,D){
-  var t0=Date.now(), max=budget||20000, stroken=licStroken(img), stem={}, eerste={}, n=0;
+  var t0=Date.now(), max=budget||20000, stroken=licStroken(img), stem={}, eerste={}, n=0, adem=ademHaler();
   var combos=[[0,2200,false],[-20,2200,false],[0,2200,true],[10,1800,false]];
   /* De kaart ligt zelden precies recht; een graad scheef over een hele kaartlengte
      is al een halve letterhoogte. Per strook dus eerst de hoek bepalen. */
@@ -4049,7 +4065,7 @@ async function licRegelUitBeeld(img,budget,D){
   for(var ci=0;ci<combos.length;ci++){
     for(var si=0;si<stroken.length;si++){
       if(Date.now()-t0>max) break;
-      await pauze(0); n++;
+      await adem(); n++;
       var hit=null;
       try{ hit=mrzFromCanvas(zonderBanen(mrzCanvas(stroken[si],false,hoekVan(si),combos[ci][0],null,combos[ci][1],combos[ci][2]))); }catch(e){ hit=null; }
       if(!hit || hit.kind!=="licence") continue;
@@ -4071,7 +4087,7 @@ async function licRegelUitBeeld(img,budget,D){
    in één ruk doet. Daarom geven we tussen elke poging het scherm even terug: de
    verhuurder ziet de app leven in plaats van een vastgelopen pagina. */
 async function rijbewijsUitBeeld(img,budget,D,melden){
-  var t0=Date.now(), max=budget||5000;
+  var t0=Date.now(), max=budget||5000, adem=ademHaler();
   var hk=null; try{ hk=vindHoeken(img); }catch(e){ hk=null; }
   var vlak=null; if(hk){ try{ vlak=vlakTrekken(img,hk,2200); }catch(e){ vlak=null; } }
   /* De hoeken van de kaart kunnen misgrepen zijn — op een drukke achtergrond gebeurt
@@ -4117,7 +4133,7 @@ async function rijbewijsUitBeeld(img,budget,D,melden){
     for(var ci=0;ci<combos.length;ci++){
       if(Date.now()-t0>max){ klaar=true; break; }
       if(melden) melden(bi*combos.length+ci+1, bronnen.length*combos.length);
-      await pauze(0);
+      await adem();
       var set=[];
       try{ set=kaartRegels(mrzCanvas(bronnen[bi].c,false,0,combos[ci][1],null,combos[ci][0],combos[ci][2])); }catch(e){ set=[]; }
       var g=set.length?rijbewijsUitRegels(set):{};
@@ -5673,7 +5689,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="95";
+var ATLASVER="96";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
