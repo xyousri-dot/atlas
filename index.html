@@ -4396,6 +4396,32 @@ function showDiag(D){
    Sommige browsers kunnen losse tekst zelf herkennen; kan dat, dan bieden we het
    als voorstel aan. */
 var ANKER=null;
+/* De naam staat op de derde regel van de strook en heeft geen eigen controlecijfer,
+   maar wél de totaalcontrole over de hele strook. Lezen wij hem niet scherp genoeg,
+   dan mag de echte tekstherkenning het proberen: komt die met een strook die de
+   controlecijfers haalt én dezelfde geboortedatum geeft, dan is de naam eruit
+   gewoon juist. Anders blijft het veld leeg. */
+async function naamUitStrook(hit){
+  if(!ANKER || !ANKER.strook) return "";
+  try{
+    if(!await needLib("ocr")) return "";
+    var st=ANKER.strook, bron=ANKER.bron;
+    var marge=Math.round(st.h*0.15);
+    var x0=Math.max(0,st.x-marge), y0=Math.max(0,st.y-marge);
+    var x1=Math.min(bron.width,st.x+st.w+marge), y1=Math.min(bron.height,st.y+st.h+marge);
+    var bw=2000, sc=bw/(x1-x0);
+    var c=document.createElement("canvas");
+    c.width=bw; c.height=Math.max(40,Math.round((y1-y0)*sc));
+    var x=c.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
+    x.drawImage(bron,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);
+    var tekst=await ocrLees(c,null,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<");
+    var uit=plakMRZ(tekst||"");
+    if(!uit || !uit.fullName) return "";
+    /* zelfde persoon? de geboortedatum moet kloppen met wat wij al zeker weten */
+    if(hit && hit.birthDate && uit.birthDate && uit.birthDate!==hit.birthDate) return "";
+    return uit.fullName;
+  }catch(e){ return ""; }
+}
 /* Het adres uit de band boven de strook halen. Eerst rechtzetten — een kaart ligt
    zelden recht en een schuine regel leest niemand goed — dan onze eigen lezer, en
    als die niets bruikbaars geeft de echte tekstherkenning. Wat eruit komt moet er
@@ -5508,6 +5534,14 @@ async function mrzFallback(blob,storedKey,done,code){
      identiteitskaart heeft het zin ernaar te zoeken; anders vullen we een vakje
      met iets dat er niet staat. */
   var isKaart = (hit.kind==="id") || (pickedDoc()==="cin");
+  /* Naam nog leeg? Dan de strook nog één keer, met de echte tekstherkenning. */
+  if(!$("cvName").value){
+    try{
+      p.textContent=t.ocrExtern;
+      var nm=await naamUitStrook(hit);
+      if(nm){ $("cvName").value=nm; markCheck("cvName"); showNameRaw(nm,true); }
+    }catch(e){}
+  }
   if(!$("cvAddr").value && isKaart){
     try{
       var bnd=await adresBand(CROPSRC||blob);
@@ -5821,7 +5855,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="98";
+var ATLASVER="99";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
