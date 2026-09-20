@@ -4415,11 +4415,32 @@ async function naamUitStrook(hit){
     var x=c.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
     x.drawImage(bron,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);
     var tekst=await ocrLees(c,null,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<");
+    /* Eerst de mooiste uitkomst: haalt de hele strook de controlecijfers, dan is
+       alles eruit juist — ook de naam. */
     var uit=plakMRZ(tekst||"");
-    if(!uit || !uit.fullName) return "";
-    /* zelfde persoon? de geboortedatum moet kloppen met wat wij al zeker weten */
-    if(hit && hit.birthDate && uit.birthDate && uit.birthDate!==hit.birthDate) return "";
-    return uit.fullName;
+    if(uit && uit.fullName){
+      if(hit && hit.birthDate && uit.birthDate && uit.birthDate!==hit.birthDate) return "";
+      return uit.fullName;
+    }
+    /* Haalt hij dat niet, dan pakken we alleen de naamregel — maar we eisen dat
+       onze eigen lezing en die van de tekstherkenner over dezelfde naam gaan.
+       Twee lezers die grotendeels hetzelfde zien, met elk hun eigen fouten: dat is
+       precies hoe je een regel zonder controlecijfer tóch kunt vertrouwen. */
+    var lijnen=String(tekst||"").toUpperCase().split(/\n+/)
+      .map(function(r){ return r.replace(/[^A-Z0-9<]/g,""); })
+      .filter(function(r){ return r.indexOf("<<")>=0 && r.length>=18 && !/[0-9]/.test(r); });
+    for(var i=0;i<lijnen.length;i++){
+      var nm=nameTrust(lijnen[i],mrzName(lijnen[i]));
+      if(!nm) continue;
+      var eigen=String((hit&&hit.nameRaw)||"");
+      if(eigen){
+        var n=Math.min(eigen.length,lijnen[i].length), gelijk=0;
+        for(var k=0;k<n;k++) if(eigen[k]===lijnen[i][k]) gelijk++;
+        if(n<10 || gelijk/n<0.55) continue;      /* een andere naam: niet overnemen */
+      }
+      return nm;
+    }
+    return "";
   }catch(e){ return ""; }
 }
 /* Het adres uit de band boven de strook halen. Eerst rechtzetten — een kaart ligt
@@ -5855,7 +5876,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="99";
+var ATLASVER="100";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
