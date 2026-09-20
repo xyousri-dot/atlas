@@ -3523,7 +3523,7 @@ async function readMRZ(blob,opts){
   for(var i=0;i<cuts.length;i++){
     /* Even ademen tussen pogingen: zo blijft het scherm leven, kan de teller
        meelopen en kunnen we netjes stoppen als het te lang duurt. */
-    if(i%2===0){ onStep(i+1,cuts.length); await tick(); }
+    onStep(i+1,cuts.length); await tick();
     if(D) D.tries=i+1;
     if(Date.now()-t0>budget) break;
     try{
@@ -4943,7 +4943,8 @@ async function licLezen(blob,storedKey,done){
      zijn gok het van een lezing die wél nagerekend was. */
   if(!$("cvLic").value || !$("cvLicExp").value){
     p.textContent=t.ocrExtern;
-    var ex=await externLezen(bron,function(f,pc){ p.textContent=t.ocrExtern+(pc?" "+Math.round(pc*100)+"%":""); });
+    var ex=await externLezen(bron,function(f,pc){ p.textContent=t.ocrExtern+(pc?" "+Math.round(pc*100)+"%":""); },
+                             { alleenDatum: !!$("cvLic").value });
     if(ex.gedaan.length){
       toonLicUit(res,D); markCheck("cvLic");
       /* Het nummer uit de regel met controlecijfer blijft de kop van de melding:
@@ -5151,9 +5152,14 @@ async function ocrSpaceTekst(canvas,melden){
 }
 /* Probeert de echte herkenners op deze foto. Geeft de lijst van gevulde velden
    terug, of een lege lijst als er niets bruikbaars uit kwam. */
-async function externLezen(blob,melden){
+async function externLezen(blob,melden,opts){
+  opts=opts||{};
   var img; try{ img=await blobImg(blob); }catch(e){ return { gedaan:[], tekst:"" }; }
   var kandidaten=kaartVoorOcr(img), alles="";
+  /* Hebben we het nummer al uit een regel met controlecijfer, dan zoeken we hier
+     alleen nog de datum. Dan is één goede lezing genoeg en hoeven we niet alle
+     uitsneden af te gaan — dat scheelt de verhuurder een halve minuut wachten. */
+  if(opts.alleenDatum) kandidaten=kandidaten.slice(0,2);
   var heeftTess=await needLib("ocr");
   if(heeftTess){
     /* Elke uitsnede twee keer: zoals hij is, en als contrastrijke grijsversie.
@@ -5163,6 +5169,7 @@ async function externLezen(blob,melden){
     for(var i=0;i<lijst.length;i++){
       var tx=await tesseractTekst(lijst[i],melden);
       if(tx && bruikbaarder(tx,alles)) alles=tx;
+      if(opts.alleenDatum && datumsUit(alles).length) break;
       if(plakMRZ(alles) || licNummerUit(plakRegels(alles))) break;
     }
   }
@@ -5666,7 +5673,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="94";
+var ATLASVER="95";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
