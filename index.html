@@ -444,6 +444,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
               <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button class="btn" id="scanBtn" style="flex:1 1 45%"></button>
                 <button class="btn ghost" id="scanVoorBtn" style="flex:1 1 45%"></button>
+                <input type="file" id="fileAchter" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
+                <input type="file" id="fileVoor" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
                 <button class="btn ghost" id="camIdBtn" style="flex:1 1 100%"></button>
               </div>
               <div class="docs" id="scanDocs"></div>
@@ -453,6 +455,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
               <p class="fine" id="slotLicP" style="margin:2px 0 8px"></p>
               <div style="display:flex;gap:8px">
                 <button class="btn ghost" id="scanLicBtn" style="flex:1"></button>
+                <input type="file" id="fileLic" accept="image/*,.heic,.heif,application/pdf,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
                 <button class="btn ghost" id="camLicBtn" style="flex:1"></button>
               </div>
               <div class="docs" id="scanLicDocs"></div>
@@ -4605,16 +4608,34 @@ function applyDoc(r,storedKey){
    meer door elkaar lopen. Bij een identiteitsbewijs leest de strook zelf of het een
    kaart of een paspoort is; dat hoeft de verhuurder niet te weten. */
 var ZIJDE="";
+/* De drie knoppen horen bij drie vaste bestandsvelden in de pagina zelf. Vroeger
+   maakte de app bij elke klik een nieuw veldje aan dat nergens in de pagina stond;
+   dat werkt voor een mens, maar dan kan niets anders er een foto in zetten dan het
+   venster van het besturingssysteem — een test ook niet. Nu staan ze er gewoon
+   (onzichtbaar), zodat elke foto langs dezelfde weg binnenkomt. */
+var VELDVAN={ achter:"fileAchter", voor:"fileVoor", licence:"fileLic" };
+async function verwerkKeuze(i,soort,zijde){
+  var fs=i&&i.files?Array.prototype.slice.call(i.files):[];
+  if(!fs.length) return;
+  setPick(soort);
+  for(var k=0;k<fs.length;k++){ setPick(soort); ZIJDE=zijde||""; await scanDoc(fs[k],fs.length>1?(k+1)+"/"+fs.length:""); }
+  ZIJDE="";
+  try{ i.value=""; }catch(e){}   /* dezelfde foto nog eens kiezen moet ook werken */
+}
+function luisterVeld(sleutel){
+  var i=$(VELDVAN[sleutel]); if(!i || i.dataset.klaar) return i;
+  i.dataset.klaar="1";
+  var soort = sleutel==="licence" ? "licence" : "cin";
+  var zijde = sleutel==="licence" ? "" : sleutel;
+  i.addEventListener("change",function(){ verwerkKeuze(i,soort,zijde); });
+  return i;
+}
 function kiesBestanden(soort,zijde){
-  var i=document.createElement("input"); i.type="file"; i.accept="image/*,.heic,.heif,application/pdf,.pdf"; i.multiple=true;
-  i.addEventListener("change",async function(){
-    var fs=i.files?Array.prototype.slice.call(i.files):[];
-    setPick(soort);
-    for(var k=0;k<fs.length;k++){ setPick(soort); ZIJDE=zijde||""; await scanDoc(fs[k],fs.length>1?(k+1)+"/"+fs.length:""); }
-    ZIJDE="";
-  });
+  var sleutel = soort==="licence" ? "licence" : (zijde==="voor" ? "voor" : "achter");
+  var i=luisterVeld(sleutel); if(!i) return;
   i.click();
 }
+["achter","voor","licence"].forEach(luisterVeld);
 $("scanBtn").addEventListener("click",function(){ kiesBestanden("cin","achter"); });
 $("scanVoorBtn").addEventListener("click",function(){ kiesBestanden("cin","voor"); });
 $("camIdBtn").addEventListener("click",function(){ cameraScan("cin"); });
@@ -5559,7 +5580,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="91";
+var ATLASVER="92";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
