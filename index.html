@@ -1,3 +1,9 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F1F4F1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
 <title>Atlas Verhuur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -216,6 +222,30 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .dock .note{flex:1 1 100%;order:-1;font-size:13.5px;color:var(--ink2);line-height:1.35}
 @media(min-width:640px){.dock .note{flex:1 1 auto;order:0}}
 @media(max-width:639px){.dock .btn{flex:1 1 auto}.dock .btn.ghost{flex:0 0 auto}}
+/* ============ TELEFOON ============
+   De verhuurder staat met zijn toestel bij de auto. Dan moet alles met één duim
+   kunnen: ruime knoppen, invoervelden die niet inzoomen (onder de 16px zoomt iOS
+   het scherm in en dan staat de pagina scheef), en geen enkele regel die breder is
+   dan het scherm. */
+@media(max-width:700px){
+  .bar-in,.tabs,.prog,.wrap,.dock-in{padding-left:14px;padding-right:14px}
+  .wrap{padding-bottom:150px}
+  input,select,textarea{font-size:16px}          /* voorkomt inzoomen op iPhone */
+  .btn{min-height:46px}
+  .dz{padding:22px 12px}
+  .dz-k{flex-direction:column}
+  .dz-k .btn{width:100%;min-width:0}
+  .row{flex-wrap:wrap}
+  .kmwrap input{max-width:120px}
+  .cam .cam-knoppen .btn{min-width:0;flex:1}
+}
+@media(max-width:400px){
+  .logo b{max-width:44vw}
+  .tabs button{padding-left:10px;padding-right:10px}
+}
+/* niets mag horizontaal uit het scherm lopen */
+html,body{max-width:100%;overflow-x:hidden}
+img,canvas,video,svg,table{max-width:100%}
 .btn{font:inherit;font-size:16px;font-weight:700;padding:14px 24px;border-radius:99px;cursor:pointer;background:var(--brand);color:#fff;border:none;flex:none}
 .btn:hover{background:var(--brand-2)}
 .btn[disabled]{background:#C6CDC6;cursor:not-allowed}
@@ -304,7 +334,10 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .dz{border:2px dashed var(--line);border-radius:14px;padding:18px 14px;text-align:center;
     background:rgba(255,255,255,.45);transition:border-color .15s,background .15s}
 .dz.over{border-color:var(--acc);background:rgba(16,122,87,.07)}
-.dz-t{font-weight:700;font-size:14px;color:var(--ink2);margin:0 0 10px}
+.dz-t{font-weight:700;font-size:14px;color:var(--ink2);margin:0 0 10px;display:none}
+/* Slepen kan alleen met een muis. Op een telefoon is die regel verwarrend, dus
+   daar tonen we hem niet: daar zijn de twee knoppen het hele verhaal. */
+@media (hover:hover) and (pointer:fine){ .dz-t{display:block} }
 .dz-k{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .dz-k .btn{min-width:140px}
 .stap{display:flex;align-items:center;gap:8px;margin:0 0 2px}
@@ -876,6 +909,7 @@ var TXT = {
   camRaak:"\u2713 Strook gelezen \u2014 foto genomen.",
   camGenomen:"Foto genomen \u2014 aan het lezen\u2026",
   camFoto:"Foto nemen",
+  camLamp:"Lamp aan", camLampUit:"Lamp uit",
   camGeen:"Geen camera beschikbaar hier \u2014 kies een foto.",
   plakLeeg:"Plak eerst de tekst van de kaart hierboven.",
   plakGelezen:"Dit is wat de tekstherkenner op de foto las. Er zat geen bruikbaar nummer of datum in. Verbeter hierboven wat fout gelezen is (vooral de regels met \u00ab < \u00bb) en druk op de knop.",
@@ -1430,6 +1464,7 @@ TXT.fr.camLicTip="Permis ou recto : placez la carte dans le cadre et prenez la p
 TXT.fr.camRaak="\u2713 Bande lue \u2014 photo prise.";
 TXT.fr.camGenomen="Photo prise \u2014 lecture\u2026";
 TXT.fr.camFoto="Prendre la photo";
+TXT.fr.camLamp="Lampe"; TXT.fr.camLampUit="\u00c9teindre";
 TXT.fr.camGeen="Pas de cam\u00e9ra ici \u2014 choisissez une photo.";
 TXT.fr.plakGelezen="Voici ce que le lecteur a lu sur la photo. Aucun num\u00e9ro ni date utilisable. Corrigez ci-dessus ce qui est mal lu (surtout les lignes avec \u00ab < \u00bb) et appuyez sur le bouton.";
 TXT.fr.plakNiets="Je n\u2019y reconnais ni num\u00e9ro, ni date, ni adresse. La carte enti\u00e8re est-elle incluse \u2014 y compris les lignes en bas avec \u00ab < \u00bb ?";
@@ -1548,6 +1583,10 @@ async function recheckScan(){
       var w=el("div"); w.style.cssText="position:fixed;left:0;right:0;top:0;z-index:70;background:#b45309;color:#fff;padding:10px 16px;font-weight:700;text-align:center;font-size:14px";
       w.textContent=T().fileWaarschuwing;
       document.body.appendChild(w);
+      /* de balk staat vast bovenaan; de pagina schuift eronder vandaan zodat hij
+         de tabbladen niet afdekt */
+      var duw=function(){ document.body.style.paddingTop=w.offsetHeight+"px"; };
+      duw(); window.addEventListener("resize",duw);
     }
   }catch(e){}
 })();
@@ -4950,11 +4989,56 @@ async function cameraScan(soort){
   var stream=null, bezig=false, klaar=false, t0=Date.now();
   function stop(){ klaar=true; try{ if(stream) stream.getTracks().forEach(function(tr){ tr.stop(); }); }catch(e){} w.remove(); CAM=null; }
   dicht.addEventListener("click",stop);
+  /* Vraag het hoogste dat het toestel geeft. Een strook van dertig tekens over de
+     breedte van een kaart heeft echt scherpe punten nodig; op 1280 breed is elk
+     lettertje nog geen twintig punten hoog en dan valt er niets te lezen. */
   try{
-    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
-  }catch(e){ stop(); toast(t.camGeen); kiesBestanden(soort); return; }
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ideal:"environment"}, width:{ideal:3840}, height:{ideal:2160} }, audio:false });
+  }catch(e){
+    try{ stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:"environment"} }, audio:false }); }
+    catch(e2){ stop(); toast(t.camGeen); kiesBestanden(soort); return; }
+  }
   v.srcObject=stream; CAM={stop:stop};
   try{ await v.play(); }catch(e){}
+  var track=null, caps={}, beeldnemer=null;
+  try{ track=stream.getVideoTracks()[0]; }catch(e){}
+  if(track){
+    try{ caps=(track.getCapabilities&&track.getCapabilities())||{}; }catch(e){ caps={}; }
+    /* doorlopend scherpstellen: zonder dit blijft een kaart dichtbij wazig */
+    try{ if(caps.focusMode && caps.focusMode.indexOf("continuous")>=0) await track.applyConstraints({ advanced:[{focusMode:"continuous"}] }); }catch(e){}
+    /* een foto uit de sensor zelf is veel scherper dan een beeldje uit de video */
+    try{ if(window.ImageCapture) beeldnemer=new ImageCapture(track); }catch(e){ beeldnemer=null; }
+    /* zaklamp bij weinig licht — in een donkere garage is dit het verschil */
+    if(caps.torch){
+      var aan=false, lamp=el("button","btn ghost",t.camLamp);
+      lamp.type="button";
+      lamp.addEventListener("click",async function(){
+        aan=!aan;
+        try{ await track.applyConstraints({ advanced:[{torch:aan}] }); }catch(e){}
+        lamp.textContent = aan ? t.camLampUit : t.camLamp;
+      });
+      knoppen.insertBefore(lamp,foto);
+    }
+  }
+  /* tikken om scherp te stellen waar de kaart ligt */
+  v.addEventListener("click",async function(){
+    if(!track) return;
+    try{ await track.applyConstraints({ advanced:[{focusMode:"single-shot"}] }); }catch(e){}
+    try{ await track.applyConstraints({ advanced:[{focusMode:"continuous"}] }); }catch(e){}
+  });
+  /* De volle foto uit de sensor. Lukt dat niet (niet elke browser kan het), dan
+     nemen we het stuk video binnen het kader. */
+  async function volleFoto(){
+    if(beeldnemer){
+      try{
+        var b=await beeldnemer.takePhoto();
+        if(b && b.size>20000) return b;
+      }catch(e){}
+    }
+    var c=grijp(); if(!c) return null;
+    return await new Promise(function(r){ c.toBlob(function(x){ r(x); },"image/jpeg",0.95); });
+  }
   /* het stuk video dat in het kader ligt, op ware grootte */
   function grijp(){
     var vw=v.videoWidth, vh=v.videoHeight; if(!vw||!vh) return null;
@@ -4968,15 +5052,19 @@ async function cameraScan(soort){
     c.getContext("2d").drawImage(v,x,y,bw,bh,0,0,c.width,c.height);
     return c;
   }
-  async function afdrukken(c,melding){
+  async function afdrukken(melding){
     if(klaar) return; klaar=true;
     txt.textContent=melding||t.camGenomen;
-    var blob=await new Promise(function(r){ c.toBlob(function(b){ r(b); },"image/jpeg",0.95); });
+    var blob=null;
+    try{ blob=await volleFoto(); }catch(e){ blob=null; }
     stop();
+    if(!blob){ toast(t.camGeen); kiesBestanden(soort); return; }
     setPick(soort);
+    ZIJDE = soort==="licence" ? "" : "achter";
     await scanDoc(new File([blob],"camera.jpg",{type:"image/jpeg"}));
+    ZIJDE="";
   }
-  foto.addEventListener("click",function(){ var c=grijp(); if(c) afdrukken(c,t.camGenomen); });
+  foto.addEventListener("click",function(){ afdrukken(t.camGenomen); });
   /* slimme sluiter: zodra de strook leesbaar is, zelf afdrukken */
   async function kijk(){
     if(klaar) return;
@@ -4989,7 +5077,7 @@ async function cameraScan(soort){
           var bl=await new Promise(function(r){ c.toBlob(function(b){ r(b); },"image/jpeg",0.9); });
           hit=await readMRZ(bl,{ budget:900 });
         }catch(e){ hit=null; }
-        if(hit){ kader.classList.add("raak"); await afdrukken(c,t.camRaak); return; }
+        if(hit){ kader.classList.add("raak"); await afdrukken(t.camRaak); return; }
       }
       var sec=Math.round((Date.now()-t0)/1000);
       txt.textContent = soort==="licence" ? t.camLicTip : (sec>6 ? t.camTip : t.camZoek);
@@ -5881,7 +5969,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="102";
+var ATLASVER="103";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
