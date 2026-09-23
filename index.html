@@ -1225,6 +1225,15 @@ var TXT = {
   sbTestRechten:function(c){ return "Aangemeld, maar deze gebruiker mag er niet bij (HTTP "+c+"). Voer het stukje SQL uit \u2014 dat zet de rechten goed."; },
   sbTestSchrijven:function(c){ return "Lezen lukt, opslaan niet (HTTP "+c+"). Voer het stukje SQL opnieuw uit; de schrijfrechten ontbreken."; },
   sbTestGoed:"Alles werkt: lezen, opslaan en verwijderen. Doe hetzelfde op je andere toestel.",
+  sbTestSleutel:"De sleutel klopt niet. Kopieer hem opnieuw in Supabase met het kopieer-icoontje (niet overtypen) en plak hem bij \u2018Publieke sleutel\u2019.",
+  sbFoutMailVerbod:"Supabase mag geen bevestigingsmail naar dit adres sturen. Oplossing: in Supabase \u2192 Authentication \u2192 Sign In / Providers \u2192 Email \u2192 zet \u2018Confirm email\u2019 uit en klik Save. Probeer daarna opnieuw.",
+  sbFoutTeVeel:"Supabase heeft te veel mails verstuurd. Zet in Supabase \u2192 Authentication \u2192 Sign In / Providers \u2192 Email de optie \u2018Confirm email\u2019 uit, dan is er geen mail meer nodig.",
+  sbFoutKort:"Het wachtwoord moet minstens 6 tekens hebben.",
+  sbFoutBestaat:"Dit e-mailadres heeft al een account. Klik op \u2018Aanmelden\u2019 in plaats van \u2018Nieuw account maken\u2019.",
+  sbFoutGeenNieuw:"Nieuwe accounts staan uit in Supabase. Zet in Authentication \u2192 Sign In / Providers \u2018Allow new users to sign up\u2019 aan.",
+  sbFoutLogin:"E-mail of wachtwoord klopt niet. Nog geen account? Klik dan op \u2018Nieuw account maken\u2019.",
+  sbFoutBevestig:"Je e-mailadres is nog niet bevestigd. Klik op de link in je mailbox, of zet in Supabase \u2192 Authentication \u2192 Sign In / Providers \u2192 Email \u2018Confirm email\u2019 uit.",
+  sbFoutMail:"Dat e-mailadres wordt niet aanvaard. Controleer of het juist geschreven is.",
   stCloudSetH:"Verbinding instellen", stCloudUrlL:"Project-URL", stCloudKeyL:"Publieke sleutel (anon key)", stCloudSave:"Verbinding bewaren",
   stCloudUit0:"Nog niet ingesteld \u2014 alles staat alleen op dit toestel.",
   stCloudAan:function(n){ return "Verbonden. Alles staat op al je toestellen."+(n?" Nog "+n+" te versturen.":""); },
@@ -1534,6 +1543,15 @@ var TXT = {
   sbTestRechten:function(c){ return "Connect\u00e9, mais cet utilisateur n\u2019a pas acc\u00e8s (HTTP "+c+"). Ex\u00e9cutez le SQL pour r\u00e9gler les droits."; },
   sbTestSchrijven:function(c){ return "Lecture possible, enregistrement non (HTTP "+c+"). Ex\u00e9cutez le SQL \u00e0 nouveau."; },
   sbTestGoed:"Tout fonctionne : lecture, \u00e9criture et suppression. Faites de m\u00eame sur votre autre appareil.",
+  sbTestSleutel:"La cl\u00e9 n\u2019est pas correcte. Copiez-la \u00e0 nouveau dans Supabase avec l\u2019ic\u00f4ne de copie et collez-la dans \u00ab Cl\u00e9 publique \u00bb.",
+  sbFoutMailVerbod:"Supabase ne peut pas envoyer d\u2019e-mail de confirmation \u00e0 cette adresse. Solution : Supabase \u2192 Authentication \u2192 Sign In / Providers \u2192 Email \u2192 d\u00e9sactivez \u00ab Confirm email \u00bb et cliquez Save.",
+  sbFoutTeVeel:"Trop d\u2019e-mails envoy\u00e9s par Supabase. D\u00e9sactivez \u00ab Confirm email \u00bb dans Authentication \u2192 Sign In / Providers \u2192 Email.",
+  sbFoutKort:"Le mot de passe doit contenir au moins 6 caract\u00e8res.",
+  sbFoutBestaat:"Cette adresse a d\u00e9j\u00e0 un compte. Cliquez sur \u00ab Se connecter \u00bb.",
+  sbFoutGeenNieuw:"Les nouveaux comptes sont d\u00e9sactiv\u00e9s dans Supabase. Activez \u00ab Allow new users to sign up \u00bb.",
+  sbFoutLogin:"E-mail ou mot de passe incorrect. Pas encore de compte ? Cliquez sur \u00ab Cr\u00e9er un compte \u00bb.",
+  sbFoutBevestig:"Votre e-mail n\u2019est pas encore confirm\u00e9. Cliquez sur le lien re\u00e7u, ou d\u00e9sactivez \u00ab Confirm email \u00bb dans Supabase.",
+  sbFoutMail:"Cette adresse e-mail n\u2019est pas accept\u00e9e. V\u00e9rifiez l\u2019orthographe.",
   stCloudSetH:"Configurer la connexion", stCloudUrlL:"URL du projet", stCloudKeyL:"Cl\u00e9 publique (anon key)", stCloudSave:"Enregistrer la connexion",
   stCloudUit0:"Pas encore configur\u00e9 \u2014 tout reste sur cet appareil.",
   stCloudAan:function(n){ return "Connect\u00e9. Vos donn\u00e9es sont sur tous vos appareils."+(n?" Encore "+n+" \u00e0 envoyer.":""); },
@@ -1820,7 +1838,7 @@ async function sbAanmelden(mail,ww){
       { method:"POST", headers:{ "apikey":SB.key, "Content-Type":"application/json" },
         body:JSON.stringify({ email:mail, password:ww }) });
     var j=null; try{ j=await res.json(); }catch(e){}
-    if(!res.ok || !j || !j.access_token) return { ok:false, fout:(j&&(j.error_description||j.msg||j.message))||("HTTP "+res.status) };
+    if(!res.ok || !j || !j.access_token) return { ok:false, fout:(((j&&(j.error_code||j.code))||"")+" "+((j&&(j.error_description||j.msg||j.message))||("HTTP "+res.status))).trim() };
     SBSES=j; sbBewaarSes(); return { ok:true };
   }catch(e){ return { ok:false, fout:String(e&&e.message||e) }; }
 }
@@ -1834,7 +1852,7 @@ async function sbNieuwAccount(mail,ww){
       { method:"POST", headers:{ "apikey":SB.key, "Content-Type":"application/json" },
         body:JSON.stringify({ email:mail, password:ww }) });
     var j=null; try{ j=await res.json(); }catch(e){}
-    if(!res.ok) return { ok:false, fout:(j&&(j.error_description||j.msg||j.message))||("HTTP "+res.status) };
+    if(!res.ok) return { ok:false, fout:(((j&&(j.error_code||j.code))||"")+" "+((j&&(j.error_description||j.msg||j.message))||("HTTP "+res.status))).trim() };
     if(j && j.access_token){ SBSES=j; sbBewaarSes(); return { ok:true }; }
     /* Geen sessie maar wel een gebruiker: de database vraagt om bevestiging per mail. */
     return { ok:false, bevestig:true };
@@ -1843,33 +1861,62 @@ async function sbNieuwAccount(mail,ww){
 
 /* De verbinding nakijken en in gewone taal zeggen wat er nog moet gebeuren. Zonder
    dit staart de verhuurder naar een foutcode en weet hij niet wat hij fout doet. */
+/* De verbinding nakijken zoals de echte Supabase zich gedraagt. Belangrijk: met
+   beveiliging aan geeft een lezing zonder aanmelden gewoon een LEGE lijst terug
+   (200), geen weigering. Of de tabel echt afgeschermd is, zie je pas als je
+   zonder aanmelden iets probeert te SCHRIJVEN: dat moet geweigerd worden. */
 async function sbTest(){
   var t=T();
   if(!sbBasis() || !SB.key) return { stap:"leeg", tekst:t.sbTest0 };
   if(!/^https?:\/\/[^\s\/]+/.test(sbBasis())) return { stap:"url", tekst:t.sbTestUrl };
-  var res;
+  /* Een afgekapte sleutel ("…") of een met spaties is de meest gemaakte fout. */
+  if(/[^\x21-\x7e]/.test(SB.key) || SB.key.length<20) return { stap:"sleutel", tekst:t.sbTestSleutel };
+  var kaal={ "apikey":SB.key, "Content-Type":"application/json" };
+  var res, j;
+  try{ res=await fetch(sbBasis()+"/rest/v1/atlas?select=path&limit=1",{ headers:kaal }); }
+  catch(e){ return { stap:"net", tekst:t.sbTestNet }; }
+  j=null; try{ j=await res.clone().json(); }catch(e){}
+  var tekst=String((j&&(j.code||""))+" "+(j&&(j.message||j.msg||j.hint||""))||"");
+  if(/api key/i.test(tekst) || (res.status===401 && !/42501|JWT/i.test(tekst))) return { stap:"sleutel", tekst:t.sbTestSleutel };
+  if(res.status===404 || /PGRST205|does not exist|schema cache/i.test(tekst)) return { stap:"tabel", tekst:t.sbTestTabel };
+  if(!res.ok && res.status!==401 && res.status!==403) return { stap:"net", tekst:t.sbTestNet+" (HTTP "+res.status+")" };
+  /* Schrijven zonder aanmelden moet mislukken. */
+  var proef="settings/proef-"+Date.now(), res0;
   try{
-    res=await fetch(sbBasis()+"/rest/v1/atlas?select=path&limit=1",{ headers:{ "apikey":SB.key } });
+    res0=await fetch(sbBasis()+"/rest/v1/atlas",{ method:"POST", headers:kaal,
+      body:JSON.stringify({ path:proef, data:{proef:true}, updated_at:new Date().toISOString() }) });
   }catch(e){ return { stap:"net", tekst:t.sbTestNet }; }
-  if(res.status===401 && !SBSES) return { stap:"ok-uit", tekst:t.sbTestKlaar };
-  if(res.status===404) return { stap:"tabel", tekst:t.sbTestTabel };
-  if(res.status===401 || res.status===403){
-    var j=null; try{ j=await res.json(); }catch(e){}
-    var code=(j&&(j.code||j.message))||"";
-    if(/PGRST205|does not exist|schema cache/i.test(String(code))) return { stap:"tabel", tekst:t.sbTestTabel };
-    if(!SBSES) return { stap:"ok-uit", tekst:t.sbTestKlaar };
+  if(res0.ok){
+    /* Ging erdoor: de beveiliging staat uit. Proefrij meteen weer weg. */
+    try{ await fetch(sbBasis()+"/rest/v1/atlas?path=eq."+encodeURIComponent(proef),{ method:"DELETE", headers:kaal }); }catch(e){}
+    return { stap:"open", tekst:t.sbTestOpen };
   }
-  if(!SBSES) return { stap:"open", tekst:t.sbTestOpen };
+  if(!SBSES) return { stap:"ok-uit", tekst:t.sbTestKlaar };
   /* Aangemeld: kan deze gebruiker er echt bij? */
   var res2=await sbRoep("/rest/v1/atlas?select=path&limit=1");
   if(res2.status===404) return { stap:"tabel", tekst:t.sbTestTabel };
   if(!res2.ok) return { stap:"rechten", tekst:t.sbTestRechten(res2.status) };
-  var proef="settings/proef-"+Date.now();
   var res3=await sbRoep("/rest/v1/atlas",{ method:"POST", headers:{ "Prefer":"resolution=merge-duplicates" },
     body:JSON.stringify({ path:proef, data:{proef:true}, updated_at:new Date().toISOString() }) });
   if(!res3.ok) return { stap:"schrijven", tekst:t.sbTestSchrijven(res3.status) };
   await sbRoep("/rest/v1/atlas?path=eq."+encodeURIComponent(proef),{ method:"DELETE" });
   return { stap:"goed", tekst:t.sbTestGoed };
+}
+
+/* Supabase antwoordt in technisch Engels. De verhuurder moet lezen wat hij moet DOEN. */
+function sbUitleg(fout){
+  var t=T(), f=String(fout||"");
+  if(/not authorized|email_address_not_authorized/i.test(f)) return t.sbFoutMailVerbod;
+  if(/rate limit|over_email_send/i.test(f)) return t.sbFoutTeVeel;
+  if(/at least 6|weak_password|password should/i.test(f)) return t.sbFoutKort;
+  if(/already registered|user_already_exists|already been registered/i.test(f)) return t.sbFoutBestaat;
+  if(/signups? not allowed|signup_disabled/i.test(f)) return t.sbFoutGeenNieuw;
+  if(/invalid login|invalid_credentials/i.test(f)) return t.sbFoutLogin;
+  if(/email not confirmed|email_not_confirmed/i.test(f)) return t.sbFoutBevestig;
+  if(/api key|ISO-8859-1|non ISO|headers/i.test(f)) return t.sbTestSleutel;
+  if(/invalid.*email|validation_failed|unable to validate email/i.test(f)) return t.sbFoutMail;
+  if(/failed to fetch|networkerror|load failed/i.test(f)) return t.sbTestNet;
+  return t.stCloudMis(f);
 }
 
 function sbZet(pad,d){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"set",path:pad,data:d,t:Date.now()}); sbBewaarRij(); sbWerk(); }
@@ -6652,7 +6699,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="112";
+var ATLASVER="113";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7385,7 +7432,7 @@ if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
   var uit=await sbAanmelden(mail,ww);
   knop.disabled=false; knop.textContent=oud;
   $("stCloudWw").value="";
-  if(!uit.ok){ SBSTAT="fout"; SBFOUT=uit.fout; tekenCloud(); toast(t.stCloudMis(uit.fout)); return; }
+  if(!uit.ok){ $("stCloudStat").textContent=sbUitleg(uit.fout); $("stCloudStat").style.color="var(--warn)"; return; }
   SBSTAT="bezig"; tekenCloud(); toast(t.stCloudOk);
   await sbRond(); tekenCloud();
 });
@@ -7397,7 +7444,7 @@ if($("stCloudNieuw")) $("stCloudNieuw").addEventListener("click",async function(
   var uit=await sbNieuwAccount(mail,ww);
   knop.disabled=false; knop.textContent=oud; $("stCloudWw").value="";
   if(uit.bevestig){ $("stCloudStat").textContent=t.stCloudBevestig; $("stCloudStat").style.color="var(--gold)"; return; }
-  if(!uit.ok){ SBSTAT="fout"; SBFOUT=uit.fout; tekenCloud(); toast(t.stCloudMis(uit.fout)); return; }
+  if(!uit.ok){ $("stCloudStat").textContent=sbUitleg(uit.fout); $("stCloudStat").style.color="var(--warn)"; return; }
   toast(t.stCloudNieuwOk); SBSTAT="bezig"; tekenCloud(); await sbRond(); tekenCloud();
 });
 if($("stCloudTest")) $("stCloudTest").addEventListener("click",async function(){
