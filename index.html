@@ -466,6 +466,26 @@ details.meer>div{padding:0 12px 12px}
 #sheet .sg div{flex:1;border-top:1px solid #111;padding-top:7px;font-size:11.5px;color:#666}
 #sheet .sg img{max-height:64px;display:block;margin-bottom:4px}
 #sheet .sm{font-size:10.5px;color:#777;margin-top:22px;line-height:1.45}
+/* ---- huurcontract in de vorm die Marokkaanse agentschappen al gebruiken:
+   twee kolommen, elk vak met een zwarte kop, en per regel label + waarde op de
+   stippellijn. Zo herkent de verhuurder zijn eigen papier terug. ---- */
+#sheet .kol{display:flex;gap:14px;align-items:flex-start}
+#sheet .kol>div{flex:1;min-width:0}
+#sheet .vak{border:1px solid #111;margin-bottom:9px}
+#sheet .vak>h3{margin:0;background:#111;color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;text-align:center}
+#sheet .vak .in{padding:7px 9px}
+#sheet .rij{display:flex;gap:8px;align-items:baseline;padding:2.5px 0;font-size:11.5px;border-bottom:1px dotted #c4c4c4}
+#sheet .rij:last-child{border-bottom:0}
+#sheet .rij>span{color:#555;flex:0 0 48%}
+#sheet .rij>b{font-weight:700;flex:1;text-align:right;word-break:break-word}
+#sheet .vak .kop{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#666;margin:8px 0 3px;border-top:1px solid #ddd;padding-top:6px}
+#sheet .vrij{font-size:11.5px;min-height:26px;border-bottom:1px dotted #c4c4c4;padding:3px 0}
+#sheet .sg2{display:flex;gap:14px;margin-top:12px}
+#sheet .sg2>div{flex:1;border:1px solid #111;padding:7px 9px;min-height:74px;font-size:10.5px;color:#555}
+#sheet .sg2 img{max-height:46px;display:block;margin:3px 0}
+#sheet .let{border:1.5px solid #111;padding:7px 9px;margin-top:10px;font-size:11px;text-align:center;font-weight:700}
+#sheet .plate{background:#fff;border-color:#111;color:#111;font-size:11.5px}
+#sheet .plate i{color:#666}
 
 @media (min-width:860px){
   .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px);gap:20px;align-items:start}
@@ -630,6 +650,9 @@ details.meer>div{padding:0 12px 12px}
               <div class="f"><label class="lbl" for="cvLic" id="cvLicL"></label><input type="text" id="cvLic" autocomplete="off"></div>
               <div class="f"><label class="lbl" for="cvLicExp" id="cvLicExpL"></label><input type="date" id="cvLicExp"></div>
             </div>
+            <!-- "Délivré le" staat op elk Marokkaans huurcontract. De regel achterop
+                 het rijbewijs bevat die datum, dus de scan vult hem meestal zelf in. -->
+            <div class="f"><label class="lbl" for="cvLicIssue" id="cvLicIssueL"></label><input type="date" id="cvLicIssue"></div>
             <div id="licRead" hidden style="margin-top:10px"></div>
           </div>
         </div>
@@ -668,6 +691,17 @@ details.meer>div{padding:0 12px 12px}
             <button type="button" class="btn ghost sm" id="nwScan" hidden style="margin:-4px 0 4px"></button>
             <p class="fine" id="nwScanP" hidden style="margin:0 0 10px"></p>
             <div class="none" id="nwFlagNote" hidden></div>
+            <!-- Een tweede bestuurder staat op het papieren contract van de meeste
+                 agentschappen. Hij komt zelden voor, dus hij staat dichtgevouwen:
+                 wie hem niet nodig heeft, ziet hem niet en tikt er niet op. -->
+            <details class="meer" id="nwD2">
+              <summary id="nwD2H"></summary>
+              <div class="grid2" style="margin-top:8px">
+                <div class="f"><label class="lbl" for="nwD2Name" id="nwD2NameL"></label><input type="text" id="nwD2Name" autocomplete="off"></div>
+                <div class="f"><label class="lbl" for="nwD2Lic" id="nwD2LicL"></label><input type="text" id="nwD2Lic" autocomplete="off"></div>
+              </div>
+              <div class="f"><label class="lbl" for="nwD2Issue" id="nwD2IssueL"></label><input type="date" id="nwD2Issue"></div>
+            </details>
           </div>
         </section>
 
@@ -836,7 +870,12 @@ details.meer>div{padding:0 12px 12px}
             <div class="f"><label class="lbl" for="cwKm" id="cwKmL"></label><input type="number" id="cwKm" inputmode="numeric"></div>
             <div class="f"><label class="lbl" for="cwRate" id="cwRateL"></label><input type="number" id="cwRate" inputmode="numeric"></div>
           </div>
-          <div class="f"><label class="lbl" for="cwCaution" id="cwCautionL"></label><input type="number" id="cwCaution" inputmode="numeric"></div>
+          <div class="grid2">
+            <div class="f"><label class="lbl" for="cwCaution" id="cwCautionL"></label><input type="number" id="cwCaution" inputmode="numeric"></div>
+            <div class="f"><label class="lbl" for="cwFranchise" id="cwFranchiseL"></label><input type="number" id="cwFranchise" inputmode="numeric" placeholder="19103"></div>
+          </div>
+          <div class="f"><label class="lbl" for="cwFuel" id="cwFuelL"></label>
+            <select id="cwFuel"><option value="diesel" id="optDiesel"></option><option value="essence" id="optEssence"></option></select></div>
         </div></div>
 
         <div class="card"><h2 class="ch" id="cwSecDocs"></h2><div class="form">
@@ -901,6 +940,7 @@ details.meer>div{padding:0 12px 12px}
           <div class="f"><label class="lbl" for="stCaution" id="stCautionL"></label><input type="number" id="stCaution" inputmode="numeric"></div>
           <div class="f"><label class="lbl" for="stWindow" id="stWindowL"></label><input type="number" id="stWindow" inputmode="numeric"></div>
         </div>
+        <div class="f"><label class="lbl" for="stFranchise" id="stFranchiseL"></label><input type="number" id="stFranchise" inputmode="numeric" placeholder="19103"></div>
         <div class="f"><label class="lbl" id="stOptL"></label>
           <button type="button" class="confirm" id="stPromise" style="margin-top:0;text-align:left"></button>
           <button type="button" class="confirm" id="stLoyal" style="text-align:left"></button>
@@ -945,6 +985,8 @@ var TXT = {
   dayH:"Wat staat er open", dayP:"Auto's die weg moeten, auto's die terug moeten, en wat aandacht vraagt.",
   newRental:"+ Verhuur", newCar:"+ Auto", newClient:"+ Klant",
   nwS1:"Wie huurt", nwS2:"Welke auto", nwS3:"Hoe lang",
+  nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
+  nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwScanKaart:"Kaart van de klant scannen",
   nwOf:"of kies iemand die er al in staat",
   nwDag:function(n){ return n+(n===1?" dag":" dagen"); },
@@ -1079,7 +1121,7 @@ var TXT = {
   mrzBad:"Nog niet juist — er staat ergens een teken verkeerd. Vergelijk teken per teken; de app rekent het na en weigert liever dan een fout in je dossier te zetten.",
   mrzGood:function(n,d){ return "✓ Klopt: "+n+", nr. "+d+". De velden hieronder zijn ingevuld."; },
   cvNameL:"Volledige naam", cvTelL:"Telefoon", cvDocTypeL:"Identiteitsdocument", optPass:"Paspoort",
-  cvDocNoL:"Documentnummer — N° / رقم", cvBirthL:"Geboortedatum", cvDocExpL:"Geldig tot", cvLicL:"Rijbewijsnummer", cvLicExpL:"Rijbewijs geldig tot",
+  cvDocNoL:"Documentnummer — N° / رقم", cvBirthL:"Geboortedatum", cvDocExpL:"Geldig tot", cvLicL:"Rijbewijsnummer", cvLicExpL:"Rijbewijs geldig tot", cvLicIssueL:"Rijbewijs afgegeven op",
   addrRead:"Adres uit de foto lezen", licRead:"Gegevens uit het rijbewijs lezen",
   ocrStart:"Tekstlezer ophalen\u2026 dit duurt de eerste keer wat langer.",
   ocrBezig:function(p){ return "Bezig met lezen\u2026 "+p+"%"; },
@@ -1106,7 +1148,7 @@ var TXT = {
   flH:"Wagenpark", flP:"Je auto's, met wat ze opbrengen en kosten.", perDay:"per dag", result:"resultaat",
   cwH:"Auto", cwP:"Gegevens, documenten, aankoop en kosten. Rechts zie je het resultaat.",
   cwSecInfo:"Gegevens", cwSecDocs:"Documenten", cwSecBuy:"Aankoop en lening", cwSecExp:"Kosten",
-  cwModelL:"Merk en model", cwPlateL:"Kenteken", cwKmL:"Kilometerstand", cwRateL:"Dagprijs (DH)", cwCautionL:"Standaardborg (DH)",
+  cwModelL:"Merk en model", cwPlateL:"Kenteken", cwKmL:"Kilometerstand", cwRateL:"Dagprijs (DH)", cwCautionL:"Standaardborg (DH)", cwFranchiseL:"Eigen risico / franchise (DH)", cwFuelL:"Brandstof", optDiesel:"Diesel", optEssence:"Benzine",
   cwInsL:"Verzekering tot", cwInspL:"Keuring tot", cwVigL:"Vignette tot",
   cwPriceL:"Aankoopprijs (DH)", cwBoughtL:"Gekocht op", cwLoanL:"Lening per maand (DH)", cwLoanNL:"Nog te betalen maanden",
   exCatL:"Soort", exAmtL:"Bedrag (DH)", exDateL:"Datum", exNoteL:"Omschrijving", exAdd:"Kost toevoegen",
@@ -1117,7 +1159,7 @@ var TXT = {
   plH2:"Resultaat", plDue:"Nog te ontvangen", plRev:"Opbrengst (ontvangen)", plCost:"Kosten", plNet:"Resultaat", plDays:"Verhuurde dagen", plUtil:"Bezetting sinds aankoop",
   plBuy:"Aankoop", plLoanLeft:"Nog aan lening", plPayback:"Terugverdiend van aankoop", plNoData:"Vul aankoop en kosten in om het resultaat te zien.",
   stH:"Instellingen", stP:"Dit verschijnt in de app en op het contract.",
-  stNameL:"Naam van de zaak", stCityL:"Stad", stInitL:"Letter logo", stCautionL:"Standaardborg (DH)", stWindowL:"Boetetermijn (dagen)", stSave:"Opslaan",
+  stNameL:"Naam van de zaak", stCityL:"Stad", stInitL:"Letter logo", stCautionL:"Standaardborg (DH)", stWindowL:"Boetetermijn (dagen)", stFranchiseL:"Eigen risico op het contract (DH)", stSave:"Opslaan",
   stFine:"De boetetermijn bepaalt de datum op het contract waarna je niets meer inhoudt. Dertig dagen na het einde van de huur is gebruikelijk.",
   stOptL:"Keuzes van de zaak",
   stToolsShow:"Meer gereedschap tonen", stToolsHide:"Gereedschap verbergen",
@@ -1252,13 +1294,32 @@ var TXT = {
         cond:"Vastgestelde staat", condNone:"Geen zichtbare schade vastgesteld.", depTitle:"Teruggave van de borg",
         depBody:"De borg wordt teruggegeven bij het inleveren van het voertuig, na gezamenlijke controle. Er wordt uitsluitend ingehouden voor schade die niet op dit contract staat, ontbrekende brandstof, of een boete met een datum binnen de huurperiode.",
         depLimit:"Na deze datum wordt niets meer ingehouden:", sigL:"Handtekening huurder", sigR:"Handtekening verhuurder",
-        small:"Dit contract is opgemaakt in twee exemplaren. Het voertuig blijft eigendom van de verhuurder. De huurder is verantwoordelijk voor boetes en overtredingen tijdens de huurperiode en stemt in met het bewaren van zijn gegevens voor de uitvoering van dit contract." }
+        small:"Dit contract is opgemaakt in twee exemplaren. Het voertuig blijft eigendom van de verhuurder. De huurder is verantwoordelijk voor boetes en overtredingen tijdens de huurperiode en stemt in met het bewaren van zijn gegevens voor de uitvoering van dit contract." },
+  ctr2:{ locataire:"De huurder", vehicule:"Het voertuig",
+        nom:"Naam", prenom:"Voornaam", naissance:"Geboortedatum",
+        cin:"CIN nr", passeport:"Paspoort nr", valable:"Geldig tot",
+        permis:"Rijbewijs nr", delivre:"Afgegeven op",
+        tel:"Telefoon", adresse:"Adres in Marokko",
+        d2:"Tweede bestuurder", d2nom:"Naam", d2permis:"Rijbewijs nr", d2delivre:"Afgegeven op",
+        depart:"Vertrek", retour:"Terug", jours:"Dagen",
+        franchise:"Eigen risico",
+        marque:"Merk en model", immat:"Kenteken", carburant:"Brandstof", essence:"Benzine", gasoil:"Diesel",
+        etat:"Staat bij vertrek", kmDep:"Km bij vertrek", niveau:"Brandstofniveau",
+        degats:"Vastgestelde schade", geen:"Geen zichtbare schade",
+        docs:"Boorddocumenten", carte:"Kentekenbewijs", assur:"Verzekering", visite:"Technische keuring", vign:"Vignet en kwitantie",
+        oui:"Ja", non:"Nee",
+        fact:"Facturatie", total:"Totaal", acompte:"Voorschot", reste:"Nog te betalen", mode:"Betaalwijze", caution:"Borg",
+        obs:"Opmerking voor vertrek / bij terugkomst",
+        sigCl:"Handtekening huurder", sigAg:"Handtekening en stempel",
+        attention:"Bewaar dit document \u2014 het moet bij elke politiecontrole getoond worden.",
+        dl:"op" }
  },
  fr:{ loc:"fr-FR",
   tabs:["Journée","Planning","Clients","Parc auto","Cautions","Caisse","Réglages"],
   dayH:"Ce qui est en cours", dayP:"Les voitures à remettre, celles à reprendre, et ce qui demande attention.",
   newRental:"+ Location", newCar:"+ Voiture", newClient:"+ Client",
   nwS1:"Qui loue", nwS2:"Quelle voiture", nwS3:"Combien de temps",
+  nwD2H:"Ajouter un 2ème conducteur", nwD2NameL:"Nom du 2ème conducteur", nwD2LicL:"N° de permis", nwD2IssueL:"Délivré le",
   nwScanKaart:"Scanner la carte du client",
   nwOf:"ou choisissez un client existant",
   nwDag:function(n){ return n+(n===1?" jour":" jours"); },
@@ -1338,7 +1399,7 @@ var TXT = {
   mrzBad:"Pas encore correct — un caractère est erroné. Comparez caractère par caractère ; l'application vérifie et préfère refuser plutôt que d'inscrire une erreur.",
   mrzGood:function(n,d){ return "✓ Correct : "+n+", n° "+d+". Les champs ci-dessous sont remplis."; },
   cvNameL:"Nom complet", cvTelL:"Téléphone", cvDocTypeL:"Pièce d'identité", optPass:"Passeport",
-  cvDocNoL:"Numéro du document — N° / رقم", cvBirthL:"Date de naissance", cvDocExpL:"Valable jusqu'au", cvLicL:"Numéro de permis", cvLicExpL:"Permis valable jusqu'au",
+  cvDocNoL:"Numéro du document — N° / رقم", cvBirthL:"Date de naissance", cvDocExpL:"Valable jusqu'au", cvLicL:"Numéro de permis", cvLicExpL:"Permis valable jusqu'au", cvLicIssueL:"Permis délivré le",
   addrRead:"Lire l\u2019adresse sur la photo", licRead:"Lire les donn\u00e9es du permis",
   ocrStart:"T\u00e9l\u00e9chargement du lecteur de texte\u2026 plus long la premi\u00e8re fois.",
   ocrBezig:function(p){ return "Lecture en cours\u2026 "+p+"%"; },
@@ -1365,7 +1426,7 @@ var TXT = {
   flH:"Parc auto", flP:"Vos voitures, avec ce qu'elles rapportent et coûtent.", perDay:"par jour", result:"résultat",
   cwH:"Voiture", cwP:"Données, documents, achat et coûts. À droite, le résultat.",
   cwSecInfo:"Données", cwSecDocs:"Documents", cwSecBuy:"Achat et crédit", cwSecExp:"Coûts",
-  cwModelL:"Marque et modèle", cwPlateL:"Immatriculation", cwKmL:"Kilométrage", cwRateL:"Prix par jour (DH)", cwCautionL:"Caution par défaut (DH)",
+  cwModelL:"Marque et modèle", cwPlateL:"Immatriculation", cwKmL:"Kilométrage", cwRateL:"Prix par jour (DH)", cwCautionL:"Caution par défaut (DH)", cwFranchiseL:"La franchise (DH)", cwFuelL:"Carburant", optDiesel:"Gasoil", optEssence:"Sans plomb",
   cwInsL:"Assurance jusqu'au", cwInspL:"Visite technique jusqu'au", cwVigL:"Vignette jusqu'au",
   cwPriceL:"Prix d'achat (DH)", cwBoughtL:"Acheté le", cwLoanL:"Traite mensuelle (DH)", cwLoanNL:"Mois restants",
   exCatL:"Type", exAmtL:"Montant (DH)", exDateL:"Date", exNoteL:"Description", exAdd:"Ajouter le coût",
@@ -1376,7 +1437,7 @@ var TXT = {
   plH2:"Résultat", plDue:"Reste à encaisser", plRev:"Revenus (encaissés)", plCost:"Coûts", plNet:"Résultat", plDays:"Jours loués", plUtil:"Taux d'occupation depuis l'achat",
   plBuy:"Achat", plLoanLeft:"Reste à payer", plPayback:"Achat remboursé à", plNoData:"Saisissez l'achat et les coûts pour voir le résultat.",
   stH:"Réglages", stP:"Ceci apparaît dans l'application et sur le contrat.",
-  stNameL:"Nom de l'agence", stCityL:"Ville", stInitL:"Lettre du logo", stCautionL:"Caution par défaut (DH)", stWindowL:"Fenêtre amende (jours)", stSave:"Enregistrer",
+  stNameL:"Nom de l'agence", stCityL:"Ville", stInitL:"Lettre du logo", stCautionL:"Caution par défaut (DH)", stWindowL:"Fenêtre amende (jours)", stFranchiseL:"La franchise au contrat (DH)", stSave:"Enregistrer",
   stFine:"La fenêtre amende fixe la date sur le contrat après laquelle plus rien n'est retenu. Trente jours après la fin de la location est courant.",
   stOptL:"Choix de l'agence",
   stToolsShow:"Afficher plus d'outils", stToolsHide:"Masquer les outils",
@@ -1512,7 +1573,25 @@ var TXT = {
         cond:"État constaté", condNone:"Aucun dommage visible constaté.", depTitle:"Restitution de la caution",
         depBody:"La caution est rendue à la reprise du véhicule, après contrôle contradictoire. Une retenue n'est possible que pour un dommage absent de ce contrat, du carburant manquant, ou une amende datée de la période de location.",
         depLimit:"Après cette date, plus aucune retenue :", sigL:"Signature du locataire", sigR:"Signature du loueur",
-        small:"Contrat établi en deux exemplaires. Le véhicule reste la propriété du loueur. Le locataire répond des amendes et infractions survenues pendant la période de location et consent à la conservation de ses données pour l'exécution du présent contrat." }
+        small:"Contrat \u00e9tabli en deux exemplaires. Le v\u00e9hicule reste la propri\u00e9t\u00e9 du loueur. Le locataire r\u00e9pond des amendes et infractions survenues pendant la p\u00e9riode de location et consent \u00e0 la conservation de ses donn\u00e9es pour l'ex\u00e9cution du pr\u00e9sent contrat." },
+  ctr2:{ locataire:"Le locataire", vehicule:"Le v\u00e9hicule en location",
+        nom:"Nom", prenom:"Pr\u00e9nom", naissance:"Date de naissance",
+        cin:"C.I.N N\u00b0", passeport:"Passeport N\u00b0", valable:"Valable jusqu'\u00e0",
+        permis:"Permis de conduire N\u00b0", delivre:"D\u00e9livr\u00e9 le",
+        tel:"T\u00e9l\u00e9phone", adresse:"Adresse au Maroc",
+        d2:"2\u00e8me conducteur d\u00e9clar\u00e9", d2nom:"Nom - Pr\u00e9nom", d2permis:"Permis de conduire N\u00b0", d2delivre:"D\u00e9livr\u00e9 le",
+        depart:"Date de d\u00e9part", retour:"Date de retour", jours:"Jours",
+        franchise:"La franchise",
+        marque:"Marque et mod\u00e8le", immat:"Immatriculation", carburant:"Carburant", essence:"Sans plomb", gasoil:"Gasoil",
+        etat:"\u00c9tat du v\u00e9hicule \u00e0 la livraison", kmDep:"Km d\u00e9part", niveau:"Niveau de carburant",
+        degats:"Dommages constat\u00e9s", geen:"Aucun dommage visible",
+        docs:"Documents de bord", carte:"Carte grise", assur:"Attestation d'assurance", visite:"Visite technique", vign:"Vignette et quittance",
+        oui:"Oui", non:"Non",
+        fact:"Facturation", total:"Total", acompte:"Acompte", reste:"Reste \u00e0 payer", mode:"Mode de paiement", caution:"Caution",
+        obs:"Observation avant d\u00e9part / D\u00e9claration au retour",
+        sigCl:"Signature du client", sigAg:"Signature et cachet",
+        attention:"Conserver ce document qui doit \u00eatre pr\u00e9sent\u00e9 \u00e0 tout contr\u00f4le de police.",
+        dl:"le" }
  }
 };
 /* Wat in het Frans nog niet vertaald is, valt terug op het Nederlands. Beter een
@@ -1711,12 +1790,12 @@ function applyLang(){
   var ids={dayH:"dayH",dayP:"dayP",newRental:"newRental",newCar:"newCar",newClient:"newClient",scanKey:"scanKey",tagsBtn:"tagsBtn",
     plH:"plH",plP:"plP",plFine:"plFine",clH:"clH",clP:"clP",cvP:"cvP",scanT:"scanT",scanBtn:"scanBtn",scanPick:"scanPick",secPersonH:"secPersonH",secIdH:"secIdH",secLicH:"secLicH",secIdP:"secIdP",secLicP:"secLicP",mrzToggle:"mrzToggle",
     cvNameL:"cvNameL",cvTelL:"cvTelL",cvDocTypeL:"cvDocTypeL",optPass:"optPass",cvDocNoL:"cvDocNoL",cvBirthL:"cvBirthL",cvDocExpL:"cvDocExpL",
-    cvLicL:"cvLicL",cvLicExpL:"cvLicExpL",cvNatL:"cvNatL",cvAddrP:"cvAddrP",cvAddrL:"cvAddrL",cvFlagL:"cvFlagL",cvNoteL:"cvNoteL",cvHistH:"cvHistH",cvFine:"cvFine",
+    cvLicL:"cvLicL",cvLicExpL:"cvLicExpL",cvLicIssueL:"cvLicIssueL",cvNatL:"cvNatL",cvAddrP:"cvAddrP",cvAddrL:"cvAddrL",cvFlagL:"cvFlagL",cvNoteL:"cvNoteL",cvHistH:"cvHistH",cvFine:"cvFine",
     nwH:"nwH",nwP:"nwP",nwClientL:"nwClientL",nwNameL:"nwNameL",nwTelL:"nwTelL",nwCarL:"nwCarL",nwFromL:"nwFromL",nwToL:"nwToL",nwTotalL:"nwTotalL",nwCautionL:"nwCautionL",nwFine:"nwFine",nwScan:"nwScan",nwScanP:"nwScanP",
     flH:"flH",flP:"flP",cwH:"cwH",cwP:"cwP",cwSecInfo:"cwSecInfo",cwSecDocs:"cwSecDocs",cwSecBuy:"cwSecBuy",cwSecExp:"cwSecExp",
-    cwModelL:"cwModelL",cwPlateL:"cwPlateL",cwKmL:"cwKmL",cwRateL:"cwRateL",cwCautionL:"cwCautionL",cwInsL:"cwInsL",cwInspL:"cwInspL",cwVigL:"cwVigL",
+    cwModelL:"cwModelL",cwPlateL:"cwPlateL",cwKmL:"cwKmL",cwRateL:"cwRateL",cwCautionL:"cwCautionL",cwFranchiseL:"cwFranchiseL",cwFuelL:"cwFuelL",optDiesel:"optDiesel",optEssence:"optEssence",cwInsL:"cwInsL",cwInspL:"cwInspL",cwVigL:"cwVigL",
     cwPriceL:"cwPriceL",cwBoughtL:"cwBoughtL",cwLoanL:"cwLoanL",cwLoanNL:"cwLoanNL",exCatL:"exCatL",exAmtL:"exAmtL",exDateL:"exDateL",exNoteL:"exNoteL",exAdd:"exAdd",
-    stH:"stH",stP:"stP",stOptL:"stOptL",stDemoH:"stDemoH",stDemoP:"stDemoP",stDemoBtn:"stDemoBtn",stWipeBtn:"stWipeBtn",stTrustH:"stTrustH",stTrustP:"stTrustP",stTrustBtn:"stTrustBtn",stCheckH:"stCheckH",stCheckP:"stCheckP",stCheckBtn:"stCheckBtn",kcH:"kcH",kcP:"kcP",trH:"trH",trP:"trP",stNameL:"stNameL",stCityL:"stCityL",stInitL:"stInitL",stCautionL:"stCautionL",stWindowL:"stWindowL",stFine:"stFine",
+    stH:"stH",stP:"stP",stOptL:"stOptL",stDemoH:"stDemoH",stDemoP:"stDemoP",stDemoBtn:"stDemoBtn",stWipeBtn:"stWipeBtn",stTrustH:"stTrustH",stTrustP:"stTrustP",stTrustBtn:"stTrustBtn",stCheckH:"stCheckH",stCheckP:"stCheckP",stCheckBtn:"stCheckBtn",kcH:"kcH",kcP:"kcP",trH:"trH",trP:"trP",stNameL:"stNameL",stCityL:"stCityL",stInitL:"stInitL",stCautionL:"stCautionL",stWindowL:"stWindowL",stFranchiseL:"stFranchiseL",stFine:"stFine",
     c2:"c2t",p2:"c2p",c3:"c3t",c4:"c4t",kmK:"kmK",fuelK:"fuelK",full:"fullBtn",kindsLbl:"kindsLbl",signHere:"sigGh",clear:"sigClr",tap:"tapTxt",
     cashH:"cashH",cashP:"cashP",cashNetL:"cashNetL",cashInL:"cashInL",cashOutL:"cashOutL",cashCashL:"cashCashL",cashCardL:"cashCardL",cashOpenH:"cashOpenH",cashFine:"cashFine",ledH:"ledH",ledP:"ledP",ledTotL:"ledTotL",ledNumL:"ledNumL",ledLateL:"ledLateL",ledOldL:"ledOldL",ledWithheldL:"ledWithheldL",findL:"findL",findH:"findH",qPL:"qPL",qDL:"qDL",qGo:"qGo",ledFine:"ledFine",back:"bBack"};
   Object.keys(ids).forEach(function(k){ var n=$(ids[k]); if(n) n.textContent=t[k]; });
@@ -2003,7 +2082,7 @@ $("clQ").addEventListener("input",renderClients);
    Daarom onthoudt elk vakje of de app het zelf heeft ingevuld. Bij een nieuwe scan
    worden alleen díe vakjes leeggemaakt; wat de verhuurder zelf typte blijft staan. */
 var IDVELDEN=["cvName","cvBirth","cvNat","cvDocNo","cvDocExp","cvAddr"];
-var LICVELDEN=["cvLic","cvLicExp","cvNat","cvBirth"];
+var LICVELDEN=["cvLic","cvLicExp","cvLicIssue","cvNat","cvBirth"];
 function wisAutoVelden(ids){
   var was={};
   ids.forEach(function(id){ var e=$(id); if(!e) return;
@@ -2043,7 +2122,7 @@ function openClient(c, afterSave){
   $("cvH").textContent = c?c.name:t.cvNew;
   $("cvName").value=c?c.name:""; $("cvTel").value=c?(c.tel||""):""; $("cvDocType").value=c?(c.docType||"cin"):"cin";
   $("cvDocNo").value=c?(c.docNumber||""):""; $("cvBirth").value=c?(c.birth||""):""; $("cvDocExp").value=c?(c.docExpiry||""):"";
-  $("cvLic").value=c?(c.licenceNumber||""):""; $("cvLicExp").value=c?(c.licenceExpiry||""):""; $("cvNat").value=c?(c.nationality||""):""; $("cvAddr").value=c?(c.address||""):"";
+  $("cvLic").value=c?(c.licenceNumber||""):""; $("cvLicExp").value=c?(c.licenceExpiry||""):""; $("cvLicIssue").value=c?(c.licenceIssue||""):""; $("cvNat").value=c?(c.nationality||""):""; $("cvAddr").value=c?(c.address||""):"";
   $("cvNote").value=c?(c.note||""):"";
   luisterAuto(); vergeetAuto();   /* alles wat er nu staat komt van de klantkaart, niet van een scan */
   Array.prototype.forEach.call($("cvFlag").children,function(b){ b.setAttribute("aria-pressed", b.dataset.v===((c&&c.flag)||"ok")); });
@@ -2106,7 +2185,7 @@ async function saveClient(){
   var t=T(), name=$("cvName").value.trim(); if(!name){ $("cvName").focus(); return; }
   var flag="ok"; Array.prototype.forEach.call($("cvFlag").children,function(b){ if(b.getAttribute("aria-pressed")==="true") flag=b.dataset.v; });
   var data={ name:name, tel:$("cvTel").value.trim(), docType:$("cvDocType").value, docNumber:$("cvDocNo").value.trim(), birth:$("cvBirth").value||"",
-    docExpiry:$("cvDocExp").value||"", licenceNumber:$("cvLic").value.trim(), licenceExpiry:$("cvLicExp").value||"", nationality:$("cvNat").value.trim(),
+    docExpiry:$("cvDocExp").value||"", licenceNumber:$("cvLic").value.trim(), licenceExpiry:$("cvLicExp").value||"", licenceIssue:$("cvLicIssue").value||"", nationality:$("cvNat").value.trim(),
     address:$("cvAddr").value.trim(), note:$("cvNote").value.trim(), flag:flag, scans:clientDraft.scans, createdAt:clientEdit?(clientEdit.createdAt||""):new Date().toISOString() };
   var id=clientEdit?clientEdit.id:uid();
   await S.set("clients/"+id,data); await reload(); toast(t.saved);
@@ -4429,6 +4508,9 @@ function fillFromMRZ(hit,storedKey){
      identiteitskaart over. */
   if(hit.kind==="licence"){
     if(hit.docNumber){ $("cvLic").value=hit.docNumber; zetVast("cvLic"); }
+    /* De regel bevat ook de afgiftedatum ("Délivré le"). Die staat op elk
+       Marokkaans huurcontract, dus hij mag niet verloren gaan. */
+    if(hit.issue && !$("cvLicIssue").value){ $("cvLicIssue").value=hit.issue; markCheck("cvLicIssue"); }
     if(hit.nationality && echtLand(hit.nationality) && !$("cvNat").value) $("cvNat").value=hit.nationality;
     renameScan(storedKey,"licence"); markCheck("cvLic"); hit.noNumber=false; return;
   }
@@ -5815,6 +5897,11 @@ function openNew(presetClient, edit){
     $("nwS1").textContent=t.nwS1; $("nwS2").textContent=t.nwS2; $("nwS3").textContent=t.nwS3;
     $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOf;
     $("nwScanKaart").hidden=extend;
+    $("nwD2H").textContent=t.nwD2H; $("nwD2NameL").textContent=t.nwD2NameL;
+    $("nwD2LicL").textContent=t.nwD2LicL; $("nwD2IssueL").textContent=t.nwD2IssueL;
+    var d2=(edit&&edit.driver2)||null;
+    $("nwD2Name").value=d2?(d2.name||""):""; $("nwD2Lic").value=d2?(d2.licence||""):""; $("nwD2Issue").value=d2?(d2.issue||""):"";
+    $("nwD2").open=!!(d2&&d2.name);
   }
   tekenAutoTegels(); tekenDagKnoppen(); markKlantKlaar();
 }
@@ -5971,12 +6058,17 @@ function markKlantKlaar(){
 ["nwClient","nwName"].forEach(function(id){
   $(id).addEventListener("change",markKlantKlaar); $(id).addEventListener("input",markKlantKlaar);
 });
+function leesD2(){
+  var n=$("nwD2Name")?$("nwD2Name").value.trim():"";
+  if(!n) return null;
+  return { name:n, licence:$("nwD2Lic").value.trim(), issue:$("nwD2Issue").value||"" };
+}
 async function saveRental(){
   var t=T(), from=$("nwFrom").value, to=$("nwTo").value;
   if(!from||!to||to<=from){ $("nwTo").focus(); return; }
   var c=car($("nwCar").value), cid=$("nwClient").value, name, tel;
   if(editRental){
-    var cl0=client(cid), upd=Object.assign({},editRental,{ vehicleId:c.id, from:from, to:to, days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0 });
+    var cl0=client(cid), upd=Object.assign({},editRental,{ driver2:leesD2(), vehicleId:c.id, from:from, to:to, days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0 });
     if(cl0){ upd.clientId=cl0.id; upd.clientName=cl0.name; upd.clientTel=cl0.tel||""; }
     if(upd.depart) upd.limit=plus(to, AG.window||30);
     await S.set("rentals/"+editRental.id,stripId(upd)); editRental=null;
@@ -5992,7 +6084,7 @@ async function saveRental(){
   var busy=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to); })[0];
   if(busy){ paintClash(busy); toast(t.nwClash); return; }
   var rid=uid();
-  await S.set("rentals/"+rid,{ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, vehicleId:c.id, from:from, to:to,
+  await S.set("rentals/"+rid,{ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, driver2:leesD2(), vehicleId:c.id, from:from, to:to,
     days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0,
     depart:null, retour:null, released:false, createdAt:new Date().toISOString() });
   await reload();
@@ -6109,6 +6201,7 @@ function openCar(c){
   $("cwH").textContent=c?c.model:t.cwH;
   $("cwModel").value=c?c.model:""; $("cwNum").value=c?c.plateNum:""; $("cwLtr").value=c?(c.plateLtr||""):""; $("cwReg").value=c?c.plateReg:"";
   $("cwKm").value=c?c.km:0; $("cwRate").value=c?c.rate:350; $("cwCaution").value=c?c.caution:(AG.caution||3000);
+  $("cwFranchise").value=c?(c.franchise||""):(AG.franchise||""); $("cwFuel").value=c?(c.fuelType||"diesel"):"diesel";
   $("cwIns").value=c?(c.insuranceUntil||""):""; $("cwInsp").value=c?(c.inspectionUntil||""):""; $("cwVig").value=c?(c.vignetteUntil||""):"";
   $("cwPrice").value=c?(c.purchasePrice||""):""; $("cwBought").value=c?(c.purchaseDate||""):""; $("cwLoan").value=c?(c.loanMonthly||""):""; $("cwLoanN").value=c?(c.loanMonthsLeft||""):"";
   $("exAmt").value=""; $("exNote").value=""; $("exDate").value=today();
@@ -6169,6 +6262,7 @@ async function saveCar(){
   var t=T(), m=$("cwModel").value.trim(), n=$("cwNum").value.trim();
   if(!m){ $("cwModel").focus(); return; } if(!n){ $("cwNum").focus(); return; }
   var data={ model:m, plateNum:n, plateLtr:$("cwLtr").value.trim(), plateReg:$("cwReg").value.trim(), km:Number($("cwKm").value)||0, rate:Number($("cwRate").value)||0, caution:Number($("cwCaution").value)||0,
+    franchise:Number($("cwFranchise").value)||0, fuelType:$("cwFuel").value||"diesel",
     insuranceUntil:$("cwIns").value||"", inspectionUntil:$("cwInsp").value||"", vignetteUntil:$("cwVig").value||"",
     purchasePrice:Number($("cwPrice").value)||0, purchaseDate:$("cwBought").value||"", loanMonthly:Number($("cwLoan").value)||0, loanMonthsLeft:Number($("cwLoanN").value)||0 };
   await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); view="vFleet"; render(); toast(t.saved);
@@ -6176,7 +6270,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="108";
+var ATLASVER="109";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6184,7 +6278,7 @@ function fillSettings(){
   $("stOcrKey").value=ocrSleutel();
   $("stOcrS").textContent = ocrSleutel() ? t.stOcrAan : t.stOcrUit;
   var t=T();
-  $("stName").value=AG.name||""; $("stCity").value=AG.city||""; $("stInit").value=AG.init||"A"; $("stCaution").value=AG.caution||3000; $("stWindow").value=AG.window||30;
+  $("stName").value=AG.name||""; $("stCity").value=AG.city||""; $("stInit").value=AG.init||"A"; $("stCaution").value=AG.caution||3000; $("stWindow").value=AG.window||30; $("stFranchise").value=AG.franchise||"";
   paintToggles();
   $("bBack").hidden=true; $("bGo").textContent=t.stSave; $("bGo").disabled=false; $("note").textContent=""; $("dock").hidden=false;
 }
@@ -6196,7 +6290,7 @@ function paintToggles(){
 $("stPromise").addEventListener("click",function(){ AG.promise=!(AG.promise!==false); paintToggles(); });
 $("stLoyal").addEventListener("click",function(){ AG.loyal=!(AG.loyal!==false); paintToggles(); });
 async function saveSettings(){
-  AG={ name:$("stName").value.trim()||"Atlas", city:$("stCity").value.trim(), init:($("stInit").value.trim()||"A").slice(0,2), caution:Number($("stCaution").value)||3000, window:Number($("stWindow").value)||30, promise:AG.promise!==false, loyal:AG.loyal!==false };
+  AG={ name:$("stName").value.trim()||"Atlas", city:$("stCity").value.trim(), init:($("stInit").value.trim()||"A").slice(0,2), caution:Number($("stCaution").value)||3000, window:Number($("stWindow").value)||30, franchise:Number($("stFranchise").value)||0, promise:AG.promise!==false, loyal:AG.loyal!==false };
   await S.set("settings/agency",AG); paintBrand(); toast(T().saved);
 }
 
@@ -6476,6 +6570,15 @@ function promiseHTML(amount,lim,cap){
   var t=T();
   if(AG.promise===false) return '<div class="promise"><span class="cap">'+(cap||t.promCap)+'</span><span class="amt">'+dh(amount)+'</span><span class="cap" style="opacity:.75">'+t.promCap2+'</span><p>'+t.noPromP+'</p></div>';
   return '<div class="promise"><span class="cap">'+(cap||t.promCap)+'</span><span class="amt">'+dh(amount)+'</span><span class="cap" style="opacity:.75">'+t.promCap2+'</span><p>'+t.promP+'</p><ul><li>'+t.promLi.join('</li><li>')+'</li></ul><div class="when"><span>'+t.promWhen+'</span><b>'+dLong(lim)+'</b></div></div>';
+}
+/* Korte versie van de borgbelofte voor op het contract: dezelfde toezegging,
+   maar compact, anders past het blad niet meer op één A4. */
+function promiseKort(lim){
+  var t=T();
+  if(AG.promise===false) return '<div class="box" style="padding:9px 11px;margin-top:9px;font-size:11px">'+esc(t.noPromP)+'</div>';
+  return '<div class="box" style="padding:9px 11px;margin-top:9px;font-size:11px;line-height:1.4">'+
+    '<b style="font-size:12px">'+esc(t.ctr.depTitle)+'</b><br>'+esc(t.ctr.depBody)+'<br>'+
+    esc(t.ctr.depLimit)+' <b style="font-size:12px">'+dNum(lim)+'</b></div>';
 }
 function promiseBox(lim){
   var t=T();
@@ -7001,22 +7104,98 @@ function openTrust(){
 $("stTrustBtn").addEventListener("click",openTrust);
 
 /* ============ CONTRACT ============ */
+/* Marokkaanse agentschappen werken allemaal met hetzelfde papieren contract:
+   links de huurder, rechts het voertuig en de facturatie, met de franchise en de
+   boorddocumenten erbij. Atlas drukt precies die vorm af, zodat de verhuurder zijn
+   eigen document herkent en niets hoeft uit te leggen aan de klant of de politie. */
+function nomPrenom(naam){
+  var d=String(naam||"").trim().split(/\s+/).filter(Boolean);
+  if(d.length<2) return { nom:d[0]||"", prenom:"" };
+  /* In de strook van een identiteitskaart staat de achternaam vooraan, en zo
+     vullen alle scans het naamveld ook. */
+  return { nom:d[0], prenom:d.slice(1).join(" ") };
+}
+function uurVan(iso){
+  if(!iso) return "";
+  var d=new Date(iso); if(isNaN(d.getTime())) return "";
+  function tw(n){ return (n<10?"0":"")+n; }
+  return tw(d.getHours())+":"+tw(d.getMinutes());
+}
+function geldigNu(d){ return !!(d && String(d).slice(0,10)>=today()); }
+/* Op een contract hoort een datum voluit: 10/08/2030, niet 10-08-30. Een jaartal
+   van twee cijfers leest bij een politiecontrole als een fout. */
+function dNum(d){ if(!d) return ""; var x=String(d).slice(0,10).split("-"); return x.length===3?(x[2]+"/"+x[1]+"/"+x[0]):String(d); }
+function cRij(k,v){
+  var tekst=(v===null||v===undefined||v==="")?"—":String(v);
+  return '<div class="rij"><span>'+esc(k)+'</span><b>'+esc(tekst)+'</b></div>';
+}
+/* Zelfde regel, maar met HTML als waarde — nodig voor de kentekenplaat, die in
+   <bdi> moet staan omdat de Arabische letter anders de volgorde omdraait. */
+function cRijH(k,h){ return '<div class="rij"><span>'+esc(k)+'</span><b>'+h+'</b></div>'; }
 async function makeContract(r,btn){
-  var t=T(), c=car(r.vehicleId), rec=r.depart||{}, cl=client(r.clientId)||{};
+  var t=T(), q=t.ctr2, c=car(r.vehicleId), rec=r.depart||{}, cl=client(r.clientId)||{};
+  var np=nomPrenom(r.clientName||cl.name||"");
   var marks=(rec.marks||[]).map(function(m,i){ return (i+1)+". "+t.kinds[m.ki]; }).join(" · ");
+  var acompte=paidRent(r), reste=Math.max(0,(Number(r.total)||0)-acompte);
+  var wijzen={}; pays(r).forEach(function(x){ if((Number(x.amount)||0)>0) wijzen[x.method]=1; });
+  var mode=Object.keys(wijzen).map(function(k){ return t.payMethods[k]||k; }).join(", ");
+  var fr=Number(c.franchise||AG.franchise||0);
+  var d2=r.driver2||null, lim=r.limit||limitDate(r);
+  var uurUit=uurVan(rec.at), uurIn=uurVan(r.retour&&r.retour.at);
+
+  var links =
+    '<div class="vak"><h3>'+esc(q.locataire)+'</h3><div class="in">'+
+      cRij(q.nom,np.nom)+cRij(q.prenom,np.prenom)+
+      cRij(q.naissance, dNum(cl.birth))+
+      cRij(cl.docType==="passport"?q.passeport:q.cin, cl.docNumber)+
+      cRij(q.valable, dNum(cl.docExpiry))+
+      cRij(q.permis, cl.licenceNumber)+
+      cRij(q.delivre, dNum(cl.licenceIssue))+
+      cRij(q.tel, r.clientTel||cl.tel)+
+      cRij(q.adresse, cl.address)+
+    '</div></div>'+
+    (d2 ? '<div class="vak"><h3>'+esc(q.d2)+'</h3><div class="in">'+
+      cRij(q.d2nom,d2.name)+cRij(q.d2permis,d2.licence)+
+      cRij(q.d2delivre, dNum(d2.issue))+'</div></div>' : '')+
+    '<div class="vak"><div class="in">'+
+      cRij(q.depart, dNum(r.from)+(uurUit?"  ·  "+uurUit:""))+
+      cRij(q.retour, dNum(r.to)+(uurIn?"  ·  "+uurIn:""))+
+      cRij(q.jours, r.days)+
+    '</div></div>'+
+    (fr ? '<div class="let">'+esc(q.franchise)+' : '+esc(dh(fr))+'</div>' : '');
+
+  var rechts =
+    '<div class="vak"><h3>'+esc(q.vehicule)+'</h3><div class="in">'+
+      cRij(q.marque, c.model)+cRijH(q.immat, plateHTML(c))+
+      cRij(q.carburant, c.fuelType==="essence"?q.essence:q.gasoil)+
+      '<div class="kop">'+esc(q.etat)+'</div>'+
+      cRij(q.kmDep, kmf(rec.km||c.km))+
+      cRij(q.niveau, fuelTxt(rec.fuel))+
+      cRij(q.degats, marks||q.geen)+
+      '<div class="kop">'+esc(q.docs)+'</div>'+
+      cRij(q.carte, q.oui)+
+      cRij(q.assur, geldigNu(c.insuranceUntil)?q.oui:q.non)+
+      cRij(q.visite, geldigNu(c.inspectionUntil)?q.oui:q.non)+
+      cRij(q.vign, geldigNu(c.vignetteUntil)?q.oui:q.non)+
+    '</div></div>'+
+    '<div class="vak"><h3>'+esc(q.fact)+'</h3><div class="in">'+
+      cRij(r.days+" "+q.jours+" × "+dh(r.rate), dh(r.total))+
+      cRij(q.total, dh(r.total))+
+      cRij(q.acompte, dh(acompte))+
+      cRij(q.reste, dh(reste))+
+      cRij(q.mode, mode)+
+      cRij(q.caution, dh(r.caution))+
+    '</div></div>'+
+    '<div class="vak"><h3>'+esc(q.obs)+'</h3><div class="in"><div class="vrij"></div><div class="vrij"></div></div></div>';
+
   var html =
-    '<div class="hd"><div><div class="ag">'+esc(AG.name)+'</div><div class="ct">'+esc(AG.city)+'</div></div><div style="text-align:right"><h1>'+t.ctr.title+'</h1><div class="ct">'+esc(r.code)+' · '+dLong(today())+'</div></div></div>'+
-    '<h2>'+t.ctr.parties+'</h2><table><tr><td>'+t.ctr.lessor+'</td><td>'+esc(AG.name)+', '+esc(AG.city)+'</td></tr><tr><td>'+t.ctr.lessee+'</td><td>'+esc(r.clientName)+'</td></tr>'+
-    (r.clientTel?'<tr><td>'+t.ctr.tel+'</td><td>'+esc(r.clientTel)+'</td></tr>':'')+
-    (cl.docNumber?'<tr><td>'+t.ctr.doc+'</td><td>'+(cl.docType==="passport"?t.optPass:"CIN")+' '+esc(cl.docNumber)+'</td></tr>':'')+
-    (cl.licenceNumber?'<tr><td>'+t.ctr.lic+'</td><td>'+esc(cl.licenceNumber)+'</td></tr>':'')+
-    (cl.address?'<tr><td>'+t.ctr.addr+'</td><td>'+esc(cl.address)+'</td></tr>':'')+'</table>'+
-    '<h2>'+t.ctr.vehicle+'</h2><table><tr><td>'+t.ctr.vehicle+'</td><td>'+esc(c.model)+'</td></tr><tr><td>'+t.ctr.plate+'</td><td>'+esc(plateTxt(c))+'</td></tr><tr><td>'+t.ctr.kmOut+'</td><td>'+kmf(rec.km||c.km)+'</td></tr><tr><td>'+t.ctr.fuelOut+'</td><td>'+fuelTxt(rec.fuel)+'</td></tr></table>'+
-    '<h2>'+t.ctr.period+'</h2><table><tr><td>'+t.ctr.from+'</td><td>'+dLong(r.from)+'</td></tr><tr><td>'+t.ctr.to+'</td><td>'+dLong(r.to)+'</td></tr><tr><td>'+t.ctr.nDays+'</td><td>'+r.days+'</td></tr></table>'+
-    '<h2>'+t.ctr.money+'</h2><table><tr><td>'+t.ctr.rate+'</td><td>'+dh(r.rate)+'</td></tr><tr><td>'+t.ctr.total+'</td><td>'+dh(r.total)+'</td></tr><tr><td>'+t.ctr.dep+'</td><td>'+dh(r.caution)+'</td></tr></table>'+
-    '<h2>'+t.ctr.cond+'</h2><div style="font-size:12.5px">'+(marks||t.ctr.condNone)+'</div>'+
-    promiseBox(r.limit||limitDate(r))+
-    '<div class="sg"><div>'+(rec.sig&&rec.sig.length>10?'<img src="'+rec.sig+'" alt="">':'')+t.ctr.sigL+'</div><div>'+t.ctr.sigR+'</div></div><div class="sm">'+t.ctr.small+'</div>';
+    '<div class="hd"><div><div class="ag">'+esc(AG.name)+'</div><div class="ct">'+esc(AG.city)+'</div></div>'+
+    '<div style="text-align:right"><h1>'+esc(t.ctr.title)+'</h1><div class="ct">'+esc(r.code)+' · '+esc(AG.city)+' '+esc(q.dl)+' '+dNum(today())+'</div></div></div>'+
+    '<div class="kol"><div>'+links+'</div><div>'+rechts+'</div></div>'+
+    promiseKort(lim)+
+    '<div class="sg2"><div>'+esc(q.sigCl)+(rec.sig&&rec.sig.length>10?'<img src="'+rec.sig+'" alt="">':'')+'</div>'+
+    '<div>'+esc(q.sigAg)+'</div></div>'+
+    '<div class="sm"><b>'+esc(q.attention)+'</b><br>'+esc(t.ctr.small)+'</div>';
   await pdfFromSheet(html,(r.code||"contract")+"-"+(r.clientName||"").replace(/[^A-Za-z0-9]+/g,"-")+".pdf",btn,t.pdfBusy);
 }
 
