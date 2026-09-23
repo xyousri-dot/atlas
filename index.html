@@ -370,6 +370,9 @@ img,canvas,video,svg,table{max-width:100%}
 /* Status van de kaartlezing op het huurscherm zelf. */
 /* Op de telefoon: de knoppen van de bon (contract, WhatsApp) boven de details. */
 @media(max-width:859px){ #vDone .two{display:flex;flex-direction:column} #vDone #rSide{order:-1;margin-bottom:14px} }
+.aanmeldbalk{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;justify-content:space-between;
+  padding:12px 14px;margin-bottom:14px;border-radius:12px;border:1px solid var(--brand);background:var(--brand-soft);color:var(--ink);font-size:14.5px;line-height:1.4}
+.aanmeldbalk span{flex:1 1 220px}
 .snelstat{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;line-height:1.4;background:var(--card);border:1px solid var(--line2)}
 .snelstat.bezig{border-color:var(--rand);color:var(--ink2)}
 .snelstat.ok{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600}
@@ -1210,6 +1213,7 @@ var TXT = {
   plMore:"Meer cijfers", plLess:"Minder cijfers",
   plH2:"Resultaat", plDue:"Nog te ontvangen", plRev:"Opbrengst (ontvangen)", plCost:"Kosten", plNet:"Resultaat", plDays:"Verhuurde dagen", plUtil:"Bezetting sinds aankoop",
   plBuy:"Aankoop", plLoanLeft:"Nog aan lening", plPayback:"Terugverdiend van aankoop", plNoData:"Vul aankoop en kosten in om het resultaat te zien.",
+  sbBalk:"Meld je aan \u2014 dan staan je auto\u2019s, klanten en contracten op al je toestellen.",
   stCloudH:"Gegevens op al je toestellen",
   stCloudP:"Zonder dit staat alles alleen in deze browser. Met een verbinding ziet je telefoon hetzelfde als je laptop, en ben je niets kwijt als je de browser leegmaakt.",
   stCloudMailL:"E-mailadres", stCloudWwL:"Wachtwoord", stCloudIn:"Aanmelden", stCloudUit:"Afmelden", stCloudNu:"Nu bijwerken",
@@ -1528,6 +1532,7 @@ var TXT = {
   plMore:"Plus de chiffres", plLess:"Moins de chiffres",
   plH2:"Résultat", plDue:"Reste à encaisser", plRev:"Revenus (encaissés)", plCost:"Coûts", plNet:"Résultat", plDays:"Jours loués", plUtil:"Taux d'occupation depuis l'achat",
   plBuy:"Achat", plLoanLeft:"Reste à payer", plPayback:"Achat remboursé à", plNoData:"Saisissez l'achat et les coûts pour voir le résultat.",
+  sbBalk:"Connectez-vous \u2014 vos voitures, clients et contrats seront sur tous vos appareils.",
   stCloudH:"Vos donn\u00e9es sur tous vos appareils",
   stCloudP:"Sans cela, tout reste dans ce navigateur. Avec une connexion, votre t\u00e9l\u00e9phone voit la m\u00eame chose que votre ordinateur, et rien n'est perdu si vous videz le navigateur.",
   stCloudMailL:"Adresse e-mail", stCloudWwL:"Mot de passe", stCloudIn:"Se connecter", stCloudUit:"Se d\u00e9connecter", stCloudNu:"Mettre \u00e0 jour",
@@ -1794,6 +1799,16 @@ function dbErr(e){ LASTERR=(e&&e.code?e.code+": ":"")+(e&&e.message?e.message:St
 var SBKEY="atlas-sb", SBSKEY="atlas-sb-sessie", SBQKEY="atlas-sb-rij";
 var SB={url:"",key:""}, SBSES=null, SBQ=[], SBBEZIG=false, SBSTAT="uit", SBFOUT="";
 try{ SB=JSON.parse(localStorage.getItem(SBKEY)||"null")||{url:"",key:""}; }catch(e){}
+/* De database van Atlas staat vast in de app. Niemand hoeft nog een adres of een
+   sleutel te plakken: openen, aanmelden, klaar. Deze sleutel is de publieke
+   ("publishable") sleutel: hij hoort in een website te staan en geeft zelf geen
+   toegang — dat doet pas het aanmelden. Heeft iemand bewust een ANDER project
+   ingesteld, dan blijft dat staan. */
+var SBSTANDAARD={ url:"https://mimpyfbitoiotxuqoymj.supabase.co", key:"sb_publishable_ULPcv7mCZw_95ClYn2PVSA_UGBaHeTu" };
+(function(){
+  var eigen=String((SB&&SB.url)||"").replace(/\/+$/,"");
+  if(!eigen || eigen===SBSTANDAARD.url) SB={ url:SBSTANDAARD.url, key:SBSTANDAARD.key };
+})();
 try{ SBSES=JSON.parse(localStorage.getItem(SBSKEY)||"null"); }catch(e){}
 try{ SBQ=JSON.parse(localStorage.getItem(SBQKEY)||"[]")||[]; }catch(e){}
 function sbBewaar(){ try{ localStorage.setItem(SBKEY,JSON.stringify(SB)); }catch(e){} }
@@ -1919,8 +1934,8 @@ function sbUitleg(fout){
   return t.stCloudMis(f);
 }
 
-function sbZet(pad,d){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"set",path:pad,data:d,t:Date.now()}); sbBewaarRij(); sbWerk(); }
-function sbWis(pad){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"del",path:pad,t:Date.now()}); sbBewaarRij(); sbWerk(); }
+function sbZet(pad,d){ if(!sbKlaar()||!sbInMap(pad)) return; SBQ.push({op:"set",path:pad,data:d,t:Date.now()}); sbBewaarRij(); sbWerk(); }
+function sbWis(pad){ if(!sbKlaar()||!sbInMap(pad)) return; SBQ.push({op:"del",path:pad,t:Date.now()}); sbBewaarRij(); sbWerk(); }
 
 /* De rij afwerken. Lukt iets niet, dan blijft het vooraan staan en proberen we het
    later opnieuw — nooit overslaan, want dan zou een wijziging stil verdwijnen. */
@@ -1966,6 +1981,28 @@ async function sbRond(){
   await sbWerk();
   if(await sbHaal()){ try{ await reload(); render(); }catch(e){} }
 }
+/* Eerste keer aanmelden op een toestel: alles wat hier al stond en nog niet in de
+   cloud zit, gaat erbij. Wat al in de cloud staat, blijft zoals het is. Zo gaat
+   er bij het aanmelden nooit iets verloren, op geen enkel toestel. */
+async function sbSamenvoegen(){
+  if(!sbKlaar()) return;
+  try{
+    var res=await sbRoep("/rest/v1/atlas?select=path");
+    if(!res.ok) return;
+    var inCloud={}; (await res.json()).forEach(function(r){ if(r&&r.path) inCloud[r.path]=1; });
+    var nu=Date.now();
+    Object.keys(local).forEach(function(pad){ if(sbInMap(pad) && !inCloud[pad]) SBQ.push({op:"set",path:pad,data:local[pad],t:nu}); });
+    sbBewaarRij(); await sbWerk();
+  }catch(e){}
+}
+function naarAanmelden(){
+  view="vSet"; render();
+  setTimeout(function(){
+    var k=$("stCloudCard"); if(k) k.scrollIntoView({behavior:"smooth",block:"start"});
+    var m=$("stCloudMail"); if(m) m.focus();
+  },150);
+}
+function naAanmelden(){ if(!sbKlaar()) return; view="vDay"; render(); }
 function sbVerf(){ try{ if(typeof tekenCloud==="function") tekenCloud(); }catch(e){} }
 
 var S={
@@ -2215,7 +2252,15 @@ function guideCard(){
 function renderDay(){
   var t=T(), box=$("dayBody"); box.innerHTML="";
   $("dayP").textContent=t.dayChain;
-  if(LOCAL && !sbKlaar()) box.appendChild(el("div","banner",t.noDb));
+  /* Niet aangemeld? Dan bovenaan één balk met één knop. Op een nieuwe telefoon
+     is dat het eerste wat je ziet — en na het aanmelden staat alles erop. */
+  if(LOCAL && !sbKlaar()){
+    if(sbIngesteld()){
+      var ab=el("div","aanmeldbalk"); ab.appendChild(el("span",null,t.sbBalk));
+      var kb=el("button","btn sm",t.stCloudIn); kb.type="button"; kb.addEventListener("click",naarAanmelden);
+      ab.appendChild(kb); box.appendChild(ab);
+    } else box.appendChild(el("div","banner",t.noDb));
+  }
   if(!CARS.length){
     var e=el("div","empty"); e.appendChild(el("h2",null,t.emptyCarsH)); e.appendChild(el("p",null,t.emptyCarsP));
     var b1=el("button","btn",t.emptyCarsB); b1.addEventListener("click",function(){ openCar(null); });
@@ -6699,7 +6744,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="113";
+var ATLASVER="114";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7434,7 +7479,7 @@ if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
   $("stCloudWw").value="";
   if(!uit.ok){ $("stCloudStat").textContent=sbUitleg(uit.fout); $("stCloudStat").style.color="var(--warn)"; return; }
   SBSTAT="bezig"; tekenCloud(); toast(t.stCloudOk);
-  await sbRond(); tekenCloud();
+  await sbSamenvoegen(); await sbRond(); tekenCloud(); naAanmelden();
 });
 if($("stCloudNieuw")) $("stCloudNieuw").addEventListener("click",async function(){
   var t=T(), knop=this, oud=knop.textContent;
@@ -7445,7 +7490,7 @@ if($("stCloudNieuw")) $("stCloudNieuw").addEventListener("click",async function(
   knop.disabled=false; knop.textContent=oud; $("stCloudWw").value="";
   if(uit.bevestig){ $("stCloudStat").textContent=t.stCloudBevestig; $("stCloudStat").style.color="var(--gold)"; return; }
   if(!uit.ok){ $("stCloudStat").textContent=sbUitleg(uit.fout); $("stCloudStat").style.color="var(--warn)"; return; }
-  toast(t.stCloudNieuwOk); SBSTAT="bezig"; tekenCloud(); await sbRond(); tekenCloud();
+  toast(t.stCloudNieuwOk); SBSTAT="bezig"; tekenCloud(); await sbSamenvoegen(); await sbRond(); tekenCloud(); naAanmelden();
 });
 if($("stCloudTest")) $("stCloudTest").addEventListener("click",async function(){
   var t=T(), knop=this, oud=knop.textContent, vak=$("stCloudStat");
