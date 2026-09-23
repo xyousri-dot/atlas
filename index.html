@@ -947,6 +947,32 @@ details.meer>div{padding:0 12px 12px}
         </div>
       </div></div>
       <div>
+        <!-- Cloudopslag: zonder dit staan de gegevens alleen in deze browser. -->
+        <div class="card" id="stCloudCard">
+          <h2 class="ch" id="stCloudH"></h2>
+          <p class="sub" id="stCloudP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p>
+          <div class="none" id="stCloudStat" style="margin-bottom:12px"></div>
+          <div id="stCloudLogin" hidden>
+            <div class="form">
+              <div class="f"><label class="lbl" for="stCloudMail" id="stCloudMailL"></label><input type="email" id="stCloudMail" autocomplete="username"></div>
+              <div class="f"><label class="lbl" for="stCloudWw" id="stCloudWwL"></label><input type="password" id="stCloudWw" autocomplete="current-password"></div>
+            </div>
+            <button class="btn sm" id="stCloudIn" style="margin-top:10px;width:100%"></button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn ghost sm" id="stCloudNu" hidden></button>
+            <button class="btn ghost sm" id="stCloudUit" hidden></button>
+          </div>
+          <details class="meer" style="margin-top:12px">
+            <summary id="stCloudSetH"></summary>
+            <div class="form" style="margin-top:8px">
+              <div class="f"><label class="lbl" for="stCloudUrl" id="stCloudUrlL"></label><input type="url" id="stCloudUrl" autocomplete="off" placeholder="https://xxxx.supabase.co"></div>
+              <div class="f"><label class="lbl" for="stCloudKey" id="stCloudKeyL"></label><input type="text" id="stCloudKey" autocomplete="off"></div>
+            </div>
+            <button class="btn ghost sm" id="stCloudSave" style="margin-top:10px;width:100%"></button>
+            <p class="fine" id="stCloudHelp" style="margin-top:10px;white-space:pre-line"></p>
+          </details>
+        </div>
         <div class="card"><h2 class="ch" id="stDemoH"></h2><p class="sub" id="stDemoP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="stDemoBtn"></button><button class="btn dangerish sm" id="stWipeBtn"></button></div></div>
         <button type="button" class="link" id="stToolsBtn" style="margin-top:14px"></button>
         <div id="stTools" hidden>
@@ -1158,6 +1184,17 @@ var TXT = {
   plMore:"Meer cijfers", plLess:"Minder cijfers",
   plH2:"Resultaat", plDue:"Nog te ontvangen", plRev:"Opbrengst (ontvangen)", plCost:"Kosten", plNet:"Resultaat", plDays:"Verhuurde dagen", plUtil:"Bezetting sinds aankoop",
   plBuy:"Aankoop", plLoanLeft:"Nog aan lening", plPayback:"Terugverdiend van aankoop", plNoData:"Vul aankoop en kosten in om het resultaat te zien.",
+  stCloudH:"Gegevens op al je toestellen",
+  stCloudP:"Zonder dit staat alles alleen in deze browser. Met een verbinding ziet je telefoon hetzelfde als je laptop, en ben je niets kwijt als je de browser leegmaakt.",
+  stCloudMailL:"E-mailadres", stCloudWwL:"Wachtwoord", stCloudIn:"Aanmelden", stCloudUit:"Afmelden", stCloudNu:"Nu bijwerken",
+  stCloudSetH:"Verbinding instellen", stCloudUrlL:"Project-URL", stCloudKeyL:"Publieke sleutel (anon key)", stCloudSave:"Verbinding bewaren",
+  stCloudUit0:"Nog niet ingesteld \u2014 alles staat alleen op dit toestel.",
+  stCloudAan:function(n){ return "Verbonden. Alles staat op al je toestellen."+(n?" Nog "+n+" te versturen.":""); },
+  stCloudBezig:"Bezig met bijwerken\u2026",
+  stCloudFout:function(f){ return "Verbinding werkt niet ("+f+"). Je werk blijft lokaal bewaard en gaat mee zodra het weer lukt."; },
+  stCloudUitLog:"Ingesteld, maar niet aangemeld. Meld je aan om je gegevens te delen tussen toestellen.",
+  stCloudOk:"Aangemeld \u2014 gegevens worden opgehaald.", stCloudMis:function(f){ return "Aanmelden lukte niet: "+f; },
+  stCloudHelp:"Zo maak je de verbinding, \u00e9\u00e9n keer per zaak:\n1. Maak een gratis project op supabase.com.\n2. Open in dat project de SQL Editor en plak het stukje SQL dat je van Atlas kreeg. Dat maakt de tabel en zet de beveiliging aan.\n3. Ga naar Project Settings \u2192 API en kopieer de Project URL en de anon public key hierboven.\n4. Maak onder Authentication \u2192 Users een gebruiker aan voor jezelf en voor je personeel.\n5. Meld je hierboven aan. Doe daarna hetzelfde op je telefoon.",
   stH:"Instellingen", stP:"Dit verschijnt in de app en op het contract.",
   stNameL:"Naam van de zaak", stCityL:"Stad", stInitL:"Letter logo", stCautionL:"Standaardborg (DH)", stWindowL:"Boetetermijn (dagen)", stFranchiseL:"Eigen risico op het contract (DH)", stSave:"Opslaan",
   stFine:"De boetetermijn bepaalt de datum op het contract waarna je niets meer inhoudt. Dertig dagen na het einde van de huur is gebruikelijk.",
@@ -1436,6 +1473,17 @@ var TXT = {
   plMore:"Plus de chiffres", plLess:"Moins de chiffres",
   plH2:"Résultat", plDue:"Reste à encaisser", plRev:"Revenus (encaissés)", plCost:"Coûts", plNet:"Résultat", plDays:"Jours loués", plUtil:"Taux d'occupation depuis l'achat",
   plBuy:"Achat", plLoanLeft:"Reste à payer", plPayback:"Achat remboursé à", plNoData:"Saisissez l'achat et les coûts pour voir le résultat.",
+  stCloudH:"Vos donn\u00e9es sur tous vos appareils",
+  stCloudP:"Sans cela, tout reste dans ce navigateur. Avec une connexion, votre t\u00e9l\u00e9phone voit la m\u00eame chose que votre ordinateur, et rien n'est perdu si vous videz le navigateur.",
+  stCloudMailL:"Adresse e-mail", stCloudWwL:"Mot de passe", stCloudIn:"Se connecter", stCloudUit:"Se d\u00e9connecter", stCloudNu:"Mettre \u00e0 jour",
+  stCloudSetH:"Configurer la connexion", stCloudUrlL:"URL du projet", stCloudKeyL:"Cl\u00e9 publique (anon key)", stCloudSave:"Enregistrer la connexion",
+  stCloudUit0:"Pas encore configur\u00e9 \u2014 tout reste sur cet appareil.",
+  stCloudAan:function(n){ return "Connect\u00e9. Vos donn\u00e9es sont sur tous vos appareils."+(n?" Encore "+n+" \u00e0 envoyer.":""); },
+  stCloudBezig:"Mise \u00e0 jour en cours\u2026",
+  stCloudFout:function(f){ return "La connexion ne fonctionne pas ("+f+"). Votre travail reste enregistr\u00e9 ici et partira d\u00e8s que possible."; },
+  stCloudUitLog:"Configur\u00e9, mais pas connect\u00e9. Connectez-vous pour partager vos donn\u00e9es entre appareils.",
+  stCloudOk:"Connect\u00e9 \u2014 r\u00e9cup\u00e9ration des donn\u00e9es.", stCloudMis:function(f){ return "La connexion a \u00e9chou\u00e9 : "+f; },
+  stCloudHelp:"Comment cr\u00e9er la connexion, une seule fois par agence :\n1. Cr\u00e9ez un projet gratuit sur supabase.com.\n2. Dans ce projet, ouvrez le SQL Editor et collez le SQL fourni par Atlas. Cela cr\u00e9e la table et active la s\u00e9curit\u00e9.\n3. Allez dans Project Settings \u2192 API et copiez la Project URL et la anon public key ci-dessus.\n4. Dans Authentication \u2192 Users, cr\u00e9ez un utilisateur pour vous et pour votre personnel.\n5. Connectez-vous ci-dessus. Faites ensuite de m\u00eame sur votre t\u00e9l\u00e9phone.",
   stH:"Réglages", stP:"Ceci apparaît dans l'application et sur le contrat.",
   stNameL:"Nom de l'agence", stCityL:"Ville", stInitL:"Lettre du logo", stCautionL:"Caution par défaut (DH)", stWindowL:"Fenêtre amende (jours)", stFranchiseL:"La franchise au contrat (DH)", stSave:"Enregistrer",
   stFine:"La fenêtre amende fixe la date sur le contrat après laquelle plus rien n'est retenu. Trente jours après la fin de la location est courant.",
@@ -1654,10 +1702,119 @@ function saveLocal(){ try{ localStorage.setItem(LKEY2,JSON.stringify(local)); }c
 function clone(o){ return o==null?o:JSON.parse(JSON.stringify(o)); }
 var LASTERR="";
 function dbErr(e){ LASTERR=(e&&e.code?e.code+": ":"")+(e&&e.message?e.message:String(e)); console.error("Atlas opslag:",e); toast("Opslagfout — "+LASTERR); }
+/* ============ cloudopslag ============
+   Atlas bewaarde tot nu toe alles in de browser waarin het is ingevoerd. Dat werkt
+   voor één toestel en breekt zodra de verhuurder zijn telefoon pakt: de auto's,
+   klanten en verhuren van de laptop staan er dan niet.
+
+   Opzet: de browser blijft de snelle kant — elke wijziging gaat eerst lokaal en is
+   meteen zichtbaar, ook zonder netwerk. Daarnaast gaat diezelfde wijziging in een
+   rij naar Supabase. Komt de app opnieuw op (of is de rij leeg), dan haalt hij de
+   gegevens weer op en vervangt hij het lokale beeld. Zo botsen twee toestellen niet:
+   wie het laatst opslaat, wint, en niets gaat verloren als het netwerk wegvalt.
+
+   Eén Supabase-project per zaak. Iedereen van die zaak logt in met een eigen
+   e-mailadres en ziet dezelfde gegevens; zonder login komt er niets binnen of buiten. */
+var SBKEY="atlas-sb", SBSKEY="atlas-sb-sessie", SBQKEY="atlas-sb-rij";
+var SB={url:"",key:""}, SBSES=null, SBQ=[], SBBEZIG=false, SBSTAT="uit", SBFOUT="";
+try{ SB=JSON.parse(localStorage.getItem(SBKEY)||"null")||{url:"",key:""}; }catch(e){}
+try{ SBSES=JSON.parse(localStorage.getItem(SBSKEY)||"null"); }catch(e){}
+try{ SBQ=JSON.parse(localStorage.getItem(SBQKEY)||"[]")||[]; }catch(e){}
+function sbBewaar(){ try{ localStorage.setItem(SBKEY,JSON.stringify(SB)); }catch(e){} }
+function sbBewaarSes(){ try{ if(SBSES) localStorage.setItem(SBSKEY,JSON.stringify(SBSES)); else localStorage.removeItem(SBSKEY); }catch(e){} }
+function sbBewaarRij(){ try{ localStorage.setItem(SBQKEY,JSON.stringify(SBQ)); }catch(e){} }
+function sbBasis(){ return String(SB.url||"").replace(/\/+$/,""); }
+function sbIngesteld(){ return !!(sbBasis() && SB.key); }
+function sbKlaar(){ return !!(sbIngesteld() && SBSES && SBSES.access_token); }
+var SBMAPPEN=["settings","vehicles","rentals","clients","expenses"];
+function sbInMap(pad){ return SBMAPPEN.indexOf(String(pad).split("/")[0])>=0; }
+
+async function sbRoep(pad,opt){
+  opt=opt||{};
+  var h={ "apikey":SB.key, "Content-Type":"application/json" };
+  if(opt.headers) for(var k in opt.headers) h[k]=opt.headers[k];
+  if(SBSES && SBSES.access_token) h.Authorization="Bearer "+SBSES.access_token;
+  var res=await fetch(sbBasis()+pad,{ method:opt.method||"GET", headers:h, body:opt.body });
+  /* Een verlopen sleutel is geen storing: één keer vernieuwen en opnieuw proberen. */
+  if(res.status===401 && SBSES && SBSES.refresh_token && !opt.nogmaals){
+    if(await sbVernieuw()){ opt.nogmaals=true; return sbRoep(pad,opt); }
+  }
+  return res;
+}
+async function sbVernieuw(){
+  try{
+    var res=await fetch(sbBasis()+"/auth/v1/token?grant_type=refresh_token",
+      { method:"POST", headers:{ "apikey":SB.key, "Content-Type":"application/json" },
+        body:JSON.stringify({ refresh_token:SBSES.refresh_token }) });
+    if(!res.ok){ SBSES=null; sbBewaarSes(); return false; }
+    SBSES=await res.json(); sbBewaarSes(); return true;
+  }catch(e){ return false; }
+}
+async function sbAanmelden(mail,ww){
+  try{
+    var res=await fetch(sbBasis()+"/auth/v1/token?grant_type=password",
+      { method:"POST", headers:{ "apikey":SB.key, "Content-Type":"application/json" },
+        body:JSON.stringify({ email:mail, password:ww }) });
+    var j=null; try{ j=await res.json(); }catch(e){}
+    if(!res.ok || !j || !j.access_token) return { ok:false, fout:(j&&(j.error_description||j.msg||j.message))||("HTTP "+res.status) };
+    SBSES=j; sbBewaarSes(); return { ok:true };
+  }catch(e){ return { ok:false, fout:String(e&&e.message||e) }; }
+}
+function sbAfmelden(){ SBSES=null; sbBewaarSes(); SBSTAT="uit"; sbVerf(); }
+
+function sbZet(pad,d){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"set",path:pad,data:d,t:Date.now()}); sbBewaarRij(); sbWerk(); }
+function sbWis(pad){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"del",path:pad,t:Date.now()}); sbBewaarRij(); sbWerk(); }
+
+/* De rij afwerken. Lukt iets niet, dan blijft het vooraan staan en proberen we het
+   later opnieuw — nooit overslaan, want dan zou een wijziging stil verdwijnen. */
+async function sbWerk(){
+  if(SBBEZIG || !sbKlaar() || !SBQ.length) return;
+  SBBEZIG=true; SBSTAT="bezig"; sbVerf();
+  try{
+    while(SBQ.length){
+      var o=SBQ[0], res;
+      if(o.op==="set"){
+        res=await sbRoep("/rest/v1/atlas",{ method:"POST", headers:{ "Prefer":"resolution=merge-duplicates" },
+          body:JSON.stringify({ path:o.path, data:o.data, updated_at:new Date(o.t).toISOString() }) });
+      } else {
+        res=await sbRoep("/rest/v1/atlas?path=eq."+encodeURIComponent(o.path),{ method:"DELETE" });
+      }
+      if(!res.ok){ SBFOUT="HTTP "+res.status; SBSTAT="fout"; break; }
+      SBQ.shift(); sbBewaarRij();
+    }
+    if(!SBQ.length){ SBSTAT="aan"; SBFOUT=""; }
+  }catch(e){ SBFOUT=String(e&&e.message||e); SBSTAT="fout"; }
+  SBBEZIG=false; sbVerf();
+}
+
+/* Ophalen mag alleen als alles van dit toestel al verstuurd is; anders zouden we
+   een wijziging die nog in de rij staat overschrijven met een oudere versie. */
+async function sbHaal(){
+  if(!sbKlaar() || SBQ.length || SBBEZIG) return false;
+  try{
+    var res=await sbRoep("/rest/v1/atlas?select=path,data");
+    if(!res.ok){ SBFOUT="HTTP "+res.status; SBSTAT="fout"; sbVerf(); return false; }
+    var rijen=await res.json(), vers={};
+    rijen.forEach(function(r){ if(r && r.path) vers[r.path]=r.data; });
+    /* Wat niet meegaat naar de cloud (taal, schetsen) blijft staan zoals het is. */
+    Object.keys(local).forEach(function(pad){ if(!sbInMap(pad)) vers[pad]=local[pad]; });
+    local=vers; saveLocal();
+    SBSTAT="aan"; SBFOUT=""; sbVerf(); return true;
+  }catch(e){ SBFOUT=String(e&&e.message||e); SBSTAT="fout"; sbVerf(); return false; }
+}
+/* Ophalen én het scherm bijwerken, zodat een verhuur die op de laptop is gemaakt
+   op de telefoon vanzelf verschijnt. */
+async function sbRond(){
+  if(!sbKlaar()) return;
+  await sbWerk();
+  if(await sbHaal()){ try{ await reload(); render(); }catch(e){} }
+}
+function sbVerf(){ try{ if(typeof tekenCloud==="function") tekenCloud(); }catch(e){} }
+
 var S={
   async get(p){ if(DB){ var s=await DB.doc(p).get(); return s.exists?clone(s.data()):null; } return clone(local[p])||null; },
-  async set(p,d){ if(DB){ await DB.doc(p).set(clone(d)); return; } local[p]=clone(d); saveLocal(); },
-  async del(p){ if(DB){ await DB.doc(p).delete(); return; } delete local[p]; saveLocal(); },
+  async set(p,d){ if(DB){ await DB.doc(p).set(clone(d)); return; } local[p]=clone(d); saveLocal(); sbZet(p,clone(d)); },
+  async del(p){ if(DB){ await DB.doc(p).delete(); return; } delete local[p]; saveLocal(); sbWis(p); },
   async list(c){
     if(DB){
       var s=await DB.collection(c).limit(1000).get();
@@ -1748,8 +1905,16 @@ async function recheckScan(){
     }
   }catch(e){}
   LOCAL=!DB;
+  /* Staat er een cloudverbinding klaar, dan halen we de gegevens eerst op. De app
+     start dus met wat er op de andere toestellen gebeurd is, niet met een oud beeld. */
+  if(sbKlaar()){ try{ await sbWerk(); await sbHaal(); }catch(e){} }
   try{ await reload(); }catch(e){ dbErr(e); }
   applyLang(); render();
+  /* Daarna blijft hij zichzelf bijwerken: elke halve minuut, en meteen wanneer de
+     verhuurder terugkomt in het tabblad. */
+  setInterval(function(){ if(!document.hidden) sbRond(); },30000);
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) sbRond(); });
+  window.addEventListener("online",function(){ sbRond(); });
   /* Vanaf een lokaal bestand geopend? Dan werken de tekstlezer en de camera niet
      (de browser blokkeert dat op file://). Dat moet de app zeggen, anders lijkt
      het alsof de scanner stuk is terwijl alleen de plek verkeerd is. */
@@ -1839,7 +2004,7 @@ function render(){
   if(view==="vLed") renderLed();
   if(view==="vCash") renderCash();
   if(view==="vFleet") renderFleet();
-  if(view==="vSet"){ fillSettings(); paintTools(); }
+  if(view==="vSet"){ fillSettings(); paintTools(); sbVerf(); }
   show(view);
 }
 $("tabs").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return; stashDraft(); rental=null; draft=null; view=b.dataset.v; render(); });
@@ -1893,7 +2058,7 @@ function guideCard(){
 function renderDay(){
   var t=T(), box=$("dayBody"); box.innerHTML="";
   $("dayP").textContent=t.dayChain;
-  if(LOCAL) box.appendChild(el("div","banner",t.noDb));
+  if(LOCAL && !sbKlaar()) box.appendChild(el("div","banner",t.noDb));
   if(!CARS.length){
     var e=el("div","empty"); e.appendChild(el("h2",null,t.emptyCarsH)); e.appendChild(el("p",null,t.emptyCarsP));
     var b1=el("button","btn",t.emptyCarsB); b1.addEventListener("click",function(){ openCar(null); });
@@ -6270,7 +6435,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="109";
+var ATLASVER="110";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6956,6 +7121,55 @@ async function systemCheck(){
   btn.disabled=false; btn.textContent=lbl;
 }
 $("stCheckBtn").addEventListener("click",systemCheck);
+
+/* ============ cloudscherm ============ */
+function tekenCloud(){
+  var t=T(), st=$("stCloudStat"); if(!st) return;
+  $("stCloudH").textContent=t.stCloudH; $("stCloudP").textContent=t.stCloudP;
+  $("stCloudMailL").textContent=t.stCloudMailL; $("stCloudWwL").textContent=t.stCloudWwL;
+  $("stCloudIn").textContent=t.stCloudIn; $("stCloudUit").textContent=t.stCloudUit; $("stCloudNu").textContent=t.stCloudNu;
+  $("stCloudSetH").textContent=t.stCloudSetH; $("stCloudUrlL").textContent=t.stCloudUrlL;
+  $("stCloudKeyL").textContent=t.stCloudKeyL; $("stCloudSave").textContent=t.stCloudSave;
+  $("stCloudHelp").textContent=t.stCloudHelp;
+  if(document.activeElement!==$("stCloudUrl")) $("stCloudUrl").value=SB.url||"";
+  if(document.activeElement!==$("stCloudKey")) $("stCloudKey").value=SB.key||"";
+
+  var aangemeld=sbKlaar();
+  $("stCloudLogin").hidden=aangemeld || !sbIngesteld();
+  $("stCloudUit").hidden=!aangemeld;
+  $("stCloudNu").hidden=!aangemeld;
+
+  var tekst, kleur="";
+  if(!sbIngesteld()) tekst=t.stCloudUit0;
+  else if(!aangemeld) tekst=t.stCloudUitLog;
+  else if(SBSTAT==="fout"){ tekst=t.stCloudFout(SBFOUT||"?"); kleur="var(--gold)"; }
+  else if(SBSTAT==="bezig") tekst=t.stCloudBezig;
+  else { tekst=t.stCloudAan(SBQ.length); kleur="var(--brand)"; }
+  st.textContent=tekst; st.style.color=kleur;
+}
+if($("stCloudSave")) $("stCloudSave").addEventListener("click",async function(){
+  SB={ url:$("stCloudUrl").value.trim(), key:$("stCloudKey").value.trim() };
+  sbBewaar(); SBSTAT=sbKlaar()?"aan":"uit"; tekenCloud(); toast(T().saved);
+  if(sbKlaar()) await sbRond();
+});
+if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
+  var t=T(), knop=this, oud=knop.textContent;
+  var mail=$("stCloudMail").value.trim(), ww=$("stCloudWw").value;
+  if(!mail || !ww) return;
+  knop.disabled=true; knop.textContent=t.stCloudBezig;
+  var uit=await sbAanmelden(mail,ww);
+  knop.disabled=false; knop.textContent=oud;
+  $("stCloudWw").value="";
+  if(!uit.ok){ SBSTAT="fout"; SBFOUT=uit.fout; tekenCloud(); toast(t.stCloudMis(uit.fout)); return; }
+  SBSTAT="bezig"; tekenCloud(); toast(t.stCloudOk);
+  await sbRond(); tekenCloud();
+});
+if($("stCloudUit")) $("stCloudUit").addEventListener("click",function(){ sbAfmelden(); toast(T().saved); });
+if($("stCloudNu")) $("stCloudNu").addEventListener("click",async function(){
+  var knop=this, oud=knop.textContent; knop.disabled=true; knop.textContent=T().stCloudBezig;
+  await sbRond(); knop.disabled=false; knop.textContent=oud; tekenCloud();
+});
+
 
 /* ============ QR SLEUTELHANGERS ============ */
 function qrDataUrl(text){
