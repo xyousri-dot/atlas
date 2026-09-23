@@ -5884,7 +5884,10 @@ function tekenAutoTegels(){
     b.type="button"; b.disabled=sel.disabled || (!vrij && sel.value!==c.id);
     b.setAttribute("aria-pressed", sel.value===c.id ? "true" : "false");
     var n=el("b"); n.textContent=c.model;
-    var o=el("span"); o.textContent=plateTxt(c)+" \u00b7 "+dh(c.rate)+(vrij?"":" \u00b7 "+t.nwBezet);
+    /* De Arabische letter in een Marokkaanse plaat draait de volgorde om als we
+       gewone tekst gebruiken (bidi). plateHTML zet elk stuk in een <bdi>, dus de
+       plaat blijft links-naar-rechts staan zoals op de auto. */
+    var o=el("span"); o.innerHTML=plateHTML(c)+" \u00b7 "+esc(dh(c.rate))+(vrij?"":" \u00b7 "+esc(t.nwBezet));
     b.appendChild(n); b.appendChild(o);
     b.addEventListener("click",function(){
       if(b.disabled) return;
@@ -5957,10 +5960,18 @@ async function saveRental(){
      dubbele verhuur van dezelfde auto er niet in */
   var busy=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to); })[0];
   if(busy){ paintClash(busy); toast(t.nwClash); return; }
-  await S.set("rentals/"+uid(),{ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, vehicleId:c.id, from:from, to:to,
+  var rid=uid();
+  await S.set("rentals/"+rid,{ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, vehicleId:c.id, from:from, to:to,
     days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0,
     depart:null, retour:null, released:false, createdAt:new Date().toISOString() });
-  await reload(); view="vDay"; render(); toast(t.saved);
+  await reload();
+  /* De klant staat aan de balie met zijn sleutel in het zicht. Hem eerst naar het
+     dagoverzicht sturen en de verhuur daar laten terugzoeken is een klik die
+     niemand nodig heeft: we gaan meteen door naar het vertrek, want daar komt
+     het contract uit. */
+  var nieuw=RENTALS.filter(function(x){ return x.id===rid; })[0];
+  if(nieuw){ toast(t.saved); openForm(nieuw,"depart"); return; }
+  view="vDay"; render(); toast(t.saved);
 }
 
 async function cancelRental(){
@@ -6126,7 +6137,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="105";
+var ATLASVER="106";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6350,9 +6361,12 @@ function receipt(r,kind){
   if(!rec){
     if(!r.released && r.caution>0 && kind==="retour") side.appendChild(settlePanel(r));
   } else if(kind==="depart"){
-    var lim=r.limit||limitDate(r); var p=el("div"); p.innerHTML=promiseHTML(r.caution,lim); side.appendChild(p.firstChild);
+    /* Het contract is waarvoor de verhuurder hier staat, dus het staat bovenaan
+       en als volle knop. De borgbelofte en de rest lezen mag daarna. */
+    var lim=r.limit||limitDate(r);
+    var pb=el("button","btn",t.pdf); pb.style.cssText="width:100%"; pb.addEventListener("click",function(){ makeContract(r,pb); }); side.appendChild(pb);
+    var p=el("div"); p.innerHTML=promiseHTML(r.caution,lim); side.appendChild(p.firstChild);
     if(r.clientTel){ var a=el("a","wa",t.wa); a.href="https://wa.me/"+r.clientTel.replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(t.waMsg(r,c,AG,dShort(lim))); a.target="_blank"; a.rel="noreferrer"; side.appendChild(a); }
-    var pb=el("button","btn ghost",t.pdf); pb.style.cssText="margin-top:10px;width:100%"; pb.addEventListener("click",function(){ makeContract(r,pb); }); side.appendChild(pb);
     var ab=el("button","btn ghost",t.attBtn); ab.style.cssText="margin-top:10px;width:100%"; ab.addEventListener("click",function(){ makeAttestation(r,ab); }); side.appendChild(ab);
   } else {
     if(rec){
