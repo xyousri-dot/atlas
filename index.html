@@ -958,8 +958,10 @@ details.meer>div{padding:0 12px 12px}
               <div class="f"><label class="lbl" for="stCloudWw" id="stCloudWwL"></label><input type="password" id="stCloudWw" autocomplete="current-password"></div>
             </div>
             <button class="btn sm" id="stCloudIn" style="margin-top:10px;width:100%"></button>
+            <button class="btn ghost sm" id="stCloudNieuw" style="margin-top:8px;width:100%"></button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn ghost sm" id="stCloudTest"></button>
             <button class="btn ghost sm" id="stCloudNu" hidden></button>
             <button class="btn ghost sm" id="stCloudUit" hidden></button>
           </div>
@@ -1187,6 +1189,18 @@ var TXT = {
   stCloudH:"Gegevens op al je toestellen",
   stCloudP:"Zonder dit staat alles alleen in deze browser. Met een verbinding ziet je telefoon hetzelfde als je laptop, en ben je niets kwijt als je de browser leegmaakt.",
   stCloudMailL:"E-mailadres", stCloudWwL:"Wachtwoord", stCloudIn:"Aanmelden", stCloudUit:"Afmelden", stCloudNu:"Nu bijwerken",
+  stCloudNieuw:"Nieuw account maken", stCloudTest:"Verbinding testen",
+  stCloudNieuwOk:"Account gemaakt en aangemeld.",
+  stCloudBevestig:"Account gemaakt. Er staat een bevestigingsmail klaar \u2014 klik die aan en meld je daarna aan. Wil je dat niet, zet dan in de database bij Authentication \u2192 Providers \u2192 Email de bevestiging uit.",
+  sbTest0:"Vul eerst de Project-URL en de publieke sleutel in, bij \u2018Verbinding instellen\u2019.",
+  sbTestUrl:"De Project-URL klopt niet. Hij hoort eruit te zien als https://xxxx.supabase.co",
+  sbTestNet:"Geen contact met de database. Controleer je internet en of de URL juist is.",
+  sbTestTabel:"De database is bereikbaar, maar de tabel bestaat nog niet. Voer het stukje SQL uit in de SQL Editor van je project \u2014 dat maakt de tabel en zet de beveiliging aan.",
+  sbTestKlaar:"De database staat klaar en is goed afgeschermd. Maak nu een account of meld je aan.",
+  sbTestOpen:"Let op: de tabel is leesbaar zonder aanmelden. Voer het stukje SQL opnieuw uit \u2014 de beveiliging staat niet aan.",
+  sbTestRechten:function(c){ return "Aangemeld, maar deze gebruiker mag er niet bij (HTTP "+c+"). Voer het stukje SQL uit \u2014 dat zet de rechten goed."; },
+  sbTestSchrijven:function(c){ return "Lezen lukt, opslaan niet (HTTP "+c+"). Voer het stukje SQL opnieuw uit; de schrijfrechten ontbreken."; },
+  sbTestGoed:"Alles werkt: lezen, opslaan en verwijderen. Doe hetzelfde op je andere toestel.",
   stCloudSetH:"Verbinding instellen", stCloudUrlL:"Project-URL", stCloudKeyL:"Publieke sleutel (anon key)", stCloudSave:"Verbinding bewaren",
   stCloudUit0:"Nog niet ingesteld \u2014 alles staat alleen op dit toestel.",
   stCloudAan:function(n){ return "Verbonden. Alles staat op al je toestellen."+(n?" Nog "+n+" te versturen.":""); },
@@ -1194,7 +1208,7 @@ var TXT = {
   stCloudFout:function(f){ return "Verbinding werkt niet ("+f+"). Je werk blijft lokaal bewaard en gaat mee zodra het weer lukt."; },
   stCloudUitLog:"Ingesteld, maar niet aangemeld. Meld je aan om je gegevens te delen tussen toestellen.",
   stCloudOk:"Aangemeld \u2014 gegevens worden opgehaald.", stCloudMis:function(f){ return "Aanmelden lukte niet: "+f; },
-  stCloudHelp:"Zo maak je de verbinding, \u00e9\u00e9n keer per zaak:\n1. Maak een gratis project op supabase.com.\n2. Open in dat project de SQL Editor en plak het stukje SQL dat je van Atlas kreeg. Dat maakt de tabel en zet de beveiliging aan.\n3. Ga naar Project Settings \u2192 API en kopieer de Project URL en de anon public key hierboven.\n4. Maak onder Authentication \u2192 Users een gebruiker aan voor jezelf en voor je personeel.\n5. Meld je hierboven aan. Doe daarna hetzelfde op je telefoon.",
+  stCloudHelp:"E\u00e9n keer per zaak:\n1. Maak een gratis project op supabase.com.\n2. Open in dat project de SQL Editor, plak het stukje SQL dat je van Atlas kreeg en druk op Run.\n3. Ga naar Project Settings \u2192 API en zet de Project URL en de anon public key hierboven.\n4. Druk op \u2018Verbinding testen\u2019. Atlas zegt zelf wat er nog mis is.\n5. Maak hierboven een account met je e-mail en een wachtwoord. Je personeel doet hetzelfde, op hun eigen toestel \u2014 niemand hoeft in supabase te komen.",
   stH:"Instellingen", stP:"Dit verschijnt in de app en op het contract.",
   stNameL:"Naam van de zaak", stCityL:"Stad", stInitL:"Letter logo", stCautionL:"Standaardborg (DH)", stWindowL:"Boetetermijn (dagen)", stFranchiseL:"Eigen risico op het contract (DH)", stSave:"Opslaan",
   stFine:"De boetetermijn bepaalt de datum op het contract waarna je niets meer inhoudt. Dertig dagen na het einde van de huur is gebruikelijk.",
@@ -1476,6 +1490,18 @@ var TXT = {
   stCloudH:"Vos donn\u00e9es sur tous vos appareils",
   stCloudP:"Sans cela, tout reste dans ce navigateur. Avec une connexion, votre t\u00e9l\u00e9phone voit la m\u00eame chose que votre ordinateur, et rien n'est perdu si vous videz le navigateur.",
   stCloudMailL:"Adresse e-mail", stCloudWwL:"Mot de passe", stCloudIn:"Se connecter", stCloudUit:"Se d\u00e9connecter", stCloudNu:"Mettre \u00e0 jour",
+  stCloudNieuw:"Cr\u00e9er un compte", stCloudTest:"Tester la connexion",
+  stCloudNieuwOk:"Compte cr\u00e9\u00e9 et connect\u00e9.",
+  stCloudBevestig:"Compte cr\u00e9\u00e9. Un e-mail de confirmation vous attend \u2014 cliquez dessus puis connectez-vous. Sinon, d\u00e9sactivez la confirmation dans Authentication \u2192 Providers \u2192 Email.",
+  sbTest0:"Renseignez d\u2019abord l\u2019URL du projet et la cl\u00e9 publique, sous \u00ab Configurer la connexion \u00bb.",
+  sbTestUrl:"L\u2019URL du projet n\u2019est pas correcte. Elle ressemble \u00e0 https://xxxx.supabase.co",
+  sbTestNet:"Pas de contact avec la base. V\u00e9rifiez votre connexion et l\u2019URL.",
+  sbTestTabel:"La base r\u00e9pond, mais la table n\u2019existe pas encore. Ex\u00e9cutez le SQL dans le SQL Editor de votre projet.",
+  sbTestKlaar:"La base est pr\u00eate et bien prot\u00e9g\u00e9e. Cr\u00e9ez un compte ou connectez-vous.",
+  sbTestOpen:"Attention : la table est lisible sans connexion. Ex\u00e9cutez le SQL \u00e0 nouveau \u2014 la s\u00e9curit\u00e9 n\u2019est pas activ\u00e9e.",
+  sbTestRechten:function(c){ return "Connect\u00e9, mais cet utilisateur n\u2019a pas acc\u00e8s (HTTP "+c+"). Ex\u00e9cutez le SQL pour r\u00e9gler les droits."; },
+  sbTestSchrijven:function(c){ return "Lecture possible, enregistrement non (HTTP "+c+"). Ex\u00e9cutez le SQL \u00e0 nouveau."; },
+  sbTestGoed:"Tout fonctionne : lecture, \u00e9criture et suppression. Faites de m\u00eame sur votre autre appareil.",
   stCloudSetH:"Configurer la connexion", stCloudUrlL:"URL du projet", stCloudKeyL:"Cl\u00e9 publique (anon key)", stCloudSave:"Enregistrer la connexion",
   stCloudUit0:"Pas encore configur\u00e9 \u2014 tout reste sur cet appareil.",
   stCloudAan:function(n){ return "Connect\u00e9. Vos donn\u00e9es sont sur tous vos appareils."+(n?" Encore "+n+" \u00e0 envoyer.":""); },
@@ -1483,7 +1509,7 @@ var TXT = {
   stCloudFout:function(f){ return "La connexion ne fonctionne pas ("+f+"). Votre travail reste enregistr\u00e9 ici et partira d\u00e8s que possible."; },
   stCloudUitLog:"Configur\u00e9, mais pas connect\u00e9. Connectez-vous pour partager vos donn\u00e9es entre appareils.",
   stCloudOk:"Connect\u00e9 \u2014 r\u00e9cup\u00e9ration des donn\u00e9es.", stCloudMis:function(f){ return "La connexion a \u00e9chou\u00e9 : "+f; },
-  stCloudHelp:"Comment cr\u00e9er la connexion, une seule fois par agence :\n1. Cr\u00e9ez un projet gratuit sur supabase.com.\n2. Dans ce projet, ouvrez le SQL Editor et collez le SQL fourni par Atlas. Cela cr\u00e9e la table et active la s\u00e9curit\u00e9.\n3. Allez dans Project Settings \u2192 API et copiez la Project URL et la anon public key ci-dessus.\n4. Dans Authentication \u2192 Users, cr\u00e9ez un utilisateur pour vous et pour votre personnel.\n5. Connectez-vous ci-dessus. Faites ensuite de m\u00eame sur votre t\u00e9l\u00e9phone.",
+  stCloudHelp:"Une seule fois par agence :\n1. Cr\u00e9ez un projet gratuit sur supabase.com.\n2. Dans ce projet, ouvrez le SQL Editor, collez le SQL fourni par Atlas et cliquez sur Run.\n3. Dans Project Settings \u2192 API, copiez la Project URL et la anon public key ci-dessus.\n4. Cliquez sur \u00ab Tester la connexion \u00bb. Atlas vous dit ce qui manque.\n5. Cr\u00e9ez un compte ci-dessus avec votre e-mail et un mot de passe. Votre personnel fait de m\u00eame sur son appareil.",
   stH:"Réglages", stP:"Ceci apparaît dans l'application et sur le contrat.",
   stNameL:"Nom de l'agence", stCityL:"Ville", stInitL:"Lettre du logo", stCautionL:"Caution par défaut (DH)", stWindowL:"Fenêtre amende (jours)", stFranchiseL:"La franchise au contrat (DH)", stSave:"Enregistrer",
   stFine:"La fenêtre amende fixe la date sur le contrat après laquelle plus rien n'est retenu. Trente jours après la fin de la location est courant.",
@@ -1761,6 +1787,52 @@ async function sbAanmelden(mail,ww){
   }catch(e){ return { ok:false, fout:String(e&&e.message||e) }; }
 }
 function sbAfmelden(){ SBSES=null; sbBewaarSes(); SBSTAT="uit"; sbVerf(); }
+
+/* Een nieuw account maken vanuit Atlas zelf. Zo hoeft de verhuurder — en zijn
+   personeel — nooit in het beheerscherm van de database te komen. */
+async function sbNieuwAccount(mail,ww){
+  try{
+    var res=await fetch(sbBasis()+"/auth/v1/signup",
+      { method:"POST", headers:{ "apikey":SB.key, "Content-Type":"application/json" },
+        body:JSON.stringify({ email:mail, password:ww }) });
+    var j=null; try{ j=await res.json(); }catch(e){}
+    if(!res.ok) return { ok:false, fout:(j&&(j.error_description||j.msg||j.message))||("HTTP "+res.status) };
+    if(j && j.access_token){ SBSES=j; sbBewaarSes(); return { ok:true }; }
+    /* Geen sessie maar wel een gebruiker: de database vraagt om bevestiging per mail. */
+    return { ok:false, bevestig:true };
+  }catch(e){ return { ok:false, fout:String(e&&e.message||e) }; }
+}
+
+/* De verbinding nakijken en in gewone taal zeggen wat er nog moet gebeuren. Zonder
+   dit staart de verhuurder naar een foutcode en weet hij niet wat hij fout doet. */
+async function sbTest(){
+  var t=T();
+  if(!sbBasis() || !SB.key) return { stap:"leeg", tekst:t.sbTest0 };
+  if(!/^https?:\/\/[^\s\/]+/.test(sbBasis())) return { stap:"url", tekst:t.sbTestUrl };
+  var res;
+  try{
+    res=await fetch(sbBasis()+"/rest/v1/atlas?select=path&limit=1",{ headers:{ "apikey":SB.key } });
+  }catch(e){ return { stap:"net", tekst:t.sbTestNet }; }
+  if(res.status===401 && !SBSES) return { stap:"ok-uit", tekst:t.sbTestKlaar };
+  if(res.status===404) return { stap:"tabel", tekst:t.sbTestTabel };
+  if(res.status===401 || res.status===403){
+    var j=null; try{ j=await res.json(); }catch(e){}
+    var code=(j&&(j.code||j.message))||"";
+    if(/PGRST205|does not exist|schema cache/i.test(String(code))) return { stap:"tabel", tekst:t.sbTestTabel };
+    if(!SBSES) return { stap:"ok-uit", tekst:t.sbTestKlaar };
+  }
+  if(!SBSES) return { stap:"open", tekst:t.sbTestOpen };
+  /* Aangemeld: kan deze gebruiker er echt bij? */
+  var res2=await sbRoep("/rest/v1/atlas?select=path&limit=1");
+  if(res2.status===404) return { stap:"tabel", tekst:t.sbTestTabel };
+  if(!res2.ok) return { stap:"rechten", tekst:t.sbTestRechten(res2.status) };
+  var proef="settings/proef-"+Date.now();
+  var res3=await sbRoep("/rest/v1/atlas",{ method:"POST", headers:{ "Prefer":"resolution=merge-duplicates" },
+    body:JSON.stringify({ path:proef, data:{proef:true}, updated_at:new Date().toISOString() }) });
+  if(!res3.ok) return { stap:"schrijven", tekst:t.sbTestSchrijven(res3.status) };
+  await sbRoep("/rest/v1/atlas?path=eq."+encodeURIComponent(proef),{ method:"DELETE" });
+  return { stap:"goed", tekst:t.sbTestGoed };
+}
 
 function sbZet(pad,d){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"set",path:pad,data:d,t:Date.now()}); sbBewaarRij(); sbWerk(); }
 function sbWis(pad){ if(!sbIngesteld()||!sbInMap(pad)) return; SBQ.push({op:"del",path:pad,t:Date.now()}); sbBewaarRij(); sbWerk(); }
@@ -6435,7 +6507,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="110";
+var ATLASVER="111";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7128,6 +7200,8 @@ function tekenCloud(){
   $("stCloudH").textContent=t.stCloudH; $("stCloudP").textContent=t.stCloudP;
   $("stCloudMailL").textContent=t.stCloudMailL; $("stCloudWwL").textContent=t.stCloudWwL;
   $("stCloudIn").textContent=t.stCloudIn; $("stCloudUit").textContent=t.stCloudUit; $("stCloudNu").textContent=t.stCloudNu;
+  $("stCloudNieuw").textContent=t.stCloudNieuw; $("stCloudTest").textContent=t.stCloudTest;
+  $("stCloudTest").hidden=!sbIngesteld();
   $("stCloudSetH").textContent=t.stCloudSetH; $("stCloudUrlL").textContent=t.stCloudUrlL;
   $("stCloudKeyL").textContent=t.stCloudKeyL; $("stCloudSave").textContent=t.stCloudSave;
   $("stCloudHelp").textContent=t.stCloudHelp;
@@ -7163,6 +7237,26 @@ if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
   if(!uit.ok){ SBSTAT="fout"; SBFOUT=uit.fout; tekenCloud(); toast(t.stCloudMis(uit.fout)); return; }
   SBSTAT="bezig"; tekenCloud(); toast(t.stCloudOk);
   await sbRond(); tekenCloud();
+});
+if($("stCloudNieuw")) $("stCloudNieuw").addEventListener("click",async function(){
+  var t=T(), knop=this, oud=knop.textContent;
+  var mail=$("stCloudMail").value.trim(), ww=$("stCloudWw").value;
+  if(!mail || !ww) return;
+  knop.disabled=true; knop.textContent=t.stCloudBezig;
+  var uit=await sbNieuwAccount(mail,ww);
+  knop.disabled=false; knop.textContent=oud; $("stCloudWw").value="";
+  if(uit.bevestig){ $("stCloudStat").textContent=t.stCloudBevestig; $("stCloudStat").style.color="var(--gold)"; return; }
+  if(!uit.ok){ SBSTAT="fout"; SBFOUT=uit.fout; tekenCloud(); toast(t.stCloudMis(uit.fout)); return; }
+  toast(t.stCloudNieuwOk); SBSTAT="bezig"; tekenCloud(); await sbRond(); tekenCloud();
+});
+if($("stCloudTest")) $("stCloudTest").addEventListener("click",async function(){
+  var t=T(), knop=this, oud=knop.textContent, vak=$("stCloudStat");
+  knop.disabled=true; knop.textContent=t.stCloudBezig;
+  var uit;
+  try{ uit=await sbTest(); }catch(e){ uit={ stap:"net", tekst:t.sbTestNet }; }
+  knop.disabled=false; knop.textContent=oud;
+  vak.textContent=uit.tekst;
+  vak.style.color=(uit.stap==="goed"||uit.stap==="ok-uit")?"var(--brand)":"var(--gold)";
 });
 if($("stCloudUit")) $("stCloudUit").addEventListener("click",function(){ sbAfmelden(); toast(T().saved); });
 if($("stCloudNu")) $("stCloudNu").addEventListener("click",async function(){
