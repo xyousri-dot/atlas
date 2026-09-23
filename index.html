@@ -367,6 +367,13 @@ img,canvas,video,svg,table{max-width:100%}
 .tegel .plate{border:0;padding:0;background:none;font-family:inherit;font-size:inherit;color:inherit;gap:4px}
 .tegel[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
 .tegel:disabled{opacity:.5;cursor:not-allowed}
+/* Status van de kaartlezing op het huurscherm zelf. */
+/* Op de telefoon: de knoppen van de bon (contract, WhatsApp) boven de details. */
+@media(max-width:859px){ #vDone .two{display:flex;flex-direction:column} #vDone #rSide{order:-1;margin-bottom:14px} }
+.snelstat{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;line-height:1.4;background:var(--card);border:1px solid var(--line2)}
+.snelstat.bezig{border-color:var(--rand);color:var(--ink2)}
+.snelstat.ok{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snelstat.half{border-color:var(--gold);color:var(--ink)}
 /* Wat er staat als er nog geen auto's zijn: geen lege plek, maar de weg vooruit. */
 .leegvak{grid-column:1/-1;border:1px dashed var(--rand);border-radius:10px;padding:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .leegvak p{margin:0 0 0 2px;flex:1 1 200px;font-size:13.5px;color:var(--ink2)}
@@ -682,6 +689,14 @@ details.meer>div{padding:0 12px 12px}
           <div class="vstap-k"><span class="vstap-nr">1</span><b id="nwS1"></b><span class="vstap-ok" id="nwV1" hidden>\u2713</span></div>
           <div class="vstap-in">
             <button type="button" class="btn groot" id="nwScanKaart" style="width:100%"></button>
+            <!-- De kaart wordt hier gelezen, op dit scherm. Geen apart klantscherm meer
+                 en geen tweede opslaanknop: terwijl de kaart gelezen wordt kiest de
+                 verhuurder de auto en de dagen. -->
+            <div class="snelstat" id="nwScanStat" hidden role="status" aria-live="polite"></div>
+            <button type="button" class="btn ghost sm" id="nwScanLic" hidden style="width:100%;margin-top:8px"></button>
+            <input type="file" id="snelCam" accept="image/*,.heic,.heif" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
+            <input type="file" id="snelKies" accept="image/*,.heic,.heif,application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
+            <input type="file" id="snelLic" accept="image/*,.heic,.heif,application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
             <p class="fine" id="nwOf" style="margin:10px 0 6px;text-align:center"></p>
             <div class="f"><label class="lbl" for="nwClient" id="nwClientL"></label><select id="nwClient"></select></div>
             <div class="grid2" id="nwNewWrap">
@@ -711,6 +726,7 @@ details.meer>div{padding:0 12px 12px}
             <div class="tegels" id="nwCarTegels"></div>
             <label class="lbl" for="nwCar" id="nwCarL" hidden></label>
             <select id="nwCar" hidden></select>
+            <div class="f" id="nwKmWrap" style="margin-top:10px"><label class="lbl" for="nwKm" id="nwKmL"></label><input type="number" id="nwKm" inputmode="numeric"></div>
           </div>
         </section>
 
@@ -1011,8 +1027,16 @@ var TXT = {
  nl:{ loc:"nl-NL",
   tabs:["Dag","Planning","Klanten","Wagenpark","Borgen","Kas","Instellingen"],
   dayH:"Wat staat er open", dayP:"Auto's die weg moeten, auto's die terug moeten, en wat aandacht vraagt.",
-  newRental:"+ Verhuur", newCar:"+ Auto", newClient:"+ Klant",
+  newRental:"Nieuw contract", newCar:"+ Auto", newClient:"+ Klant",
   nwS1:"Wie huurt", nwS2:"Welke auto", nwS3:"Hoe lang",
+  nwContract:"Contract maken", nwReserve:"Reservering opslaan", nwKmL:"Km bij vertrek",
+  snelBezig:function(s){ return "Kaart wordt gelezen\u2026 "+s+" s \u2014 kies intussen de auto en de dagen."; },
+  snelOk:function(n,nr,geb){ return "\u2713 "+n+(nr?" \u00b7 "+nr:"")+(geb?" \u00b7 geb. "+geb:""); },
+  snelHalf:"De naam was niet leesbaar \u2014 typ hem hieronder. Wat wel gelezen is, gaat mee op het contract.",
+  snelNiets:"Op deze foto kon ik niets lezen. Neem de achterkant van de kaart, recht van boven, met de regels onderaan erop.",
+  snelLic:"+ Rijbewijs scannen", snelLicOk:function(nr){ return "\u2713 Rijbewijs "+nr; },
+  snelWacht:"Even geduld \u2014 de kaart wordt nog gelezen.",
+  rFotos:"Foto\u2019s en schade vastleggen (mag ook later)", rSnelKlaar:"Contract klaar",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwScanKaart:"Kaart van de klant scannen",
@@ -1275,7 +1299,7 @@ var TXT = {
   vGive:function(m){ return "Voorstel: "+m+" volledig teruggeven."; }, vHold:"Voorstel: een deel inhouden, bedrag samen met de klant afspreken.",
   vFoot:"Atlas houdt zelf niets in en doet geen betaling.",
   rDepart:"Sleutels meegegeven", rRetour:"Auto teruggenomen", rWhat:"Wat is vastgelegd",
-  rKm:"Kilometerstand", rFuel:"Brandstof", rDmg:"Aangetikte schade", rPhotos:"Foto's", rSign:"Handtekening", rCaution:"Borg",
+  rKm:"Kilometerstand", rFuel:"Brandstof", rDmg:"Aangetikte schade", rPhotos:"Foto's", rSign:"Handtekening", rSignPapier:"op het papier", rCaution:"Borg",
   rNone:"geen", rPts:function(n){ return n+" punt"+(n>1?"en":""); },
   cmpH:"Vertrek / terugkomst", cmpDep:"Vertrek", cmpRet:"Terugkomst", cmpNo:"geen foto", cmpNoDep:"Geen vertrekfoto's van deze huur.",
   rNoteDep:"De borg staat nu in het boek, met zijn einddatum.", rNoteRet:"Vul hieronder in hoeveel je teruggeeft — de rest komt automatisch in het boek als ingehouden.", release:"Borg teruggegeven",
@@ -1368,8 +1392,16 @@ var TXT = {
  fr:{ loc:"fr-FR",
   tabs:["Journée","Planning","Clients","Parc auto","Cautions","Caisse","Réglages"],
   dayH:"Ce qui est en cours", dayP:"Les voitures à remettre, celles à reprendre, et ce qui demande attention.",
-  newRental:"+ Location", newCar:"+ Voiture", newClient:"+ Client",
+  newRental:"Nouveau contrat", newCar:"+ Voiture", newClient:"+ Client",
   nwS1:"Qui loue", nwS2:"Quelle voiture", nwS3:"Combien de temps",
+  nwContract:"\u00c9tablir le contrat", nwReserve:"Enregistrer la r\u00e9servation", nwKmL:"Km au d\u00e9part",
+  snelBezig:function(s){ return "Lecture de la carte\u2026 "+s+" s \u2014 choisissez la voiture et les jours en attendant."; },
+  snelOk:function(n,nr,geb){ return "\u2713 "+n+(nr?" \u00b7 "+nr:"")+(geb?" \u00b7 n\u00e9(e) le "+geb:""); },
+  snelHalf:"Le nom n\u2019\u00e9tait pas lisible \u2014 tapez-le ci-dessous. Ce qui a \u00e9t\u00e9 lu figure sur le contrat.",
+  snelNiets:"Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
+  snelLic:"+ Scanner le permis", snelLicOk:function(nr){ return "\u2713 Permis "+nr; },
+  snelWacht:"Un instant \u2014 la carte est encore en lecture.",
+  rFotos:"Photos et dommages (possible plus tard)", rSnelKlaar:"Contrat pr\u00eat",
   nwD2H:"Ajouter un 2ème conducteur", nwD2NameL:"Nom du 2ème conducteur", nwD2LicL:"N° de permis", nwD2IssueL:"Délivré le",
   nwScanKaart:"Scanner la carte du client",
   nwOf:"ou choisissez un client existant",
@@ -1576,7 +1608,7 @@ var TXT = {
   vGive:function(m){ return "Proposition : rendre "+m+" en entier."; }, vHold:"Proposition : retenir une partie, à convenir avec le client.",
   vFoot:"Atlas ne retient rien tout seul et ne prélève aucun paiement.",
   rDepart:"Clés remises", rRetour:"Véhicule repris", rWhat:"Ce qui est enregistré",
-  rKm:"Kilométrage", rFuel:"Carburant", rDmg:"Dommages marqués", rPhotos:"Photos", rSign:"Signature", rCaution:"Caution",
+  rKm:"Kilométrage", rFuel:"Carburant", rDmg:"Dommages marqués", rPhotos:"Photos", rSign:"Signature", rSignPapier:"sur le papier", rCaution:"Caution",
   rNone:"aucun", rPts:function(n){ return n+" point"+(n>1?"s":""); },
   cmpH:"Départ / retour", cmpDep:"Départ", cmpRet:"Retour", cmpNo:"pas de photo", cmpNoDep:"Pas de photo de départ pour cette location.",
   rNoteDep:"La caution est inscrite, avec sa date limite.", rNoteRet:"Indiquez ci-dessous combien vous rendez — le reste est automatiquement inscrit comme retenu.", release:"Caution rendue",
@@ -1760,7 +1792,13 @@ async function sbRoep(pad,opt){
   var h={ "apikey":SB.key, "Content-Type":"application/json" };
   if(opt.headers) for(var k in opt.headers) h[k]=opt.headers[k];
   if(SBSES && SBSES.access_token) h.Authorization="Bearer "+SBSES.access_token;
-  var res=await fetch(sbBasis()+pad,{ method:opt.method||"GET", headers:h, body:opt.body });
+  /* Een verbinding die blijft hangen (slechte 4G, wifi die wegvalt) mag de rij niet
+     minutenlang vasthouden: na 15 seconden opgeven, dan probeert de volgende ronde het. */
+  var stop=(typeof AbortController!=="undefined")?new AbortController():null;
+  var wekker=stop?setTimeout(function(){ try{ stop.abort(); }catch(e){} },15000):null;
+  var res;
+  try{ res=await fetch(sbBasis()+pad,{ method:opt.method||"GET", headers:h, body:opt.body, signal:stop?stop.signal:undefined }); }
+  finally{ if(wekker) clearTimeout(wekker); }
   /* Een verlopen sleutel is geen storing: één keer vernieuwen en opnieuw proberen. */
   if(res.status===401 && SBSES && SBSES.refresh_token && !opt.nogmaals){
     if(await sbVernieuw()){ opt.nogmaals=true; return sbRoep(pad,opt); }
@@ -6141,6 +6179,10 @@ function openNew(presetClient, edit){
     $("nwD2").open=!!(d2&&d2.name);
   }
   tekenAutoTegels(); tekenDagKnoppen(); markKlantKlaar();
+  if(!edit) snelReset();
+  if($("nwKmL")) $("nwKmL").textContent=t.nwKmL;
+  if($("nwKmWrap")) $("nwKmWrap").hidden=!!edit;
+  zetKm(); zetHuurKnop();
 }
 function clientHistory(c){
   var past=RENTALS.filter(function(r){ return live(r) && r.clientId===c.id && r.retour; });
@@ -6274,17 +6316,95 @@ function tekenDagKnoppen(){
 ["nwFrom","nwTo"].forEach(function(id){
   $(id).addEventListener("change",function(){ tekenDagKnoppen(); tekenAutoTegels(); });
 });
-/* De snelste weg naar een contract: kaart scannen, klant staat erin, terug hierheen. */
-$("nwScanKaart").addEventListener("click",function(){
-  var f=$("nwFrom").value, tt=$("nwTo").value, auto=$("nwCar").value;
-  openClient(null,function(id){
-    openNew(id);
-    if(f) $("nwFrom").value=f;
-    if(tt) $("nwTo").value=tt;
-    if(auto) $("nwCar").value=auto;
-    recalc(); tekenDagKnoppen(); tekenAutoTegels(); markKlantKlaar();
-  });
-});
+/* ============ SNEL CONTRACT ============
+   Het papieren contract van een agentschap is: blad pakken, invullen, tekenen. Atlas
+   moet sneller zijn dan dat, anders stapt niemand over. Dus:
+
+     Nieuw contract  →  foto van de kaart  →  Contract maken
+
+   De kaart wordt hier op het huurscherm gelezen, niet op een apart klantscherm met
+   een eigen opslaanknop. Het lezen duurt even; intussen tikt de verhuurder de auto
+   en het aantal dagen aan. Klant, verhuur en vertrek worden samen opgeslagen op het
+   moment dat hij op "Contract maken" drukt, en de PDF komt er meteen uit.
+
+   De gelezen gegevens staan in het (verborgen) klantformulier — dat is de plek waar
+   de hele leesmachine al naartoe schrijft. We lezen ze daar uit, in plaats van een
+   tweede leesweg te bouwen die kan afwijken. */
+var SNELKLANT=null, SNELFORM=false, SNELBEZIG=null;
+function klantUitFormulier(){
+  return { name:$("cvName").value.trim(), tel:$("cvTel").value.trim(), docType:$("cvDocType").value||"cin",
+    docNumber:$("cvDocNo").value.trim(), birth:$("cvBirth").value||"", docExpiry:$("cvDocExp").value||"",
+    licenceNumber:$("cvLic").value.trim(), licenceExpiry:$("cvLicExp").value||"", licenceIssue:$("cvLicIssue").value||"",
+    nationality:$("cvNat").value.trim(), address:$("cvAddr").value.trim(),
+    scans:(clientDraft&&clientDraft.scans)?Object.assign({},clientDraft.scans):{} };
+}
+function snelReset(){ SNELKLANT=null; SNELFORM=false; SNELBEZIG=null;
+  if($("nwScanStat")){ $("nwScanStat").hidden=true; $("nwScanStat").textContent=""; }
+  if($("nwScanLic")) $("nwScanLic").hidden=true; }
+/* Het huurscherm weer precies zo zetten als het stond: openClient() hieronder
+   verandert de onderste knoppen en het scherm, en dat mag de verhuurder niet merken. */
+function terugNaarHuur(){
+  var t=T(); view="vNew";
+  VIEWS.forEach(function(x){ $(x).hidden = x!=="vNew"; });
+  $("dock").hidden=false; $("prog").hidden=true;
+  Array.prototype.forEach.call($("tabs").children,function(b){ b.setAttribute("aria-current", b.dataset.v===TABOF.vNew); });
+  $("bBack").hidden=false; $("bBack").className="btn ghost"; $("bBack").textContent=t.cancel;
+  zetHuurKnop();
+}
+function zetHuurKnop(){
+  var t=T(), b=$("bGo"); if(!b || view!=="vNew") return;
+  if(editRental){ b.textContent=t.nwSaveEdit; return; }
+  b.textContent = ($("nwFrom").value && $("nwFrom").value<=today()) ? t.nwContract : t.nwReserve;
+}
+async function snelScan(bestanden,soort){
+  var t=T(); if(!bestanden || !bestanden.length) return;
+  var stat=$("nwScanStat"), t0=Date.now();
+  stat.hidden=false; stat.className="snelstat bezig"; stat.textContent=t.snelBezig(0);
+  var tik=setInterval(function(){ stat.textContent=t.snelBezig(Math.round((Date.now()-t0)/1000)); },1000);
+  /* Wat al op het huurscherm staat, blijft staan. */
+  var bewaar={ car:$("nwCar").value, from:$("nwFrom").value, to:$("nwTo").value,
+               total:$("nwTotal").value, caution:$("nwCaution").value, name:$("nwName").value, tel:$("nwTel").value };
+  if(!SNELFORM){ openClient(null,null); SNELFORM=true; }
+  terugNaarHuur();
+  var klaar;
+  SNELBEZIG=new Promise(function(r){ klaar=r; });
+  try{ await verwerkKeuze({ files:Array.prototype.slice.call(bestanden), value:"" }, soort, soort==="licence"?"":"achter"); }
+  catch(e){}
+  clearInterval(tik);
+  var k=klantUitFormulier(); SNELKLANT=k;
+  /* Het huurscherm bijwerken, zonder de keuzes van de verhuurder te wissen. */
+  if(view==="vNew"){
+    $("nwClient").value="new"; syncClientPick();
+    $("nwName").value = k.name || bewaar.name;
+    $("nwTel").value = bewaar.tel || k.tel;
+    if(bewaar.car) $("nwCar").value=bewaar.car;
+    if(bewaar.from) $("nwFrom").value=bewaar.from;
+    if(bewaar.to) $("nwTo").value=bewaar.to;
+    recalc(); tekenAutoTegels(); tekenDagKnoppen(); markKlantKlaar(); zetHuurKnop();
+    if(bewaar.total) $("nwTotal").value=bewaar.total;
+    if(bewaar.caution) $("nwCaution").value=bewaar.caution;
+  }
+  var nummer = k.docNumber ? ((k.docType==="passport"?"":"CIN ")+k.docNumber) : "";
+  var regels=[];
+  if(soort==="licence"){
+    if(k.licenceNumber) regels.push(t.snelLicOk(k.licenceNumber));
+  }
+  if(k.name) regels.unshift(t.snelOk(k.name, nummer, k.birth?dNum(k.birth):""));
+  if(!k.name && !k.docNumber && !k.licenceNumber){ stat.className="snelstat half"; stat.textContent=t.snelNiets; }
+  else if(!k.name){ stat.className="snelstat half"; stat.textContent=t.snelHalf; if(!bewaar.name) $("nwName").focus(); }
+  else { stat.className="snelstat ok"; stat.textContent=regels.join("  ·  "); }
+  $("nwScanLic").hidden=false; $("nwScanLic").textContent=k.licenceNumber?t.snelLicOk(k.licenceNumber):t.snelLic;
+  SNELBEZIG=null; klaar();
+}
+$("nwScanKaart").addEventListener("click",function(){ $("snelKies").click(); });
+$("nwScanLic").addEventListener("click",function(){ $("snelLic").click(); });
+$("snelKies").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"cin").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("snelCam").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"cin").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("snelLic").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"licence").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("nwFrom").addEventListener("change",zetHuurKnop);
+/* Km bij vertrek: staat al op wat de auto laatst had. Alleen aanpassen als het niet klopt. */
+function zetKm(){ var c=car($("nwCar").value); if($("nwKm")) $("nwKm").value = c && c.km ? c.km : ""; }
+$("nwCar").addEventListener("change",zetKm);
 function markKlantKlaar(){
   var sel=$("nwClient"), naam=$("nwName").value.trim();
   var klaar = (sel.value && sel.value!=="new") || naam.length>1;
@@ -6311,26 +6431,51 @@ async function saveRental(){
     await S.set("rentals/"+editRental.id,stripId(upd)); editRental=null;
     await reload(); view="vDay"; render(); toast(t.saved); return;
   }
+  /* Wordt de kaart nog gelezen? Dan even wachten, anders gaat de klant zonder
+     documentnummer het contract op. */
+  if(SNELBEZIG){ toast(t.snelWacht); var bk=$("bGo"); bk.disabled=true; await SNELBEZIG; bk.disabled=false; cid=$("nwClient").value; }
+  /* Eerst kijken of de auto vrij is, pas daarna iets opslaan — anders blijft er
+     een klant achter zonder verhuur. */
+  var busy=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to); })[0];
+  if(busy){ paintClash(busy); toast(t.nwClash); return; }
   if(cid==="new"){
     name=$("nwName").value.trim(); if(!name){ $("nwName").focus(); return; }
     tel=$("nwTel").value.trim(); cid=uid();
-    await S.set("clients/"+cid,{ name:name, tel:tel, docType:"cin", docNumber:"", flag:"ok", note:"", scans:{}, createdAt:new Date().toISOString() });
+    /* Alles wat van de kaart gelezen is, gaat mee in de klantfiche: nummer,
+       geboortedatum, adres, rijbewijs en de foto's zelf. */
+    var extra=SNELKLANT||{};
+    await S.set("clients/"+cid,Object.assign(
+      { docType:"cin", docNumber:"", flag:"ok", note:"", scans:{} }, extra,
+      { name:name, tel:tel, flag:"ok", note:"", createdAt:new Date().toISOString() }));
+    SNELKLANT=null;
   } else { var cl=client(cid); name=cl.name; tel=cl.tel||""; }
-  /* tweede slot: ook als de knop op een of andere manier aan stond, gaat een
-     dubbele verhuur van dezelfde auto er niet in */
-  var busy=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to); })[0];
-  if(busy){ paintClash(busy); toast(t.nwClash); return; }
   var rid=uid();
-  await S.set("rentals/"+rid,{ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, driver2:leesD2(), vehicleId:c.id, from:from, to:to,
+  var huur={ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, driver2:leesD2(), vehicleId:c.id, from:from, to:to,
     days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0,
-    depart:null, retour:null, released:false, createdAt:new Date().toISOString() });
+    depart:null, retour:null, released:false, createdAt:new Date().toISOString() };
+  /* Vandaag weg: dan is dit het moment dat de sleutel over de balie gaat. Het
+     vertrek wordt meteen vastgelegd met de km-stand van het scherm, een volle tank
+     en geen schade — precies wat de verhuurder anders met de hand op het papier
+     zet. Foto's en schade aanduiden kan daarna nog, maar houdt het contract niet
+     meer tegen. Begint de huur later, dan is het een reservering. */
+  var nuWeg = from<=today();
+  if(nuWeg){
+    var km=Number($("nwKm")&&$("nwKm").value)||Number(c.km)||0;
+    huur.depart={ marks:[], shots:{}, km:km, fuel:"100", sig:null, at:new Date().toISOString(), snel:true };
+    huur.limit=plus(to, AG.window||30);
+    if(km>(Number(c.km)||0)){ var c2=Object.assign({},c,{km:km}); await S.set("vehicles/"+c.id,stripId(c2)); }
+  }
+  await S.set("rentals/"+rid,huur);
   await reload();
-  /* De klant staat aan de balie met zijn sleutel in het zicht. Hem eerst naar het
-     dagoverzicht sturen en de verhuur daar laten terugzoeken is een klik die
-     niemand nodig heeft: we gaan meteen door naar het vertrek, want daar komt
-     het contract uit. */
   var nieuw=RENTALS.filter(function(x){ return x.id===rid; })[0];
-  if(nieuw){ toast(t.saved); openForm(nieuw,"depart"); return; }
+  if(nieuw && nuWeg){
+    toast(t.saved);
+    receipt(nieuw,"depart");
+    /* De PDF meteen maken: daar drukte de verhuurder op. */
+    var knop=$("rSide").querySelector("button.btn");
+    if(knop) makeContract(nieuw,knop);
+    return;
+  }
   view="vDay"; render(); toast(t.saved);
 }
 
@@ -6507,7 +6652,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="111";
+var ATLASVER="112";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6717,12 +6862,12 @@ async function finishHandover(){
 function receipt(r,kind){
   var t=T(), c=car(r.vehicleId), rec=r[kind]||null;
   rental=r;
-  $("rTitle").textContent = kind==="depart"?t.rDepart:t.rRetour; $("rSub").innerHTML=esc(r.clientName)+" · "+esc(c.model)+" "+plateHTML(c);
+  $("rTitle").textContent = (kind==="depart" && rec && rec.snel) ? t.rSnelKlaar : (kind==="depart"?t.rDepart:t.rRetour); $("rSub").innerHTML=esc(r.clientName)+" · "+esc(c.model)+" "+plateHTML(c);
   var main=$("rMain"); main.innerHTML="";
   var card=el("div","card"); card.appendChild(Object.assign(el("h2","ch"),{textContent:t.rWhat}));
   function row(k,v){ var x=el("div","row"); x.appendChild(el("span","k",k)); x.appendChild(el("span","v",v)); card.appendChild(x); }
   if(rec){
-    row(t.rKm,kmf(rec.km)); row(t.rFuel,fuelTxt(rec.fuel)); row(t.rDmg,rec.marks.length?t.rPts(rec.marks.length):t.rNone); row(t.rPhotos,Object.keys(rec.shots||{}).length+" / 4"); row(t.rSign,r.clientName); row(t.rCaution,dh(r.caution));
+    row(t.rKm,kmf(rec.km)); row(t.rFuel,fuelTxt(rec.fuel)); row(t.rDmg,rec.marks.length?t.rPts(rec.marks.length):t.rNone); row(t.rPhotos,Object.keys(rec.shots||{}).length+" / 4"); row(t.rSign, (rec.sig&&rec.sig.length>10) ? r.clientName : t.rSignPapier); row(t.rCaution,dh(r.caution));
     if(kind==="retour" && r.released){
       var ret=(r.cautionReturned!=null)?r.cautionReturned:r.caution, held=(r.cautionWithheld!=null)?r.cautionWithheld:0;
       row(t.rReturned,dh(ret)); if(held>0) row(t.rWithheld,dh(held));
@@ -6753,6 +6898,12 @@ function receipt(r,kind){
        en als volle knop. De borgbelofte en de rest lezen mag daarna. */
     var lim=r.limit||limitDate(r);
     var pb=el("button","btn",t.pdf); pb.style.cssText="width:100%"; pb.addEventListener("click",function(){ makeContract(r,pb); }); side.appendChild(pb);
+    /* Snel contract gemaakt zonder foto's? Dan kan het hier alsnog, maar het hoeft niet. */
+    if(rec && rec.snel){
+      var fb=el("button","btn ghost",t.rFotos); fb.style.cssText="width:100%;margin-top:8px";
+      fb.addEventListener("click",function(){ openForm(r,"depart"); });
+      side.appendChild(fb);
+    }
     var p=el("div"); p.innerHTML=promiseHTML(r.caution,lim); side.appendChild(p.firstChild);
     if(r.clientTel){ var a=el("a","wa",t.wa); a.href="https://wa.me/"+r.clientTel.replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(t.waMsg(r,c,AG,dShort(lim))); a.target="_blank"; a.rel="noreferrer"; side.appendChild(a); }
     var ab=el("button","btn ghost",t.attBtn); ab.style.cssText="margin-top:10px;width:100%"; ab.addEventListener("click",function(){ makeAttestation(r,ab); }); side.appendChild(ab);
@@ -7681,7 +7832,13 @@ function lookup(){
 $("qGo").addEventListener("click",lookup);
 
 /* ============ dock ============ */
-$("newRental").addEventListener("click",function(){ openNew(); });
+/* "Nieuw contract" opent het huurscherm én meteen de camera: bijna elke verhuur
+   begint met de kaart van de klant. Wie een vaste klant heeft, sluit de camera en
+   kiest hem uit de lijst. */
+$("newRental").addEventListener("click",function(){
+  openNew();
+  if(view==="vNew" && $("snelCam")) $("snelCam").click();
+});
 $("newCar").addEventListener("click",function(){ openCar(null); });
 $("newClient").addEventListener("click",function(){ openClient(null); });
 $("bBack").addEventListener("click",function(){
