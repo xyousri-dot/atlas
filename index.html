@@ -11,7 +11,7 @@
 <title>Atlas Verhuur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -19,8 +19,8 @@
 <style>
 :root{
   --bg:#F1F4F1; --card:#FFFFFF;
-  --ink:#151A16; --ink2:#596159; --ink3:#8B938B;
-  --line:#E4E8E3; --line2:#CED5CD;
+  --ink:#151A16; --ink2:#596159; --ink3:#676F67;
+  --line:#E4E8E3; --line2:#CED5CD; --rand:#868E86; --focus:#0C6A4C;
   --brand:#0C6A4C; --brand-2:#0A5540; --brand-soft:#E5F1EA;
   --warn:#C23F28; --warn-soft:#FBEAE4;
   --gold:#9A6E12; --gold-soft:#F9EFD9;
@@ -29,7 +29,10 @@
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%;font-variant-numeric:tabular-nums}
-h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.018em;line-height:1.16}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.022em;line-height:1.14;
+  font-family:"Bricolage Grotesque",Figtree,-apple-system,sans-serif;font-weight:800}
+/* Wie met een toetsenbord werkt moet zien waar hij staat. */
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .lbl{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
 [hidden]{display:none!important}
 .mono{font-family:"JetBrains Mono",monospace}
@@ -332,6 +335,30 @@ img,canvas,video,svg,table{max-width:100%}
 .cam .cam-knoppen{position:absolute;left:0;right:0;bottom:28px;display:flex;gap:10px;justify-content:center;padding:0 16px}
 .cam .cam-knoppen .btn{min-width:140px}
 .slot-h{font-weight:800;font-size:15px;letter-spacing:-.01em}
+/* Eén stap per blok: nummer, titel, vinkje als hij klaar is. */
+/* Let op: ".stap" bestond al voor de koppen in het scanvak. Deze blokken heten
+   daarom ".vstap" — anders vechten twee regels om hetzelfde element. */
+.vstap{background:var(--card);border:1px solid var(--line);border-radius:var(--rc);box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
+.vstap-k{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.vstap-k b{font-size:16px;font-weight:800;letter-spacing:-.015em;font-family:"Bricolage Grotesque",Figtree,sans-serif}
+.vstap-nr{width:25px;height:25px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
+  display:grid;place-items:center;font-size:13px;font-weight:800;flex:none}
+.vstap-ok{margin-left:auto;color:var(--brand);font-weight:800;font-size:15px;text-align:right}
+.vstap-in{padding:14px}
+.btn.groot{min-height:56px;font-size:17px}
+/* auto's als tegels: kijken en kiezen, geen uitklaplijst */
+.tegels{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.tegel{text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--card);
+  border:1px solid var(--line2);border-radius:var(--rs);padding:11px 12px;min-height:58px}
+.tegel b{display:block;font-size:15px;font-weight:700}
+.tegel span{display:block;font-size:12.5px;color:var(--ink2)}
+.tegel[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
+.tegel:disabled{opacity:.5;cursor:not-allowed}
+/* dagen: de vier die ze in de praktijk gebruiken */
+.dagen{display:flex;gap:8px;flex-wrap:wrap}
+.dagknop{flex:1 1 auto;min-width:70px;min-height:46px;border-radius:var(--rs);border:1px solid var(--line2);
+  background:var(--card);color:inherit;font:inherit;font-weight:700;cursor:pointer}
+.dagknop[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
 /* Neerzetvak: één groot, duidelijk doel per document. Dat is wat de scanners van
    de grote aanbieders ook doen — niet vier knopjes naast elkaar, maar één vlak
    waar de foto heen moet. */
@@ -608,27 +635,49 @@ details.meer>div{padding:0 12px 12px}
   <div id="vNew" hidden>
     <div class="title"><div><h1 id="nwH"></h1><p id="nwP"></p></div></div>
     <div class="two">
-      <div class="card"><div class="form">
-        <div class="f"><label class="lbl" for="nwClient" id="nwClientL"></label><select id="nwClient"></select></div>
-        <div class="grid2" id="nwNewWrap">
-          <div class="f"><label class="lbl" for="nwName" id="nwNameL"></label><input type="text" id="nwName" autocomplete="off"></div>
-          <div class="f"><label class="lbl" for="nwTel" id="nwTelL"></label><input type="tel" id="nwTel" autocomplete="off" placeholder="+212 6 ..."></div>
-        </div>
-        <button type="button" class="btn ghost sm" id="nwScan" hidden style="margin:-4px 0 4px"></button>
-        <p class="fine" id="nwScanP" hidden style="margin:0 0 10px"></p>
-        <div class="none" id="nwFlagNote" hidden></div>
-        <div class="f"><label class="lbl" for="nwCar" id="nwCarL"></label><select id="nwCar"></select></div>
-        <div class="grid2">
-          <div class="f"><label class="lbl" for="nwFrom" id="nwFromL"></label><input type="date" id="nwFrom"></div>
-          <div class="f"><label class="lbl" for="nwTo" id="nwToL"></label><input type="date" id="nwTo"></div>
-        </div>
-        <div class="none" id="nwClash" hidden></div>
-        <div class="calc" id="nwCalc"></div>
-        <div class="grid2">
-          <div class="f"><label class="lbl" for="nwTotal" id="nwTotalL"></label><input type="number" id="nwTotal" inputmode="numeric"></div>
-          <div class="f"><label class="lbl" for="nwCaution" id="nwCautionL"></label><input type="number" id="nwCaution" inputmode="numeric"></div>
-        </div>
-      </div></div>
+      <div>
+        <section class="vstap">
+          <div class="vstap-k"><span class="vstap-nr">1</span><b id="nwS1"></b><span class="vstap-ok" id="nwV1" hidden>\u2713</span></div>
+          <div class="vstap-in">
+            <button type="button" class="btn groot" id="nwScanKaart" style="width:100%"></button>
+            <p class="fine" id="nwOf" style="margin:10px 0 6px;text-align:center"></p>
+            <div class="f"><label class="lbl" for="nwClient" id="nwClientL"></label><select id="nwClient"></select></div>
+            <div class="grid2" id="nwNewWrap">
+              <div class="f"><label class="lbl" for="nwName" id="nwNameL"></label><input type="text" id="nwName" autocomplete="off"></div>
+              <div class="f"><label class="lbl" for="nwTel" id="nwTelL"></label><input type="tel" id="nwTel" autocomplete="off" placeholder="+212 6 ..."></div>
+            </div>
+            <button type="button" class="btn ghost sm" id="nwScan" hidden style="margin:-4px 0 4px"></button>
+            <p class="fine" id="nwScanP" hidden style="margin:0 0 10px"></p>
+            <div class="none" id="nwFlagNote" hidden></div>
+          </div>
+        </section>
+
+        <section class="vstap">
+          <div class="vstap-k"><span class="vstap-nr">2</span><b id="nwS2"></b><span class="vstap-ok" id="nwV2"></span></div>
+          <div class="vstap-in">
+            <div class="tegels" id="nwCarTegels"></div>
+            <label class="lbl" for="nwCar" id="nwCarL" hidden></label>
+            <select id="nwCar" hidden></select>
+          </div>
+        </section>
+
+        <section class="vstap">
+          <div class="vstap-k"><span class="vstap-nr">3</span><b id="nwS3"></b><span class="vstap-ok" id="nwV3"></span></div>
+          <div class="vstap-in">
+            <div class="dagen" id="nwDagen"></div>
+            <div class="grid2" style="margin-top:10px">
+              <div class="f"><label class="lbl" for="nwFrom" id="nwFromL"></label><input type="date" id="nwFrom"></div>
+              <div class="f"><label class="lbl" for="nwTo" id="nwToL"></label><input type="date" id="nwTo"></div>
+            </div>
+            <div class="none" id="nwClash" hidden></div>
+            <div class="calc" id="nwCalc"></div>
+            <div class="grid2">
+              <div class="f"><label class="lbl" for="nwTotal" id="nwTotalL"></label><input type="number" id="nwTotal" inputmode="numeric"></div>
+              <div class="f"><label class="lbl" for="nwCaution" id="nwCautionL"></label><input type="number" id="nwCaution" inputmode="numeric"></div>
+            </div>
+          </div>
+        </section>
+      </div>
       <div><p class="fine" id="nwFine"></p></div>
     </div>
   </div>
@@ -876,6 +925,11 @@ var TXT = {
   tabs:["Dag","Planning","Klanten","Wagenpark","Borgen","Kas","Instellingen"],
   dayH:"Wat staat er open", dayP:"Auto's die weg moeten, auto's die terug moeten, en wat aandacht vraagt.",
   newRental:"+ Verhuur", newCar:"+ Auto", newClient:"+ Klant",
+  nwS1:"Wie huurt", nwS2:"Welke auto", nwS3:"Hoe lang",
+  nwScanKaart:"Kaart van de klant scannen",
+  nwOf:"of kies iemand die er al in staat",
+  nwDag:function(n){ return n+(n===1?" dag":" dagen"); },
+  nwBezet:"bezet",
   depart:"Meegeven", retour:"Terugnemen", done:"Klaar", caution:"borg", late:"Te laat",
   stepName:{1:"Meegeven",2:"Terugnemen",3:"Borg afrekenen",4:"Klaar"},
   stepOf4:function(n){ return "stap "+n+" van 4"; },
@@ -1185,6 +1239,11 @@ var TXT = {
   tabs:["Journée","Planning","Clients","Parc auto","Cautions","Caisse","Réglages"],
   dayH:"Ce qui est en cours", dayP:"Les voitures à remettre, celles à reprendre, et ce qui demande attention.",
   newRental:"+ Location", newCar:"+ Voiture", newClient:"+ Client",
+  nwS1:"Qui loue", nwS2:"Quelle voiture", nwS3:"Combien de temps",
+  nwScanKaart:"Scanner la carte du client",
+  nwOf:"ou choisissez un client existant",
+  nwDag:function(n){ return n+(n===1?" jour":" jours"); },
+  nwBezet:"occup\u00e9e",
   depart:"Remettre", retour:"Reprendre", done:"Terminé", caution:"caution", late:"En retard",
   stepName:{1:"Remettre",2:"Reprendre",3:"Solder la caution",4:"Terminé"},
   stepOf4:function(n){ return "étape "+n+" sur 4"; },
@@ -5733,6 +5792,12 @@ function openNew(presetClient, edit){
   /* recalc() heeft hierboven al bepaald of de auto vrij is. Die uitkomst mag
      hier niet overschreven worden, anders staat de knop tóch aan. */
   $("bGo").textContent=edit?t.nwSaveEdit:t.nwSave; $("bGo").disabled=!$("nwClash").hidden; $("note").textContent="";
+  if($("nwS1")){
+    $("nwS1").textContent=t.nwS1; $("nwS2").textContent=t.nwS2; $("nwS3").textContent=t.nwS3;
+    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOf;
+    $("nwScanKaart").hidden=extend;
+  }
+  tekenAutoTegels(); tekenDagKnoppen(); markKlantKlaar();
 }
 function clientHistory(c){
   var past=RENTALS.filter(function(r){ return live(r) && r.clientId===c.id && r.retour; });
@@ -5747,7 +5812,11 @@ function loyalCaution(base,h){
 }
 function syncClientPick(){
   var t=T(), v=$("nwClient").value, c=client(v);
-  $("nwNewWrap").hidden = v!=="new"; $("nwScan").hidden = v!=="new"; $("nwScanP").hidden = v!=="new";
+  $("nwNewWrap").hidden = v!=="new";
+  /* De grote knop bovenaan doet hetzelfde als deze oude knop. Twee knoppen voor
+     één handeling maakt het alleen maar onduidelijk, dus de oude blijft weg. */
+  $("nwScan").hidden = true; $("nwScanP").hidden = true;
+  if($("nwScanKaart")) $("nwScanKaart").hidden = (v!=="new");
   var n=$("nwFlagNote"); n.hidden=true; n.style.color="";
   if(c && (c.flag==="block"||c.flag==="warn")){ n.hidden=false; n.textContent=(c.flag==="block"?t.nwBlocked:t.nwWarn+(c.note||"")); n.style.color=c.flag==="block"?"var(--warn)":"var(--gold)"; return; }
   if(c){ var h=clientHistory(c); if(h.n){ n.hidden=false; n.textContent=t.loyal(h.n+1,h.onTime,h.dmg); n.style.color=(h.onTime&&!h.dmg)?"var(--brand)":"var(--ink2)"; } }
@@ -5798,6 +5867,76 @@ function recalc(){
   $("bGo").disabled=!!clash;
 }
 ["nwCar","nwFrom","nwTo"].forEach(function(id){ $(id).addEventListener("change",recalc); });
+
+/* ============ HET VERHUURSCHERM: KIJKEN EN TIKKEN ============
+   Een uitklaplijst met auto's dwingt de verhuurder te lezen en te zoeken. Tegels
+   laten hem zien wat er staat en wat vrij is; één tik is genoeg. Hetzelfde voor de
+   duur: bijna elke verhuur is één, twee, drie of zeven dagen. */
+function vrijeAuto(c,van,tot){
+  return !RENTALS.some(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(van,tot,r.from,r.to); });
+}
+function tekenAutoTegels(){
+  var t=T(), doos=$("nwCarTegels"); if(!doos) return;
+  var sel=$("nwCar"), van=$("nwFrom").value, tot=$("nwTo").value;
+  doos.innerHTML="";
+  CARS.forEach(function(c){
+    var vrij=vrijeAuto(c,van,tot), b=el("button","tegel");
+    b.type="button"; b.disabled=sel.disabled || (!vrij && sel.value!==c.id);
+    b.setAttribute("aria-pressed", sel.value===c.id ? "true" : "false");
+    var n=el("b"); n.textContent=c.model;
+    var o=el("span"); o.textContent=plateTxt(c)+" \u00b7 "+dh(c.rate)+(vrij?"":" \u00b7 "+t.nwBezet);
+    b.appendChild(n); b.appendChild(o);
+    b.addEventListener("click",function(){
+      if(b.disabled) return;
+      sel.value=c.id; sel.dispatchEvent(new Event("change"));
+      tekenAutoTegels();
+    });
+    doos.appendChild(b);
+  });
+  var gekozen=CARS.filter(function(c){ return c.id===sel.value; })[0];
+  if($("nwV2")) $("nwV2").textContent = gekozen ? "\u2713 "+gekozen.model : "";
+}
+function tekenDagKnoppen(){
+  var t=T(), doos=$("nwDagen"); if(!doos) return;
+  var van=$("nwFrom").value, tot=$("nwTo").value, nu=Math.max(1,dayDiff(van,tot));
+  doos.innerHTML="";
+  [1,2,3,7].forEach(function(n){
+    var b=el("button","dagknop",t.nwDag(n));
+    b.type="button"; b.setAttribute("aria-pressed", nu===n ? "true":"false");
+    b.disabled=$("nwFrom").disabled;
+    b.addEventListener("click",function(){
+      $("nwTo").value=plus($("nwFrom").value,n);
+      $("nwTo").dispatchEvent(new Event("change"));
+      tekenDagKnoppen(); tekenAutoTegels();
+    });
+    doos.appendChild(b);
+  });
+  if($("nwV3")) $("nwV3").textContent="\u2713 "+t.nwDag(nu);
+}
+["nwFrom","nwTo"].forEach(function(id){
+  $(id).addEventListener("change",function(){ tekenDagKnoppen(); tekenAutoTegels(); });
+});
+/* De snelste weg naar een contract: kaart scannen, klant staat erin, terug hierheen. */
+$("nwScanKaart").addEventListener("click",function(){
+  var f=$("nwFrom").value, tt=$("nwTo").value, auto=$("nwCar").value;
+  openClient(null,function(id){
+    openNew(id);
+    if(f) $("nwFrom").value=f;
+    if(tt) $("nwTo").value=tt;
+    if(auto) $("nwCar").value=auto;
+    recalc(); tekenDagKnoppen(); tekenAutoTegels(); markKlantKlaar();
+  });
+});
+function markKlantKlaar(){
+  var sel=$("nwClient"), naam=$("nwName").value.trim();
+  var klaar = (sel.value && sel.value!=="new") || naam.length>1;
+  if($("nwV1")){ $("nwV1").hidden=!klaar;
+    var c=CLIENTS.filter(function(x){ return x.id===sel.value; })[0];
+    $("nwV1").textContent = "\u2713 "+(c?c.name:naam); }
+}
+["nwClient","nwName"].forEach(function(id){
+  $(id).addEventListener("change",markKlantKlaar); $(id).addEventListener("input",markKlantKlaar);
+});
 async function saveRental(){
   var t=T(), from=$("nwFrom").value, to=$("nwTo").value;
   if(!from||!to||to<=from){ $("nwTo").focus(); return; }
@@ -5987,7 +6126,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="104";
+var ATLASVER="105";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
