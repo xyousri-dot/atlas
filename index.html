@@ -58,6 +58,15 @@ h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.022em;line-height:1.14;
 .track{height:5px;border-radius:99px;background:#DDE3DD;overflow:hidden}
 .track i{display:block;height:100%;background:var(--brand);border-radius:99px;transition:width .25s ease}
 @media (prefers-reduced-motion:reduce){.track i{transition:none}}
+/* De vier stappen als knopjes onder de balk: wat af is wordt groen, wat nog moet
+   blijft grijs, en tikken brengt je meteen bij dat stuk van het formulier. */
+.prog-stappen{display:flex;gap:6px;margin-top:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.prog-stappen::-webkit-scrollbar{display:none}
+.prog-stappen button{flex:0 0 auto;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap;
+  border:1px solid var(--line2);background:var(--card);color:var(--ink2);border-radius:99px;padding:4px 10px;display:flex;align-items:center;gap:5px}
+.prog-stappen button em{font-style:normal;font-weight:700;color:var(--ink)}
+.prog-stappen button.af{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+.prog-stappen button.af em{color:var(--brand)}
 
 .wrap{max-width:1100px;margin:0 auto;padding:4px 20px 130px}
 .title{margin:14px 0 18px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
@@ -352,6 +361,10 @@ img,canvas,video,svg,table{max-width:100%}
   border:1px solid var(--line2);border-radius:var(--rs);padding:11px 12px;min-height:58px}
 .tegel b{display:block;font-size:15px;font-weight:700}
 .tegel span{display:block;font-size:12.5px;color:var(--ink2)}
+/* In een tegel hoeft de plaat geen kadertje: hij mag gewoon op één regel met de
+   dagprijs staan. De isolate blijft wel, anders draait de Arabische letter de
+   volgorde om. */
+.tegel .plate{border:0;padding:0;background:none;font-family:inherit;font-size:inherit;color:inherit;gap:4px}
 .tegel[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
 .tegel:disabled{opacity:.5;cursor:not-allowed}
 /* dagen: de vier die ze in de praktijk gebruiken */
@@ -478,6 +491,9 @@ details.meer>div{padding:0 12px 12px}
   <div class="prog" id="prog" hidden>
     <div class="prog-row"><b id="progTxt"></b><span id="progWho"></span></div>
     <div class="track"><i id="progBar" style="width:0%"></i></div>
+    <!-- De vier stappen staan verder naar beneden op het scherm. Wie ze hier
+         bovenaan ziet, weet meteen wat er nog moet en kan erheen tikken. -->
+    <div class="prog-stappen" id="progStappen"></div>
   </div>
 </div>
 
@@ -6137,7 +6153,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="106";
+var ATLASVER="107";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -6307,11 +6323,29 @@ function steps(){
     { id:"s4", ok:!!draft.sig, state:"c4s", txt:draft.sig?t.stepState.signed:t.stepState.toSign }
   ];
 }
+/* Korte naam van een stap: de titel van de kaart zelf, zodat er nooit twee
+   verschillende woorden voor hetzelfde ding op het scherm staan. */
+function stapNaam(i){ var h=$("c"+(i+1)+"t"); return h?h.textContent:String(i+1); }
+function tekenStapKnoppen(st){
+  var doos=$("progStappen"); if(!doos) return;
+  doos.innerHTML="";
+  st.forEach(function(s,i){
+    var b=el("button"); b.type="button"; b.className=s.ok?"af":"";
+    var n=el("em"); n.textContent=s.ok?"✓":String(i+1);
+    b.appendChild(n); b.appendChild(document.createTextNode(stapNaam(i)));
+    b.addEventListener("click",function(){
+      var kaart=$(s.id)?$(s.id).closest(".card"):null;
+      if(kaart) kaart.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    doos.appendChild(b);
+  });
+}
 function refresh(){
   if(!draft) return;
   var t=T(), st=steps(), done=st.filter(function(s){return s.ok;}).length;
   st.forEach(function(s,i){ $(s.id).className="step"+(s.ok?" on":""); $(s.id).textContent=s.ok?"✓":String(i+1); var n=$(s.state); n.textContent=s.txt; n.className="state"+(s.ok?" ok":""); });
   $("prog").hidden=false; $("progTxt").textContent=done===4?t.progAll:done+" "+t.progDone; $("progWho").textContent=rental?rental.clientName:""; $("progBar").style.width=(done/4*100)+"%";
+  tekenStapKnoppen(st);
   $("bGo").disabled=done<4;
   $("note").textContent = done===4?(mode==="depart"?t.noteDepart:t.noteRetour):t.stillNeed+st.filter(function(s){return !s.ok;}).map(function(s){ return t.missing[s.id]; }).join(", ");
 }
