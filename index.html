@@ -1110,12 +1110,13 @@ var TXT = {
   snelOk:function(n,nr,geb){ return "\u2713 "+n+(nr?" \u00b7 "+nr:"")+(geb?" \u00b7 geb. "+geb:""); },
   snelHalf:"De naam was niet leesbaar \u2014 typ hem hieronder. Wat wel gelezen is, gaat mee op het contract.",
   snelNiets:"Op deze foto kon ik niets lezen. Neem de achterkant van de kaart, recht van boven, met de regels onderaan erop.",
-  snelLic:"+ Rijbewijs scannen", snelLicOk:function(nr){ return "\u2713 Rijbewijs "+nr; },
+  snelLic:"+ Nog een foto (andere kant of rijbewijs)", snelLicOk:function(nr){ return "\u2713 Rijbewijs "+nr; },
   snelWacht:"Even geduld \u2014 de kaart wordt nog gelezen.",
+  snelNogId:"neem nu ook een foto van de ID-kaart voor naam en CIN.",
   rFotos:"Foto\u2019s en schade vastleggen (mag ook later)", rSnelKlaar:"Contract klaar", klaarKnop:"Klaar",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
-  nwScanKaart:"Kaart van de klant scannen",
+  nwScanKaart:"ID en rijbewijs scannen",
   nwOf:"of kies iemand die er al in staat",
   nwDag:function(n){ return n+(n===1?" dag":" dagen"); },
   nwBezet:"bezet",
@@ -1500,11 +1501,12 @@ var TXT = {
   snelOk:function(n,nr,geb){ return "\u2713 "+n+(nr?" \u00b7 "+nr:"")+(geb?" \u00b7 n\u00e9(e) le "+geb:""); },
   snelHalf:"Le nom n\u2019\u00e9tait pas lisible \u2014 tapez-le ci-dessous. Ce qui a \u00e9t\u00e9 lu figure sur le contrat.",
   snelNiets:"Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
-  snelLic:"+ Scanner le permis", snelLicOk:function(nr){ return "\u2713 Permis "+nr; },
+  snelLic:"+ Une autre photo (autre face ou permis)", snelLicOk:function(nr){ return "\u2713 Permis "+nr; },
   snelWacht:"Un instant \u2014 la carte est encore en lecture.",
+  snelNogId:"prenez aussi une photo de la CIN pour le nom et le num\u00e9ro.",
   rFotos:"Photos et dommages (possible plus tard)", rSnelKlaar:"Contrat pr\u00eat", klaarKnop:"Termin\u00e9",
   nwD2H:"Ajouter un 2ème conducteur", nwD2NameL:"Nom du 2ème conducteur", nwD2LicL:"N° de permis", nwD2IssueL:"Délivré le",
-  nwScanKaart:"Scanner la carte du client",
+  nwScanKaart:"Scanner CIN et permis",
   nwOf:"ou choisissez un client existant",
   nwDag:function(n){ return n+(n===1?" jour":" jours"); },
   nwBezet:"occup\u00e9e",
@@ -6181,7 +6183,10 @@ function voorkantUitRegels(regels){
         if(q.length>=3 && q.length<=30 && !/ROYAUME|MAROC|CARTE|NATIONAL|IDENTIT|CNIE/.test(q)) namen.unshift(q);
         else if(namen.length) break;
       }
-      if(namen.length) o.name=namen.join(" ");
+      /* Op de voorkant staat de voornaam boven de familienaam (YOUSSRI / ELOUARRAT).
+         Overal elders in Atlas — strook, contract — komt de familienaam eerst.
+         Omdraaien, anders staat de voornaam op het contract bij "Nom". */
+      if(namen.length) o.name = namen.length===2 ? (namen[1]+" "+namen[0]) : namen.join(" ");
     }
     var v=r.match(/VALABLE\s*JUSQU.{0,4}\s*([0-3]?\d[\.\/\-][01]?\d[\.\/\-](?:19|20)\d\d)/i);
     if(v && !o.expiry){ var d2=datumsUit(v[1])[0]; if(d2 && d2.jaar>=nu-1) o.expiry=d2.iso; }
@@ -6302,7 +6307,8 @@ async function mrzFallback(blob,storedKey,done,code){
      tel later wél klaar was. Nu krijgt de lezer echt de tijd, laat hij zien hoever
      hij is, en stopt hij zichzelf netjes met het beste dat hij tot dan vond. */
   try{
-    hit=await readMRZ(blob,{ budget:isLic?4000:42000, diag:D, onStep:function(n,tot){ p.textContent=t.scanTry(n,tot); } });
+    if(VOORMRZ && VOORMRZ.bron===blob && VOORMRZ.hit){ hit=VOORMRZ.hit; VOORMRZ=null; }
+    else hit=await readMRZ(blob,{ budget:isLic?4000:42000, diag:D, onStep:function(n,tot){ p.textContent=t.scanTry(n,tot); } });
   }catch(e){ hit=null; }
   if(!hit){
     var kk=renameScan(storedKey,pickedDoc()); paintScans();
@@ -6579,7 +6585,55 @@ function tekenDagKnoppen(){
    De gelezen gegevens staan in het (verborgen) klantformulier — dat is de plek waar
    de hele leesmachine al naartoe schrijft. We lezen ze daar uit, in plaats van een
    tweede leesweg te bouwen die kan afwijken. */
-var SNELKLANT=null, SNELFORM=false, SNELBEZIG=null;
+var SNELKLANT=null, SNELFORM=false, SNELBEZIG=null, VOORMRZ=null;
+/* ============ WAT LIGT ER OP DE FOTO? ============
+   De verhuurder moet niet weten welke knop bij welk document hoort. Hij neemt een
+   foto — voorkant, achterkant, paspoort, rijbewijs, of meerdere tegelijk — en Atlas
+   bepaalt zelf wat het is. Gemeten op de echte foto's:
+     – de regel achterop het rijbewijs (D1…MA) wordt in 1–3 s gevonden, zonder één vals
+       alarm op de andere documenten;
+     – de strook van een ID-achterkant of paspoort in 2–8 s;
+     – een voorkant heeft geen van beide; daar mag niet 15 s naar een strook gezocht
+       worden. De tekst ("PERMIS DE CONDUIRE" of "CARTE NATIONALE") beslist dan.
+   Pas daarna gaat de foto door de leesweg die bij dat document hoort, zodat
+   gegevens van het ene document nooit die van het andere wissen. */
+function laadBeeld(bestand){
+  return new Promise(function(ok,nee){
+    var u=URL.createObjectURL(bestand), i=new Image();
+    i.onload=function(){ ok(i); }; i.onerror=function(){ nee(new Error("beeld")); }; i.src=u;
+  });
+}
+async function snelTekst(img){
+  try{
+    if(!await needLib("ocr")) return "";
+    var w=Math.min(1400,img.width), c=document.createElement("canvas");
+    c.width=w; c.height=Math.round(img.height*w/img.width);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return String(await ocrLees(c,null,"")||"").toUpperCase();
+  }catch(e){ return ""; }
+}
+async function soortVanFoto(bestand){
+  var img=null; try{ img=await laadBeeld(bestand); }catch(e){ img=null; }
+  if(!img) return { soort:"cin", zijde:"achter" };   /* kan het beeld niet openen (pdf?): de gewone weg */
+  /* 1. rijbewijs achterkant: de regel met controlecijfer */
+  var d1=null; try{ d1=await licRegelUitBeeld(img,4000,{}); }catch(e){ d1=null; }
+  if(d1) return { soort:"licence", zijde:"" };
+  /* 2. de tekst, één snelle lezing */
+  var tx=await snelTekst(img);
+  var rijbewijs=/PERMIS|CONDUIRE|DRIVING|رخصة/.test(tx);
+  var strookTekst=/<<<|<[A-Z]{3}<|P<[A-Z]{3}|I[D<]MAR/.test(tx.replace(/\s/g,""));
+  var voorkant=/CARTE\s*NATIONALE|IDENTIT|البطاقة/.test(tx);
+  if(rijbewijs && !strookTekst) return { soort:"licence", zijde:"" };
+  var st=null; try{ st=vindStrook(img); }catch(e){ st=null; }
+  /* 3. de strook: meteen lezen, en die lezing wordt verderop hergebruikt */
+  if(strookTekst || st || !voorkant){
+    var hit=null;
+    try{ hit=await readMRZ(bestand,{ budget:(strookTekst||st)?20000:12000 }); }catch(e){ hit=null; }
+    if(hit && hit.kind!=="licence"){ VOORMRZ={ bron:bestand, hit:hit }; return { soort:"cin", zijde:"achter" }; }
+  }
+  /* 4. geen strook, geen rijbewijsregel: een voorkant */
+  return rijbewijs ? { soort:"licence", zijde:"" } : { soort:"cin", zijde:"voor" };
+}
 /* Sleutels meegeven zonder formulier: vertrek vastleggen met de km-stand van de
    auto, volle tank, geen schade — en meteen het contract. Zelfde als "Contract
    maken" bij een nieuwe verhuur, maar dan voor een reservering. */
@@ -6667,8 +6721,14 @@ async function snelScan(bestanden,soort){
   terugNaarHuur();
   var klaar;
   SNELBEZIG=new Promise(function(r){ klaar=r; });
-  try{ await verwerkKeuze({ files:Array.prototype.slice.call(bestanden), value:"" }, soort, soort==="licence"?"":"achter"); }
-  catch(e){}
+  var lijst=Array.prototype.slice.call(bestanden);
+  for(var fi=0;fi<lijst.length;fi++){
+    try{
+      var wat = soort==="auto" ? await soortVanFoto(lijst[fi]) : { soort:soort, zijde:(soort==="licence"?"":"achter") };
+      await verwerkKeuze({ files:[lijst[fi]], value:"" }, wat.soort, wat.zijde);
+    }catch(e){}
+    VOORMRZ=null;
+  }
   clearInterval(tik);
   var k=klantUitFormulier(); SNELKLANT=k;
   /* Het huurscherm bijwerken, zonder de keuzes van de verhuurder te wissen. */
@@ -6685,21 +6745,24 @@ async function snelScan(bestanden,soort){
   }
   var nummer = k.docNumber ? ((k.docType==="passport"?"":"CIN ")+k.docNumber) : "";
   var regels=[];
-  if(soort==="licence"){
-    if(k.licenceNumber) regels.push(t.snelLicOk(k.licenceNumber));
-  }
+  if(k.licenceNumber) regels.push(t.snelLicOk(k.licenceNumber));
   if(k.name) regels.unshift(t.snelOk(k.name, nummer, k.birth?dNum(k.birth):""));
   if(!k.name && !k.docNumber && !k.licenceNumber){ stat.className="snelstat half"; stat.textContent=t.snelNiets; }
+  /* Alleen het rijbewijs gelezen: dat is geen fout — achterop staat de volledige
+     naam gewoon niet. Zeg wat er nog nodig is in plaats van "niet leesbaar". */
+  else if(!k.name && k.licenceNumber && !k.docNumber){ stat.className="snelstat half"; stat.textContent=t.snelLicOk(k.licenceNumber)+" \u2014 "+t.snelNogId; }
   else if(!k.name){ stat.className="snelstat half"; stat.textContent=t.snelHalf; if(!bewaar.name) $("nwName").focus(); }
   else { stat.className="snelstat ok"; stat.textContent=regels.join("  ·  "); }
   $("nwScanLic").hidden=false; $("nwScanLic").textContent=k.licenceNumber?t.snelLicOk(k.licenceNumber):t.snelLic;
   SNELBEZIG=null; klaar();
 }
 $("nwScanKaart").addEventListener("click",function(){ $("snelKies").click(); });
+$("snelKies").multiple=true;
 $("nwScanLic").addEventListener("click",function(){ $("snelLic").click(); });
-$("snelKies").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"cin").then(function(){ try{ i.value=""; }catch(e){} }); });
-$("snelCam").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"cin").then(function(){ try{ i.value=""; }catch(e){} }); });
-$("snelLic").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"licence").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("snelKies").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"auto").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("snelCam").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"auto").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("snelLic").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"auto").then(function(){ try{ i.value=""; }catch(e){} }); });
+$("snelLic").multiple=true;
 $("nwFrom").addEventListener("change",zetHuurKnop);
 /* Km bij vertrek: staat al op wat de auto laatst had. Alleen aanpassen als het niet klopt. */
 function zetKm(){ var c=car($("nwCar").value); if($("nwKm")) $("nwKm").value = c && c.km ? c.km : ""; toonKm(); }
@@ -6957,7 +7020,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="120";
+var ATLASVER="121";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
