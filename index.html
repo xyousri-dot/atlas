@@ -1119,6 +1119,7 @@ var TXT = {
   snelNogId:"neem nu ook een foto van de ACHTERKANT van de ID-kaart voor naam en CIN.",
   snelNrTyp:"nummer niet zeker gelezen \u2014 typ het over van het document",
   snelNrCheck:"kijk nummer en geboortedatum even na met het document",
+  nogEensTerug:"Druk nog eens op terug om Atlas te sluiten",
   snelLicTyp:"rijbewijsnummer niet zeker gelezen \u2014 typ het hieronder over",
   snelAIUit:"Slimme scan staat uit: je bent niet aangemeld (Instellingen \u2192 Cloud). Nu de gewone scan gebruikt.",
   snelAIFout:"Slimme scan niet bereikbaar (code {c}) \u2014 nu de gewone scan gebruikt.",
@@ -1524,6 +1525,7 @@ var TXT = {
   snelNogId:"prenez aussi une photo du VERSO de la CIN pour le nom et le num\u00e9ro.",
   snelNrTyp:"num\u00e9ro pas lu avec certitude \u2014 recopiez-le du document",
   snelNrCheck:"v\u00e9rifiez num\u00e9ro et date de naissance avec le document",
+  nogEensTerug:"Appuyez encore sur retour pour fermer Atlas",
   snelLicTyp:"num\u00e9ro de permis pas lu avec certitude \u2014 tapez-le ci-dessous",
   snelAIUit:"Scan intelligent d\u00e9sactiv\u00e9 : vous n\u2019\u00eates pas connect\u00e9 (R\u00e9glages \u2192 Cloud). Scan normal utilis\u00e9.",
   snelAIFout:"Scan intelligent injoignable (code {c}) \u2014 scan normal utilis\u00e9.",
@@ -2322,10 +2324,10 @@ var TABOF={vDay:"vDay",vNew:"vDay",vForm:"vDay",vDone:"vDay",vCard:"vDay",vTrust
    Terug (knop in Atlas én de terugknop/veeg van de telefoon) gaat één scherm terug,
    niet helemaal naar het begin en niet de site uit. Elk nieuw scherm krijgt een plek
    in de geschiedenis van de browser. */
-var GETOOND="", VIA_POP=false, DIEPTE=0, NWOPEN=false, TERUGNA="";
+var GETOOND="", VIA_POP=false, DIEPTE=1, NWOPEN=false, TERUGNA="", STAPEL=["vDay","vDay"], IDX=1, KLAARNAV=false, WAARSCHUWD=0;
 var ZELFSTANDIG=["vDay","vPlan","vClients","vLed","vCash","vFleet","vSet"];
 function show(v){
-  if(!VIA_POP && v!==GETOOND && GETOOND){ try{ history.pushState({ v:v },""); DIEPTE++; }catch(e){} }
+  if(!VIA_POP && v!==GETOOND && GETOOND){ try{ STAPEL=STAPEL.slice(0,IDX+1); STAPEL.push(v); IDX++; history.pushState({ v:v, i:IDX },""); DIEPTE++; }catch(e){} }
   GETOOND=v;
   view=v;
   VIEWS.forEach(function(x){ $(x).hidden = x!==v; });
@@ -2334,20 +2336,51 @@ function show(v){
   Array.prototype.forEach.call($("tabs").children,function(b){ b.setAttribute("aria-current", b.dataset.v===TABOF[v]); });
   window.scrollTo(0,0);
 }
-try{ history.replaceState({ v:"vDay" },""); }catch(e){}
+/* Onderaan staat een "wachtpost": wie op Vandaag nog eens terug drukt, krijgt eerst een
+   melding in plaats van dat Atlas zomaar verdwijnt. Twee keer snel terug = Atlas sluiten. */
+try{ history.replaceState({ v:"vDay", i:0, s:1 },""); history.pushState({ v:"vDay", i:1 },""); }catch(e){}
+/* Vensters (bv. "Auto terug"): krijgen een eigen plek in de geschiedenis, zodat de
+   terugknop van de telefoon alleen het venster sluit en Atlas niet verlaat. */
+var MODALSTAAT=false, SLUITPOP=false;
+try{ new MutationObserver(function(){
+  var open=document.querySelectorAll(".ask").length>0;
+  if(open && !MODALSTAAT){ MODALSTAAT=true; try{ STAPEL=STAPEL.slice(0,IDX+1); STAPEL.push(view); IDX++; DIEPTE=IDX; history.pushState({ v:view, i:IDX, m:1 },""); }catch(e){} }
+  else if(!open && MODALSTAAT){ MODALSTAAT=false;
+    if(!SLUITPOP){ try{ STAPEL[IDX]=view; history.replaceState({ v:view, i:IDX },""); }catch(e){} } SLUITPOP=false; }
+}).observe(document.body,{ childList:true }); }catch(e){}
 window.addEventListener("popstate",function(e){
+  if(e.state && e.state.s){
+    if(Date.now()-WAARSCHUWD<2500){ history.back(); return; }
+    WAARSCHUWD=Date.now(); try{ toast(T().nogEensTerug); }catch(err){}
+    try{ history.pushState({ v:"vDay", i:1 },""); }catch(err){} IDX=1; DIEPTE=1; STAPEL=["vDay","vDay"];
+    if(view!=="vDay"){ VIA_POP=true; try{ view="vDay"; render(); } finally { VIA_POP=false; } }
+    return;
+  }
+  if(e.state && typeof e.state.i==="number"){ IDX=e.state.i; DIEPTE=e.state.i; }
+  var open=document.querySelectorAll(".ask");
+  if(open.length){ SLUITPOP=true; Array.prototype.forEach.call(open,function(x){ x.remove(); }); return; }
   var doel=(e.state && e.state.v) || "vDay";
-  if(DIEPTE>0) DIEPTE--;
+  /* Dubbele plek (venster dat met een knop gesloten werd): meteen nog een stap terug. */
+  if(doel===view && !KLAARNAV && e.state && e.state.i>1 && ZELFSTANDIG.indexOf(doel)>=0){ history.back(); return; }
   /* Schermen die alleen zin hebben midden in een handeling: dan naar Vandaag. */
   var mag = ZELFSTANDIG.indexOf(doel)>=0 || (doel==="vNew" && NWOPEN);
   if(!mag) doel="vDay";
-  if(view==="vForm"){ try{ stashDraft(); }catch(err){} rental=null; draft=null; }
+  if(view==="vForm" && !KLAARNAV){ try{ stashDraft(); }catch(err){} rental=null; draft=null; }
+  KLAARNAV=false;
   VIA_POP=true;
   try{ view=doel; if(doel==="vNew") show("vNew"); else render(); } finally { VIA_POP=false; }
 });
+/* Klaar met een handeling (opgeslagen, verwijderd, afgerond): terug naar het scherm
+   waar je vandaan kwam, zónder de tussenschermen (formulier, bon) in de geschiedenis te
+   laten staan. Anders brengt "terug" je daarna weer in een oud formulier. */
+function naarKlaar(v){
+  for(var j=IDX-1;j>=1;j--){ if(STAPEL[j]===v){ KLAARNAV=true; view=v; history.go(j-IDX); return; } }
+  try{ STAPEL[IDX]=v; history.replaceState({ v:v, i:IDX },""); }catch(e){}
+  VIA_POP=true; try{ view=v; render(); } finally { VIA_POP=false; }
+}
 /* Eén scherm terug; lukt dat niet (net geopend), dan naar Vandaag. */
 function eenTerug(){
-  if(DIEPTE>0){ history.back(); return; }
+  if(DIEPTE>1){ history.back(); return; }
   view="vDay"; render();
 }
 function render(){
@@ -2552,7 +2585,7 @@ async function loadDemo(){
       insuranceUntil:D(160+i*10), inspectionUntil:D(120+i*20), vignetteUntil:D(190),
       purchasePrice:0, purchaseDate:"", loanMonthly:0, loanMonthsLeft:0 },cars[i]));
   }
-  await reload(); applyLang(); view="vDay"; render(); toast(T().saved);
+  await reload(); applyLang(); naarKlaar("vDay"); toast(T().saved);
 }
 
 async function wipeAll(){
@@ -2746,9 +2779,9 @@ async function saveClient(){
   var id=clientEdit?clientEdit.id:uid();
   await S.set("clients/"+id,data); await reload(); toast(t.saved);
   if(clientDraft.after){ var f=clientDraft.after; clientDraft=null; f(id); return; }
-  view="vClients"; render();
+  naarKlaar("vClients");
 }
-async function delClient(){ if(!clientEdit){ view="vClients"; render(); return; } await S.del("clients/"+clientEdit.id); await reload(); view="vClients"; render(); toast(T().deleted); }
+async function delClient(){ if(!clientEdit){ naarKlaar("vClients"); return; } await S.del("clients/"+clientEdit.id); await reload(); naarKlaar("vClients"); toast(T().deleted); }
 
 /* ============ MRZ: de regels met <<< onderaan een paspoort of moderne ID ============
    Gestandaardiseerd (ICAO 9303) en met controlegetallen: klopt de som niet, dan vullen
@@ -6756,7 +6789,7 @@ function snelTerug(r){
     var patch={ retour:rec, released:true, releasedAt:today(), cautionReturned:borgNu, cautionWithheld:0, withholdNote:"" };
     await S.set("rentals/"+r.id,stripId(Object.assign({},r,patch)));
     if(k>(Number(c.km)||0)){ await S.set("vehicles/"+c.id,stripId(Object.assign({},c,{km:k}))); }
-    await reload(); dicht(); view="vDay"; render();
+    await reload(); dicht(); naarKlaar("vDay");
     toast(borgNu>0?t.qrKlaar(dh(borgNu)):t.qrKlaarZonder);
   });
   setTimeout(function(){ km.focus(); km.select(); },50);
@@ -7040,7 +7073,7 @@ async function saveRentalEcht(){
     if(cl0){ upd.clientId=cl0.id; upd.clientName=cl0.name; upd.clientTel=cl0.tel||""; }
     if(upd.depart) upd.limit=plus(to, AG.window||30);
     await S.set("rentals/"+editRental.id,stripId(upd)); editRental=null;
-    await reload(); view="vDay"; render(); toast(t.saved); return;
+    await reload(); naarKlaar("vDay"); toast(t.saved); return;
   }
   /* Wordt de kaart nog gelezen? Dan even wachten, anders gaat de klant zonder
      documentnummer het contract op. */
@@ -7091,13 +7124,13 @@ async function saveRentalEcht(){
     if(knop) makeContract(nieuw,knop);
     return;
   }
-  view="vDay"; render(); toast(t.saved);
+  NWOPEN=false; naarKlaar("vDay"); toast(t.saved);
 }
 
 async function cancelRental(){
   var t=T(); if(!editRental) return;
   var r=editRental;
-  if(await doCancel(r)){ editRental=null; view="vDay"; render(); }
+  if(await doCancel(r)){ editRental=null; NWOPEN=false; naarKlaar("vDay"); }
 }
 
 /* Annuleren is niet alleen een vinkje. Heeft de klant al betaald, dan moet dat
@@ -7266,12 +7299,12 @@ async function saveCar(){
     franchise:Number($("cwFranchise").value)||0, fuelType:$("cwFuel").value||"diesel",
     insuranceUntil:$("cwIns").value||"", inspectionUntil:$("cwInsp").value||"", vignetteUntil:$("cwVig").value||"",
     purchasePrice:Number($("cwPrice").value)||0, purchaseDate:$("cwBought").value||"", loanMonthly:Number($("cwLoan").value)||0, loanMonthsLeft:Number($("cwLoanN").value)||0 };
-  await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); view="vFleet"; render(); toast(t.saved);
+  await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); naarKlaar("vFleet"); toast(t.saved);
 }
-async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
+async function delCar(){ if(!carEdit){ naarKlaar("vFleet"); return; } await S.del("vehicles/"+carEdit.id); await reload(); naarKlaar("vFleet"); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="132";
+var ATLASVER="133";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7597,7 +7630,7 @@ function settlePanel(r){
     if(isNaN(v)||v<0||v>full){ toast(t.settleBad); return; }
     var withheld=full-v, patch={released:true,releasedAt:today(),cautionReturned:v,cautionWithheld:withheld,withholdNote:note.value.trim()};
     await S.set("rentals/"+r.id,stripId(Object.assign({},r,patch)));
-    await reload(); view="vLed"; render(); toast(t.saved);
+    await reload(); naarKlaar("vLed"); toast(t.saved);
   });
   box.appendChild(go);
   return box;
@@ -8502,8 +8535,8 @@ $("newRental").addEventListener("click",function(){
 $("newCar").addEventListener("click",function(){ openCar(null); });
 $("newClient").addEventListener("click",function(){ openClient(null); });
 $("bBack").addEventListener("click",function(){
-  if(view==="vCar"){ carEdit?delCar():(view="vFleet",render()); return; }
-  if(view==="vClient"){ clientEdit?delClient():(view="vClients",render()); return; }
+  if(view==="vCar"){ carEdit?delCar():eenTerug(); return; }
+  if(view==="vClient"){ clientEdit?delClient():eenTerug(); return; }
   if(view==="vNew"){ if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; NWOPEN=false; eenTerug(); return; }
   stashDraft(); rental=null; draft=null; eenTerug();
 });
@@ -8512,7 +8545,7 @@ $("bGo").addEventListener("click",function(){
   if(view==="vCar"){ saveCar(); return; }
   if(view==="vClient"){ saveClient(); return; }
   if(view==="vSet"){ saveSettings(); return; }
-  if(view==="vDone"){ rental=null; view="vDay"; render(); return; }
+  if(view==="vDone"){ rental=null; naarKlaar("vDay"); return; }
   if(view==="vForm" && draft && steps().every(function(s){ return s.ok; })) finishHandover();
 });
 $("km").addEventListener("input",function(){ if(draft){ draft.km=this.value; updateVerdict(); refresh(); } });
