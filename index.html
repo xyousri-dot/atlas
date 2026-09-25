@@ -370,6 +370,29 @@ img,canvas,video,svg,table{max-width:100%}
 /* Status van de kaartlezing op het huurscherm zelf. */
 /* Op de telefoon: de knoppen van de bon (contract, WhatsApp) boven de details. */
 @media(max-width:859px){ #vDone .two{display:flex;flex-direction:column} #vDone #rSide{order:-1;margin-bottom:14px} }
+/* ---- simpel startscherm ---- */
+#vDay .title{flex-direction:column;align-items:stretch;gap:12px}
+#vDay .title .add{width:100%}
+#vDay #scanKey{display:none}
+#vDay #newRental{width:100%;min-height:64px;font-size:20px;font-weight:800;border-radius:16px}
+.tabs button[data-v="vPlan"],.tabs button[data-v="vLed"],.tabs button[data-v="vCash"],.tabs button[data-v="vSet"]{display:none}
+.tabs.alles button[data-v="vPlan"],.tabs.alles button[data-v="vLed"],.tabs.alles button[data-v="vCash"],.tabs.alles button[data-v="vSet"]{display:inline-flex}
+.tabs button[data-v="vPlan"][aria-current="true"],.tabs button[data-v="vLed"][aria-current="true"],.tabs button[data-v="vCash"][aria-current="true"],.tabs button[data-v="vSet"][aria-current="true"]{display:inline-flex}
+.sh{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:22px 2px 8px}
+.kaartje{background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:14px;margin-bottom:10px}
+.kaartje.laat{border-color:var(--warn);box-shadow:inset 4px 0 0 var(--warn)}
+.kaartje .boven{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.kaartje .auto{font-size:17px;font-weight:800}
+.kaartje .wie{font-size:15px;color:var(--ink2);margin-top:2px}
+.kaartje .wanneer{font-size:14px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.kaartje .wanneer.vandaag{color:var(--gold)}
+.kaartje .wanneer.laat{color:var(--warn)}
+.kaartje .knoppen{display:flex;gap:8px;margin-top:12px}
+.kaartje .knoppen .btn{flex:1;min-height:48px;font-size:16px}
+.kaartje .knoppen .btn.ghost{flex:0 0 auto}
+.vrijlijst{display:flex;flex-wrap:wrap;gap:8px}
+.vrijlijst button{font:inherit;font-size:14.5px;font-weight:700;min-height:44px;padding:8px 14px;border-radius:99px;border:1px solid var(--brand);background:var(--brand-soft);color:var(--brand);cursor:pointer}
+.leegtje{color:var(--ink3);font-size:15px;padding:6px 2px}
 .aanmeldbalk{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;justify-content:space-between;
   padding:12px 14px;margin-bottom:14px;border-radius:12px;border:1px solid var(--brand);background:var(--brand-soft);color:var(--ink);font-size:14.5px;line-height:1.4}
 .aanmeldbalk span{flex:1 1 220px}
@@ -520,6 +543,7 @@ details.meer>div{padding:0 12px 12px}
     <button data-v="vLed" aria-current="false"></button>
     <button data-v="vCash" aria-current="false"></button>
     <button data-v="vSet" aria-current="false"></button>
+    <button data-v="meer" class="tab-meer" aria-expanded="false"></button>
   </div>
   <div class="prog" id="prog" hidden>
     <div class="prog-row"><b id="progTxt"></b><span id="progWho"></span></div>
@@ -1028,8 +1052,16 @@ details.meer>div{padding:0 12px 12px}
 /* ============ TEKSTEN ============ */
 var TXT = {
  nl:{ loc:"nl-NL",
-  tabs:["Dag","Planning","Klanten","Wagenpark","Borgen","Kas","Instellingen"],
-  dayH:"Wat staat er open", dayP:"Auto's die weg moeten, auto's die terug moeten, en wat aandacht vraagt.",
+  tabs:["Vandaag","Planning","Klanten","Auto\u2019s","Borgen","Kas","Instellingen","Meer \u25be"], tabMinder:"Minder \u25b4",
+  dayH:"Vandaag", dayP:"",
+  hOnderweg:"Onderweg", hReserv:"Gereserveerd", hBorg:"Borg nog terug te geven", hVrij:"Vrij \u2014 tik om te verhuren",
+  terugOp:function(d){ return "terug "+d; }, terugVandaag:"vandaag terug", teLaat:function(n){ return n+(n>1?" dagen":" dag")+" te laat"; },
+  vertrekt:function(d){ return "vertrekt "+d; }, vertrektVandaag:"vertrekt vandaag",
+  bTerug:"Auto terug", bContract:"Contract", bMee:"Sleutels meegeven", bBorg:"Borg afrekenen",
+  geenOnderweg:"Geen auto\u2019s onderweg.", geenVrij:"Alle auto\u2019s zijn weg.",
+  qrH:"Auto terug", qrKmL:"Kilometerstand nu", qrOk:function(b){ return "Alles in orde \u2014 borg "+b+" terug"; }, qrOkZonder:"Alles in orde",
+  qrSchade:"Er is schade of er ontbreekt brandstof", qrKlaar:function(b){ return "Auto terug. Borg "+b+" teruggegeven."; }, qrKlaarZonder:"Auto terug.",
+  qrKmLaag:"Die kilometerstand is lager dan bij vertrek.",
   newRental:"Nieuw contract", newCar:"+ Auto", newClient:"+ Klant",
   nwS1:"Wie huurt", nwS2:"Welke auto", nwS3:"Hoe lang",
   nwContract:"Contract maken", nwReserve:"Reservering opslaan", nwKmL:"Km bij vertrek",
@@ -1403,8 +1435,16 @@ var TXT = {
         dl:"op" }
  },
  fr:{ loc:"fr-FR",
-  tabs:["Journée","Planning","Clients","Parc auto","Cautions","Caisse","Réglages"],
-  dayH:"Ce qui est en cours", dayP:"Les voitures à remettre, celles à reprendre, et ce qui demande attention.",
+  tabs:["Aujourd\u2019hui","Planning","Clients","Voitures","Cautions","Caisse","R\u00e9glages","Plus \u25be"], tabMinder:"Moins \u25b4",
+  dayH:"Aujourd\u2019hui", dayP:"",
+  hOnderweg:"En location", hReserv:"R\u00e9servations", hBorg:"Caution \u00e0 rendre", hVrij:"Libres \u2014 touchez pour louer",
+  terugOp:function(d){ return "retour "+d; }, terugVandaag:"retour aujourd\u2019hui", teLaat:function(n){ return "en retard de "+n+" j"; },
+  vertrekt:function(d){ return "d\u00e9part "+d; }, vertrektVandaag:"d\u00e9part aujourd\u2019hui",
+  bTerug:"Voiture rendue", bContract:"Contrat", bMee:"Remettre les cl\u00e9s", bBorg:"Rendre la caution",
+  geenOnderweg:"Aucune voiture en location.", geenVrij:"Toutes les voitures sont sorties.",
+  qrH:"Voiture rendue", qrKmL:"Kilom\u00e9trage actuel", qrOk:function(b){ return "Tout est en ordre \u2014 rendre "+b; }, qrOkZonder:"Tout est en ordre",
+  qrSchade:"Il y a un dommage ou il manque du carburant", qrKlaar:function(b){ return "Voiture rendue. Caution de "+b+" rendue."; }, qrKlaarZonder:"Voiture rendue.",
+  qrKmLaag:"Ce kilom\u00e9trage est inf\u00e9rieur \u00e0 celui du d\u00e9part.",
   newRental:"Nouveau contrat", newCar:"+ Voiture", newClient:"+ Client",
   nwS1:"Qui loue", nwS2:"Quelle voiture", nwS3:"Combien de temps",
   nwContract:"\u00c9tablir le contrat", nwReserve:"Enregistrer la r\u00e9servation", nwKmL:"Km au d\u00e9part",
@@ -2201,7 +2241,12 @@ function render(){
   if(view==="vSet"){ fillSettings(); paintTools(); sbVerf(); }
   show(view);
 }
-$("tabs").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return; stashDraft(); rental=null; draft=null; view=b.dataset.v; render(); });
+$("tabs").addEventListener("click",function(e){
+  var b=e.target.closest("button"); if(!b) return;
+  /* "Meer" toont de tabbladen die een gewone verhuurder zelden nodig heeft. */
+  if(b.dataset.v==="meer"){ var open=!$("tabs").classList.contains("alles"); $("tabs").classList.toggle("alles",open);
+    b.setAttribute("aria-expanded",open?"true":"false"); b.textContent=open?T().tabMinder:T().tabs[7]; return; }
+  stashDraft(); rental=null; draft=null; view=b.dataset.v; render(); });
 $("lnNL").addEventListener("click",function(){ setLang("nl"); });
 $("lnFR").addEventListener("click",function(){ setLang("fr"); });
 function setLang(x){ L=x; try{ localStorage.setItem(LKEY,x); }catch(e){} stashDraft(); applyLang(); view="vDay"; rental=null; draft=null; render(); }
@@ -2249,11 +2294,19 @@ function guideCard(){
   t.guideSteps.forEach(function(s){ var li=document.createElement("li"); li.textContent=s; li.style.marginBottom="6px"; ol.appendChild(li); });
   c.appendChild(ol); return c;
 }
+/* ============ STARTSCHERM ============
+   De verhuurders voor wie Atlas gemaakt is, werken niet met software. Het eerste
+   scherm moet dus in één oogopslag zeggen wat er te doen is, met één knop per ding:
+     – bovenaan: Nieuw contract (groot)
+     – wat te laat is, in rood
+     – wat onderweg is, met één knop: Auto terug
+     – wat gereserveerd is, met één knop: Sleutels meegeven
+     – welke auto's vrij zijn: tik erop en je verhuurt hem
+   Geen uitleg, geen stappenplan, geen jargon. */
 function renderDay(){
   var t=T(), box=$("dayBody"); box.innerHTML="";
-  $("dayP").textContent=t.dayChain;
-  /* Niet aangemeld? Dan bovenaan één balk met één knop. Op een nieuwe telefoon
-     is dat het eerste wat je ziet — en na het aanmelden staat alles erop. */
+  $("dayH").textContent=t.dayH;
+  $("dayP").textContent=new Date().toLocaleDateString(t.loc,{weekday:"long",day:"numeric",month:"long"});
   if(LOCAL && !sbKlaar()){
     if(sbIngesteld()){
       var ab=el("div","aanmeldbalk"); ab.appendChild(el("span",null,t.sbBalk));
@@ -2267,44 +2320,61 @@ function renderDay(){
     var b2=el("button","btn ghost",t.demoB); b2.addEventListener("click",function(){ runDemo(b2,t.demoB); });
     e.appendChild(b1); e.appendChild(b2); box.appendChild(e); return;
   }
-  if(showGuide()) box.appendChild(guideCard());
+  var nu=today();
+  /* Papieren van een auto verlopen (verzekering, keuring, vignet): dat moet hij
+     zien voor hij die auto meegeeft. Kort, in rood, één tik naar de auto. */
   var al=el("div","alerts");
-  RENTALS.filter(function(r){ return stage(r)==="retour" && r.to<today(); }).forEach(function(r){
-    var b=el("button","alert bad"); b.innerHTML="<span><b>"+esc(r.clientName)+"</b> · "+esc(car(r.vehicleId).model)+" <small>— "+t.alLate(dayDiff(r.to,today()))+"</small></span>›";
-    b.addEventListener("click",function(){ openForm(r,"retour"); }); al.appendChild(b);
-  });
   docAlerts().forEach(function(a){
     var b=el("button","alert"+(a.bad?" bad":"")); b.innerHTML="<span><b>"+esc(a.car.model)+"</b> · "+a.label+" <small>— "+(a.bad?t.alExpired:t.alExpires)+" "+dShort(a.date)+"</small></span>›";
     b.addEventListener("click",function(){ openCar(a.car); }); al.appendChild(b);
   });
   if(al.children.length) box.appendChild(al);
+  function kop(tekst){ box.appendChild(el("p","sh",tekst)); }
+  function kaart(r,wanneer,klasse,knoppen){
+    var c=car(r.vehicleId), k=el("div","kaartje"+(klasse==="laat"?" laat":""));
+    var bo=el("div","boven"); bo.appendChild(el("span","auto",c.model));
+    bo.appendChild(el("span","wanneer"+(klasse?" "+klasse:""),wanneer)); k.appendChild(bo);
+    var wie=el("div","wie"); wie.innerHTML=esc(r.clientName)+" · "+plateHTML(c); k.appendChild(wie);
+    var kn=el("div","knoppen");
+    knoppen.forEach(function(x){ var b=el("button","btn"+(x.ghost?" ghost":""),x.label); b.type="button"; b.addEventListener("click",x.fn); kn.appendChild(b); });
+    k.appendChild(kn); box.appendChild(k);
+  }
+  var live2=RENTALS.filter(function(r){ return live(r); });
+  var weg=live2.filter(function(r){ return stepOf(r)===2; }).sort(function(a,b){ return a.to.localeCompare(b.to); });
+  var gepland=live2.filter(function(r){ return stepOf(r)===1; }).sort(function(a,b){ return a.from.localeCompare(b.from); });
+  var borg=live2.filter(function(r){ return stepOf(r)===3; });
 
-  var open=RENTALS.filter(function(r){ return live(r) && stepOf(r)<4; });
-  if(!open.length){
-    var e2=el("div","empty"); e2.appendChild(el("h2",null,t.emptyRentH)); e2.appendChild(el("p",null,t.emptyRentP));
-    var b3=el("button","btn",t.newRental); b3.addEventListener("click",openNew); e2.appendChild(b3); box.appendChild(e2);
-  } else {
-    open.sort(function(a,b){ var da=stage(a)==="depart"?a.from:a.to, db2=stage(b)==="depart"?b.from:b.to; return da.localeCompare(db2); });
-    var list=el("div","jobs");
-    open.forEach(function(r){ list.appendChild(jobBlock(r)); });
-    box.appendChild(list);
+  kop(t.hOnderweg+(weg.length?" ("+weg.length+")":""));
+  if(!weg.length) box.appendChild(el("p","leegtje",t.geenOnderweg));
+  weg.forEach(function(r){
+    var laat=r.to<nu, vandaag=r.to===nu;
+    kaart(r, laat?t.teLaat(dayDiff(r.to,nu)):(vandaag?t.terugVandaag:t.terugOp(dDay(r.to))), laat?"laat":(vandaag?"vandaag":""),
+      [{label:t.bTerug, fn:function(){ snelTerug(r); }},
+       {label:t.bContract, ghost:true, fn:function(){ receipt(r,"depart"); }}]);
+  });
+  if(borg.length){
+    kop(t.hBorg);
+    borg.forEach(function(r){ kaart(r, dh(r.caution), "", [{label:t.bBorg, fn:function(){ receipt(r,"retour"); }}]); });
   }
-  var cancelled=RENTALS.filter(function(r){ return r.cancelled; });
-  if(cancelled.length){
-    box.appendChild(Object.assign(el("p","sub-h"),{textContent:t.cancelledH}));
-    var l3=el("div","jobs");
-    cancelled.slice(-4).reverse().forEach(function(r){ var wr=el("div","jobwrap"); var j=jobRow(r); j.style.opacity=".6"; wr.appendChild(j);
-      var kept=Number(r.cancelKept)||0;
-      wr.appendChild(Object.assign(el("p","fine"),{textContent:kept>0?t.cancelKept(dh(kept)):t.cancelNothing,style:"margin:0;padding:0 18px 12px"}));
-      l3.appendChild(wr); });
-    box.appendChild(l3);
+  if(gepland.length){
+    kop(t.hReserv);
+    gepland.forEach(function(r){
+      var vandaag=r.from<=nu;
+      kaart(r, vandaag?t.vertrektVandaag:t.vertrekt(dDay(r.from)), vandaag?"vandaag":"",
+        [{label:t.bMee, fn:function(){ snelVertrek(r); }},
+         {label:"✎", ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]);
+    });
   }
-  var closed=RENTALS.filter(function(r){ return live(r) && stepOf(r)===4; });
-  if(closed.length){
-    box.appendChild(Object.assign(el("p","sub-h"),{textContent:t.done}));
-    var l2=el("div","jobs");
-    closed.slice(-6).reverse().forEach(function(r){ var j=jobRow(r); j.style.opacity=".75"; j.className="job"; var wr=el("div","jobwrap"); wr.appendChild(j); l2.appendChild(wr); });
-    box.appendChild(l2);
+  /* Vrije auto's: tik erop en het contract begint met die auto al gekozen. */
+  var vrij=CARS.filter(function(c){ return vrijeAuto(c,nu,plus(nu,1)); });
+  kop(t.hVrij);
+  if(!vrij.length) box.appendChild(el("p","leegtje",t.geenVrij));
+  else {
+    var vl=el("div","vrijlijst");
+    vrij.forEach(function(c){ var b=el("button",null,c.model); b.type="button";
+      b.addEventListener("click",function(){ openNew(); $("nwCar").value=c.id; $("nwCar").dispatchEvent(new Event("change")); tekenAutoTegels(); recalc(); });
+      vl.appendChild(b); });
+    box.appendChild(vl);
   }
 }
 /* Rij + de handelingen die op deze stap logisch zijn. Verlengen en betalen
@@ -6423,6 +6493,56 @@ function tekenDagKnoppen(){
    de hele leesmachine al naartoe schrijft. We lezen ze daar uit, in plaats van een
    tweede leesweg te bouwen die kan afwijken. */
 var SNELKLANT=null, SNELFORM=false, SNELBEZIG=null;
+/* Sleutels meegeven zonder formulier: vertrek vastleggen met de km-stand van de
+   auto, volle tank, geen schade — en meteen het contract. Zelfde als "Contract
+   maken" bij een nieuwe verhuur, maar dan voor een reservering. */
+async function snelVertrek(r,km){
+  var t=T(), c=car(r.vehicleId);
+  km=Number(km)||Number(c.km)||0;
+  var rec={ marks:[], shots:{}, km:km, fuel:"100", sig:null, at:new Date().toISOString(), snel:true };
+  var next=Object.assign({},r,{ depart:rec, limit:plus(r.to, AG.window||30) });
+  await S.set("rentals/"+r.id,stripId(next));
+  if(km>(Number(c.km)||0)){ await S.set("vehicles/"+c.id,stripId(Object.assign({},c,{km:km}))); }
+  await reload();
+  var vers=RENTALS.filter(function(x){ return x.id===r.id; })[0]||next;
+  receipt(vers,"depart");
+  var knop=$("rSide").querySelector("button.btn");
+  if(knop) makeContract(vers,knop);
+}
+/* Auto terug in één scherm: km-stand, en één grote knop "Alles in orde — borg
+   terug". Is er iets mis, dan gaat de tweede knop naar het volledige formulier met
+   schade en foto's. Zo is de gewone terugkomst één tik, en de moeilijke blijft kunnen. */
+function snelTerug(r){
+  var t=T(), c=car(r.vehicleId), vanKm=Number(r.depart&&r.depart.km)||Number(c.km)||0;
+  var w=el("div","ask"), b=el("div");
+  b.appendChild(el("h2",null,t.qrH));
+  b.appendChild(Object.assign(el("p","fine"),{textContent:r.clientName+" · "+c.model,style:"margin:0 0 12px"}));
+  var f=el("div","f"); var lb=el("label","lbl",t.qrKmL); lb.htmlFor="qrKm"; f.appendChild(lb);
+  var km=document.createElement("input"); km.type="number"; km.id="qrKm"; km.inputMode="numeric"; km.value=String(vanKm); km.min=String(vanKm);
+  f.appendChild(km); b.appendChild(f);
+  var fout=Object.assign(el("p","fine"),{style:"color:var(--warn);margin:6px 0 0"}); fout.hidden=true; b.appendChild(fout);
+  var borgNu=Number(r.caution)||0;
+  var ok=el("button","btn",borgNu>0?t.qrOk(dh(borgNu)):t.qrOkZonder); ok.type="button"; ok.style.cssText="width:100%;margin-top:14px;min-height:54px;font-size:17px";
+  var schade=el("button","btn ghost",t.qrSchade); schade.type="button"; schade.style.cssText="width:100%;margin-top:8px";
+  var weg=el("button","btn ghost sm",t.cancel); weg.type="button"; weg.style.cssText="width:100%;margin-top:8px";
+  b.appendChild(ok); b.appendChild(schade); b.appendChild(weg); w.appendChild(b); document.body.appendChild(w);
+  function dicht(){ w.remove(); }
+  weg.addEventListener("click",dicht);
+  w.addEventListener("click",function(e){ if(e.target===w) dicht(); });
+  schade.addEventListener("click",function(){ dicht(); openForm(r,"retour"); });
+  ok.addEventListener("click",async function(){
+    var k=Number(km.value)||vanKm;
+    if(k<vanKm){ fout.textContent=t.qrKmLaag; fout.hidden=false; km.focus(); return; }
+    ok.disabled=true;
+    var rec={ marks:(r.depart&&r.depart.marks)?r.depart.marks.slice():[], shots:{}, km:k, fuel:"100", sig:null, at:new Date().toISOString(), snel:true };
+    var patch={ retour:rec, released:true, releasedAt:today(), cautionReturned:borgNu, cautionWithheld:0, withholdNote:"" };
+    await S.set("rentals/"+r.id,stripId(Object.assign({},r,patch)));
+    if(k>(Number(c.km)||0)){ await S.set("vehicles/"+c.id,stripId(Object.assign({},c,{km:k}))); }
+    await reload(); dicht(); view="vDay"; render();
+    toast(borgNu>0?t.qrKlaar(dh(borgNu)):t.qrKlaarZonder);
+  });
+  setTimeout(function(){ km.focus(); km.select(); },50);
+}
 function klantUitFormulier(){
   return { name:$("cvName").value.trim(), tel:$("cvTel").value.trim(), docType:$("cvDocType").value||"cin",
     docNumber:$("cvDocNo").value.trim(), birth:$("cvBirth").value||"", docExpiry:$("cvDocExp").value||"",
@@ -6744,7 +6864,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="114";
+var ATLASVER="115";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
