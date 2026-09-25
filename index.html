@@ -5834,6 +5834,8 @@ async function licLezen(blob,storedKey,done){
   if(beeld){ try{ regel=await licRegelUitBeeld(beeld,20000,D); }catch(e){ regel=null; } }
   if(regel){
     $("cvLic").value=regel.docNumber; zetVast("cvLic");
+    /* "Délivré le" staat in dezelfde regel en is door het controlecijfer gedekt. */
+    if(regel.issue && !$("cvLicIssue").value) $("cvLicIssue").value=regel.issue;
     if(regel.nationality && !$("cvNat").value) $("cvNat").value=regel.nationality;
     D.licNaam=regel.fullName||"";
   }
@@ -6887,7 +6889,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="117";
+var ATLASVER="118";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
