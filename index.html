@@ -746,6 +746,7 @@ details.meer>div{padding:0 12px 12px}
                  en geen tweede opslaanknop: terwijl de kaart gelezen wordt kiest de
                  verhuurder de auto en de dagen. -->
             <p class="fine" id="nwScanTip" style="margin:8px 2px 0;text-align:center"></p>
+            <p id="nwAILamp" style="margin:6px 2px 0;text-align:center;font-size:13px;font-weight:600;cursor:pointer"></p>
             <div class="snelstat" id="nwScanStat" hidden role="status" aria-live="polite"></div>
             <button type="button" class="btn ghost sm" id="nwScanLic" hidden style="width:100%;margin-top:8px"></button>
             <input type="file" id="snelCam" accept="image/*,.heic,.heif" capture="environment" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
@@ -1329,6 +1330,9 @@ var TXT = {
   stCloudSetH:"Verbinding instellen", stCloudUrlL:"Project-URL", stCloudKeyL:"Publieke sleutel (anon key)", stCloudSave:"Verbinding bewaren",
   stCloudUit0:"Nog niet ingesteld \u2014 alles staat alleen op dit toestel.",
   stCloudAan:function(n){ return "Verbonden. Alles staat op al je toestellen."+(n?" Nog "+n+" te versturen.":""); },
+  aiAan:function(m){ return "\u25cf Slimme scan AAN"+(m?" \u2014 aangemeld als "+m:""); },
+  aiUitLamp:"\u25cb Slimme scan UIT \u2014 tik hier om aan te melden",
+  stAls:function(m){ return "Aangemeld als "+m; },
   stCloudBezig:"Bezig met bijwerken\u2026",
   stCloudFout:function(f){ return "Verbinding werkt niet ("+f+"). Je werk blijft lokaal bewaard en gaat mee zodra het weer lukt."; },
   stCloudUitLog:"Ingesteld, maar niet aangemeld. Meld je aan om je gegevens te delen tussen toestellen.",
@@ -1675,6 +1679,9 @@ var TXT = {
   stCloudSetH:"Configurer la connexion", stCloudUrlL:"URL du projet", stCloudKeyL:"Cl\u00e9 publique (anon key)", stCloudSave:"Enregistrer la connexion",
   stCloudUit0:"Pas encore configur\u00e9 \u2014 tout reste sur cet appareil.",
   stCloudAan:function(n){ return "Connect\u00e9. Vos donn\u00e9es sont sur tous vos appareils."+(n?" Encore "+n+" \u00e0 envoyer.":""); },
+  aiAan:function(m){ return "\u25cf Scan intelligent ACTIF"+(m?" \u2014 connect\u00e9 : "+m:""); },
+  aiUitLamp:"\u25cb Scan intelligent INACTIF \u2014 touchez ici pour vous connecter",
+  stAls:function(m){ return "Connect\u00e9 : "+m; },
   stCloudBezig:"Mise \u00e0 jour en cours\u2026",
   stCloudFout:function(f){ return "La connexion ne fonctionne pas ("+f+"). Votre travail reste enregistr\u00e9 ici et partira d\u00e8s que possible."; },
   stCloudUitLog:"Configur\u00e9, mais pas connect\u00e9. Connectez-vous pour partager vos donn\u00e9es entre appareils.",
@@ -6439,7 +6446,7 @@ function openNew(presetClient, edit){
   $("bGo").textContent=edit?t.nwSaveEdit:t.nwSave; $("bGo").disabled=!$("nwClash").hidden; $("note").textContent="";
   if($("nwS1")){
     $("nwS1").textContent=t.nwS1; $("nwS2").textContent=t.nwS2; $("nwS3").textContent=t.nwS3;
-    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOfVaste; $("nwScanTip").textContent=t.snelTip;
+    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOfVaste; $("nwScanTip").textContent=t.snelTip; tekenAILamp();
     $("nwAndersH").textContent=t.nwAndersH; $("nwKmPas").textContent=t.nwPas;
     $("nwVaste").open = ($("nwClient").value!=="new");
     $("nwAnders").open = !!edit;
@@ -7235,7 +7242,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="130";
+var ATLASVER="131";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7960,6 +7967,14 @@ async function systemCheck(){
 $("stCheckBtn").addEventListener("click",systemCheck);
 
 /* ============ cloudscherm ============ */
+function sbMail(){ try{ return (SBSES && ((SBSES.user && SBSES.user.email) || SBSES.email)) || ""; }catch(e){ return ""; } }
+/* Zichtbaar vóór het scannen: werkt de slimme scan (aangemeld) of niet. */
+function tekenAILamp(){
+  var l=$("nwAILamp"); if(!l) return; var t=T(), aan=sbKlaar();
+  l.textContent = aan ? t.aiAan(sbMail()) : t.aiUitLamp;
+  l.style.color = aan ? "var(--brand)" : "var(--muted, #888)";
+  l.onclick = aan ? null : function(){ naarAanmelden(); };
+}
 function tekenCloud(){
   var t=T(), st=$("stCloudStat"); if(!st) return;
   $("stCloudH").textContent=t.stCloudH; $("stCloudP").textContent=t.stCloudP;
@@ -7984,7 +7999,9 @@ function tekenCloud(){
   else if(SBSTAT==="fout"){ tekst=t.stCloudFout(SBFOUT||"?"); kleur="var(--gold)"; }
   else if(SBSTAT==="bezig") tekst=t.stCloudBezig;
   else { tekst=t.stCloudAan(SBQ.length); kleur="var(--brand)"; }
+  if(aangemeld && sbMail()) tekst=t.stAls(sbMail())+". "+tekst;
   st.textContent=tekst; st.style.color=kleur;
+  try{ tekenAILamp(); }catch(e){}
 }
 if($("stCloudSave")) $("stCloudSave").addEventListener("click",async function(){
   SB={ url:$("stCloudUrl").value.trim(), key:$("stCloudKey").value.trim() };
