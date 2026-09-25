@@ -745,6 +745,7 @@ details.meer>div{padding:0 12px 12px}
             <!-- De kaart wordt hier gelezen, op dit scherm. Geen apart klantscherm meer
                  en geen tweede opslaanknop: terwijl de kaart gelezen wordt kiest de
                  verhuurder de auto en de dagen. -->
+            <p class="fine" id="nwScanTip" style="margin:8px 2px 0;text-align:center"></p>
             <div class="snelstat" id="nwScanStat" hidden role="status" aria-live="polite"></div>
             <button type="button" class="btn ghost sm" id="nwScanLic" hidden style="width:100%;margin-top:8px"></button>
             <input type="file" id="snelCam" accept="image/*,.heic,.heif" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
@@ -1112,7 +1113,11 @@ var TXT = {
   snelNiets:"Op deze foto kon ik niets lezen. Neem de achterkant van de kaart, recht van boven, met de regels onderaan erop.",
   snelLic:"+ Nog een foto (andere kant of rijbewijs)", snelLicOk:function(nr){ return "\u2713 Rijbewijs "+nr; },
   snelWacht:"Even geduld \u2014 de kaart wordt nog gelezen.",
-  snelNogId:"neem nu ook een foto van de ID-kaart voor naam en CIN.",
+  snelNogId:"neem nu ook een foto van de ACHTERKANT van de ID-kaart voor naam en CIN.",
+  snelDraaiId:"Dit is de voorkant. Draai de ID-kaart om en neem de achterkant (met de regels <<< onderaan): daar staan naam, nummer, datums en adres.",
+  snelDraaiLic:"Rijbewijs: het nummer staat achteraan, op de regel die met D1MA begint. Neem de achterkant, recht van boven.",
+  snelKnopAchterId:"\u21bb Achterkant van de ID nemen", snelKnopAchterLic:"\u21bb Achterkant van het rijbewijs nemen",
+  snelTip:"Tip: neem de ACHTERKANT van de ID en van het rijbewijs \u2014 daar staat alles op.",
   rFotos:"Foto\u2019s en schade vastleggen (mag ook later)", rSnelKlaar:"Contract klaar", klaarKnop:"Klaar",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
@@ -1503,7 +1508,11 @@ var TXT = {
   snelNiets:"Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
   snelLic:"+ Une autre photo (autre face ou permis)", snelLicOk:function(nr){ return "\u2713 Permis "+nr; },
   snelWacht:"Un instant \u2014 la carte est encore en lecture.",
-  snelNogId:"prenez aussi une photo de la CIN pour le nom et le num\u00e9ro.",
+  snelNogId:"prenez aussi une photo du VERSO de la CIN pour le nom et le num\u00e9ro.",
+  snelDraaiId:"C\u2019est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, num\u00e9ro, dates et adresse y figurent.",
+  snelDraaiLic:"Permis : le num\u00e9ro est au verso, sur la ligne qui commence par D1MA. Photographiez le verso, bien de face.",
+  snelKnopAchterId:"\u21bb Photographier le verso de la CIN", snelKnopAchterLic:"\u21bb Photographier le verso du permis",
+  snelTip:"Astuce : photographiez le VERSO de la CIN et du permis \u2014 tout y figure.",
   rFotos:"Photos et dommages (possible plus tard)", rSnelKlaar:"Contrat pr\u00eat", klaarKnop:"Termin\u00e9",
   nwD2H:"Ajouter un 2ème conducteur", nwD2NameL:"Nom du 2ème conducteur", nwD2LicL:"N° de permis", nwD2IssueL:"Délivré le",
   nwScanKaart:"Scanner CIN et permis",
@@ -6411,7 +6420,7 @@ function openNew(presetClient, edit){
   $("bGo").textContent=edit?t.nwSaveEdit:t.nwSave; $("bGo").disabled=!$("nwClash").hidden; $("note").textContent="";
   if($("nwS1")){
     $("nwS1").textContent=t.nwS1; $("nwS2").textContent=t.nwS2; $("nwS3").textContent=t.nwS3;
-    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOfVaste;
+    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOfVaste; $("nwScanTip").textContent=t.snelTip;
     $("nwAndersH").textContent=t.nwAndersH; $("nwKmPas").textContent=t.nwPas;
     $("nwVaste").open = ($("nwClient").value!=="new");
     $("nwAnders").open = !!edit;
@@ -6623,7 +6632,7 @@ async function soortVanFoto(bestand){
   var rijbewijs=/PERMIS|CONDUIRE|DRIVING|رخصة/.test(tx);
   var strookTekst=/<<<|<[A-Z]{3}<|P<[A-Z]{3}|I[D<]MAR/.test(tx.replace(/\s/g,""));
   var voorkant=/CARTE\s*NATIONALE|IDENTIT|البطاقة/.test(tx);
-  if(rijbewijs && !strookTekst) return { soort:"licence", zijde:"" };
+  if(rijbewijs && !strookTekst) return { soort:"licence", zijde:"voorkant", tekst:tx };
   var st=null; try{ st=vindStrook(img); }catch(e){ st=null; }
   /* 3. de strook: meteen lezen, en die lezing wordt verderop hergebruikt */
   if(strookTekst || st || !voorkant){
@@ -6631,8 +6640,11 @@ async function soortVanFoto(bestand){
     try{ hit=await readMRZ(bestand,{ budget:(strookTekst||st)?20000:12000 }); }catch(e){ hit=null; }
     if(hit && hit.kind!=="licence"){ VOORMRZ={ bron:bestand, hit:hit }; return { soort:"cin", zijde:"achter" }; }
   }
-  /* 4. geen strook, geen rijbewijsregel: een voorkant */
-  return rijbewijs ? { soort:"licence", zijde:"" } : { soort:"cin", zijde:"voor" };
+  /* 4. geen strook, geen rijbewijsregel: een voorkant. Daar leest geen enkele
+     tekstherkenner betrouwbaar door het veiligheidspatroon heen (op de echte site
+     gemeten: pure ruis). Niet een minuut laten zwoegen — meteen vragen om de kaart
+     om te draaien. Wat de snelle lezing toevallig wel vond, nemen we mee. */
+  return { soort: rijbewijs?"licence":"cin", zijde:"voorkant", tekst:tx };
 }
 /* Sleutels meegeven zonder formulier: vertrek vastleggen met de km-stand van de
    auto, volle tank, geen schade — en meteen het contract. Zelfde als "Contract
@@ -6721,10 +6733,22 @@ async function snelScan(bestanden,soort){
   terugNaarHuur();
   var klaar;
   SNELBEZIG=new Promise(function(r){ klaar=r; });
-  var lijst=Array.prototype.slice.call(bestanden);
+  var lijst=Array.prototype.slice.call(bestanden), voorkanten=[];
   for(var fi=0;fi<lijst.length;fi++){
     try{
       var wat = soort==="auto" ? await soortVanFoto(lijst[fi]) : { soort:soort, zijde:(soort==="licence"?"":"achter") };
+      if(wat.zijde==="voorkant"){
+        voorkanten.push(wat.soort);
+        /* foto toch bij de klant bewaren */
+        try{ if(clientDraft){ var sl=wat.soort==="licence"?"licence-voor":"cin-voor", n2=2; while(clientDraft.scans[sl]) sl=(wat.soort==="licence"?"licence-voor-":"cin-voor-")+(n2++); clientDraft.scans[sl]=await storeScan(lijst[fi]); } }catch(e){}
+        /* wat de snelle lezing wel vond (zelden), in lege vakjes */
+        try{ if(wat.soort==="cin" && wat.tekst){ var vk=voorkantUitRegels(plakRegels(wat.tekst));
+          if(vk.birth && !$("cvBirth").value) $("cvBirth").value=vk.birth;
+          if(vk.expiry && !$("cvDocExp").value) $("cvDocExp").value=vk.expiry;
+          if(vk.number && !$("cvDocNo").value) $("cvDocNo").value=vk.number;
+          if(vk.name && !$("cvName").value) $("cvName").value=vk.name; } }catch(e){}
+        continue;
+      }
       await verwerkKeuze({ files:[lijst[fi]], value:"" }, wat.soort, wat.zijde);
     }catch(e){}
     VOORMRZ=null;
@@ -6747,13 +6771,20 @@ async function snelScan(bestanden,soort){
   var regels=[];
   if(k.licenceNumber) regels.push(t.snelLicOk(k.licenceNumber));
   if(k.name) regels.unshift(t.snelOk(k.name, nummer, k.birth?dNum(k.birth):""));
-  if(!k.name && !k.docNumber && !k.licenceNumber){ stat.className="snelstat half"; stat.textContent=t.snelNiets; }
-  /* Alleen het rijbewijs gelezen: dat is geen fout — achterop staat de volledige
-     naam gewoon niet. Zeg wat er nog nodig is in plaats van "niet leesbaar". */
+  /* Welke melding: eerst wat er nog ontbreekt (kaart omdraaien), dan wat er is. */
+  var idVoor=voorkanten.indexOf("cin")>=0 && !k.docNumber, licVoor=voorkanten.indexOf("licence")>=0 && !k.licenceNumber;
+  if(idVoor || licVoor){
+    stat.className="snelstat half";
+    var draai = idVoor ? t.snelDraaiId : t.snelDraaiLic;
+    stat.textContent = regels.length ? (regels.join("  \u00b7  ")+"  \u00b7  "+draai) : draai;
+  }
+  else if(!k.name && !k.docNumber && !k.licenceNumber){ stat.className="snelstat half"; stat.textContent=t.snelNiets; }
+  /* Alleen het rijbewijs gelezen: geen fout — achterop staat de volledige naam
+     gewoon niet. Zeg wat er nog nodig is in plaats van "niet leesbaar". */
   else if(!k.name && k.licenceNumber && !k.docNumber){ stat.className="snelstat half"; stat.textContent=t.snelLicOk(k.licenceNumber)+" \u2014 "+t.snelNogId; }
   else if(!k.name){ stat.className="snelstat half"; stat.textContent=t.snelHalf; if(!bewaar.name) $("nwName").focus(); }
-  else { stat.className="snelstat ok"; stat.textContent=regels.join("  ·  "); }
-  $("nwScanLic").hidden=false; $("nwScanLic").textContent=k.licenceNumber?t.snelLicOk(k.licenceNumber):t.snelLic;
+  else { stat.className="snelstat ok"; stat.textContent=regels.join("  \u00b7  "); }
+  $("nwScanLic").hidden=false; $("nwScanLic").textContent = idVoor ? t.snelKnopAchterId : (licVoor ? t.snelKnopAchterLic : (k.licenceNumber?t.snelLicOk(k.licenceNumber):t.snelLic));
   SNELBEZIG=null; klaar();
 }
 $("nwScanKaart").addEventListener("click",function(){ $("snelKies").click(); });
@@ -7020,7 +7051,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="121";
+var ATLASVER="122";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
