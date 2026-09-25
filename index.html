@@ -1118,6 +1118,7 @@ var TXT = {
   snelNogId:"neem nu ook een foto van de ACHTERKANT van de ID-kaart voor naam en CIN.",
   snelNrTyp:"nummer niet zeker gelezen \u2014 typ het over van het document",
   snelNrCheck:"kijk nummer en geboortedatum even na met het document",
+  snelLicTyp:"rijbewijsnummer niet zeker gelezen \u2014 typ het hieronder over",
   snelAIUit:"Slimme scan staat uit: je bent niet aangemeld (Instellingen \u2192 Cloud). Nu de gewone scan gebruikt.",
   snelAIFout:"Slimme scan niet bereikbaar (code {c}) \u2014 nu de gewone scan gebruikt.",
   nwDocNoL:"Nummer paspoort / CIN",
@@ -1519,6 +1520,7 @@ var TXT = {
   snelNogId:"prenez aussi une photo du VERSO de la CIN pour le nom et le num\u00e9ro.",
   snelNrTyp:"num\u00e9ro pas lu avec certitude \u2014 recopiez-le du document",
   snelNrCheck:"v\u00e9rifiez num\u00e9ro et date de naissance avec le document",
+  snelLicTyp:"num\u00e9ro de permis pas lu avec certitude \u2014 tapez-le ci-dessous",
   snelAIUit:"Scan intelligent d\u00e9sactiv\u00e9 : vous n\u2019\u00eates pas connect\u00e9 (R\u00e9glages \u2192 Cloud). Scan normal utilis\u00e9.",
   snelAIFout:"Scan intelligent injoignable (code {c}) \u2014 scan normal utilis\u00e9.",
   nwDocNoL:"Num\u00e9ro passeport / CIN",
@@ -6800,20 +6802,48 @@ function aiSchoon(x){ return String(x||"").toUpperCase().replace(/\s+/g," ").tri
 async function aiVul(j,lijst){
   var uit={ iets:false, twijfelDoc:false, twijfelLic:false };
   var id=null, idAI=null, lic=null, licAI=null, adres="", licExp="", licIss="";
-  (j.fotos||[]).forEach(function(p){
+  /* Eén foto nakijken: geeft een gecontroleerde strook (id) of D1-regel (lic) terug. De AI
+     zet de D1-regel soms bij de strookregels in plaats van in d1_regel: overal zoeken. */
+  var keur=function(p){
+    var regels=(Array.isArray(p.mrz)?p.mrz:[]).map(function(r){ return String(r||"").toUpperCase().replace(/[^A-Z0-9<]/g,""); });
+    var strook=regels.filter(function(r){ return r.length>=28 && !/^D1/.test(r); });
+    if(strook.length>=2){ var h=aiMrz(strook); if(h && h.kind!=="licence") return { id:h }; }
+    var kand=[String(p.d1_regel||"")].concat(regels).map(function(r){ return String(r).toUpperCase().replace(/[^A-Z0-9<]/g,""); }).filter(function(r){ return /^D1/.test(r); });
+    for(var q=0;q<kand.length;q++){ var L=kand[q];
+      var probeer=[L.slice(0,30), mrzOpLengte(L,30)];
+      for(var z=0;z<probeer.length;z++){ var lr=null; try{ lr=probeer[z].length===30?licRegel(probeer[z]):null; }catch(e){ lr=null; } if(lr) return { lic:lr }; } }
+    return {};
+  };
+  var neem=function(p){
     if(!p || typeof p.foto!=="number" || !lijst[p.foto]) return;
     p.soort=String(p.soort||"ander");
     if(p.adres && /^id_achter|^id_voor/.test(p.soort) && !adres) adres=aiSchoon(p.adres);
     if(aiDatum(p.rijbewijs_geldig_tot) && !licExp) licExp=aiDatum(p.rijbewijs_geldig_tot);
     if(aiDatum(p.rijbewijs_afgifte) && !licIss) licIss=aiDatum(p.rijbewijs_afgifte);
-    var regels=(Array.isArray(p.mrz)?p.mrz:[]).map(function(r){ return String(r||"").toUpperCase().replace(/[^A-Z0-9<]/g,""); }).filter(function(r){ return r.length>=28; });
-    if(regels.length>=2){ var h=aiMrz(regels);
-      if(h && h.kind!=="licence"){ if(!id) id={ hit:h, p:p }; return; } }
-    var L=String(p.d1_regel||"").toUpperCase().replace(/[^A-Z0-9<]/g,"");
-    if(L.length>=30){ var lr=null; try{ lr=licRegel(L.slice(0,30)); }catch(e){ lr=null; } if(lr){ lic={ hit:lr, p:p }; return; } }
+    var k=keur(p);
+    if(k.id){ if(!id) id={ hit:k.id, p:p }; return; }
+    if(k.lic){ if(!lic) lic={ hit:k.lic, p:p }; return; }
     if(/^id_|^paspoort/.test(p.soort)){ if(!idAI || (idAI.soort==="id_voor" && p.soort!=="id_voor")) idAI=p; }
     if(/^rijbewijs/.test(p.soort) && (!licAI || (!licAI.rijbewijs_nummer && p.rijbewijs_nummer))) licAI=p;
-  });
+  };
+  (j.fotos||[]).forEach(neem);
+  uit.licFoto=(j.fotos||[]).some(function(p){ return p && /^rijbewijs/.test(String(p.soort)); });
+  /* Tweede kans: een achterkant of paspoort waarvan de controle niet lukte, apart
+     opnieuw laten lezen (één foto per keer leest de AI nauwkeuriger). */
+  var herlees=[];
+  (j.fotos||[]).forEach(function(p){ if(!p || !lijst[p.foto]) return;
+    if(!id && /^id_achter|^paspoort/.test(p.soort)) herlees.push(p.foto);
+    else if(!lic && p.soort==="rijbewijs_achter" && (!p.land || p.land==="MAR")) herlees.push(p.foto); });
+  for(var hr=0; hr<herlees.length && hr<2; hr++){
+    try{ var j2=await aiLees([lijst[herlees[hr]]]); var p2=j2&&j2.fotos&&j2.fotos[0];
+      if(p2){ p2.foto=herlees[hr]; var k2=keur(p2);
+        if(k2.id && !id){ id={ hit:k2.id, p:p2 }; if(p2.adres && !adres) adres=aiSchoon(p2.adres); }
+        if(k2.lic && !lic){ lic={ hit:k2.lic, p:p2 }; if(aiDatum(p2.rijbewijs_geldig_tot) && !licExp) licExp=aiDatum(p2.rijbewijs_geldig_tot); } } }catch(e){}
+  }
+  /* rijbewijsnummer in de vorm 07/182101 zonder geldige D1-regel: invullen maar laten nakijken */
+  if(!lic && !(licAI && licAI.rijbewijs_nummer)){
+    (j.fotos||[]).forEach(function(p){ if(p && /^rijbewijs/.test(p.soort) && p.rijbewijs_nummer && !licAI) licAI=p; });
+  }
   var zet=function(veld,w){ if(w && $(veld)) $(veld).value=w; };
   if(id){
     var h=id.hit, kind=h.kind==="passport"?"passport":"cin";
@@ -6927,6 +6957,7 @@ async function snelScan(bestanden,soort){
     if(aiUit.twijfelDoc && k.docNumber){ $("nwDocNoL").textContent=t.nwDocNoL; $("nwDocNo").value=k.docNumber; $("nwDocWrap").hidden=false; }
     if(stat.textContent.indexOf(t.snelNrTyp)<0){ stat.className="snelstat half"; stat.textContent+="  \u00b7  "+t.snelNrCheck; }
   }
+  if(aiUit && aiUit.licFoto && !k.licenceNumber && !idVoor){ stat.className="snelstat half"; stat.textContent+="  \u00b7  "+t.snelLicTyp; }
   /* Zeg het als de slimme scan niet gebruikt werd, anders weet niemand waarom het traag of mis ging. */
   if(soort==="auto" && !aiUit && AIFOUT && AIFOUT!=="aantal"){
     var aiReg=$("nwScanAI"); if(!aiReg){ aiReg=document.createElement("div"); aiReg.id="nwScanAI"; aiReg.className="muted"; aiReg.style.cssText="font-size:13px;margin:4px 0 0";
@@ -7204,7 +7235,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="129";
+var ATLASVER="130";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
