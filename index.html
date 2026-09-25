@@ -2129,13 +2129,15 @@ async function sbSamenvoegen(){
   }catch(e){}
 }
 function naarAanmelden(){
-  view="vSet"; render();
+  TERUGNA=view; view="vSet"; render();
   setTimeout(function(){
     var k=$("stCloudCard"); if(k) k.scrollIntoView({behavior:"smooth",block:"start"});
     var m=$("stCloudMail"); if(m) m.focus();
   },150);
 }
-function naAanmelden(){ if(!sbKlaar()) return; view="vDay"; render(); }
+function naAanmelden(){ if(!sbKlaar()) return;
+  if(TERUGNA==="vNew" && NWOPEN){ TERUGNA=""; show("vNew"); try{ tekenAILamp(); }catch(e){} return; }
+  TERUGNA=""; view="vDay"; render(); }
 function sbVerf(){ try{ if(typeof tekenCloud==="function") tekenCloud(); }catch(e){} }
 
 var S={
@@ -2316,13 +2318,37 @@ function paintBrand(){ $("logoM").textContent=(AG.init||"A").slice(0,2); $("logo
 /* ============ router ============ */
 var VIEWS=["vDay","vPlan","vClients","vClient","vNew","vForm","vDone","vLed","vCash","vFleet","vCar","vSet","vCard","vTrust"];
 var TABOF={vDay:"vDay",vNew:"vDay",vForm:"vDay",vDone:"vDay",vCard:"vDay",vTrust:"vSet",vPlan:"vPlan",vClients:"vClients",vClient:"vClients",vLed:"vLed",vCash:"vCash",vFleet:"vFleet",vCar:"vFleet",vSet:"vSet"};
+/* ============ TERUG ============
+   Terug (knop in Atlas én de terugknop/veeg van de telefoon) gaat één scherm terug,
+   niet helemaal naar het begin en niet de site uit. Elk nieuw scherm krijgt een plek
+   in de geschiedenis van de browser. */
+var GETOOND="", VIA_POP=false, DIEPTE=0, NWOPEN=false, TERUGNA="";
+var ZELFSTANDIG=["vDay","vPlan","vClients","vLed","vCash","vFleet","vSet"];
 function show(v){
+  if(!VIA_POP && v!==GETOOND && GETOOND){ try{ history.pushState({ v:v },""); DIEPTE++; }catch(e){} }
+  GETOOND=v;
   view=v;
   VIEWS.forEach(function(x){ $(x).hidden = x!==v; });
   $("prog").hidden = v!=="vForm";
   $("dock").hidden = ["vDay","vLed","vCash","vFleet","vClients","vPlan","vCard","vTrust"].indexOf(v)>=0;
   Array.prototype.forEach.call($("tabs").children,function(b){ b.setAttribute("aria-current", b.dataset.v===TABOF[v]); });
   window.scrollTo(0,0);
+}
+try{ history.replaceState({ v:"vDay" },""); }catch(e){}
+window.addEventListener("popstate",function(e){
+  var doel=(e.state && e.state.v) || "vDay";
+  if(DIEPTE>0) DIEPTE--;
+  /* Schermen die alleen zin hebben midden in een handeling: dan naar Vandaag. */
+  var mag = ZELFSTANDIG.indexOf(doel)>=0 || (doel==="vNew" && NWOPEN);
+  if(!mag) doel="vDay";
+  if(view==="vForm"){ try{ stashDraft(); }catch(err){} rental=null; draft=null; }
+  VIA_POP=true;
+  try{ view=doel; if(doel==="vNew") show("vNew"); else render(); } finally { VIA_POP=false; }
+});
+/* Eén scherm terug; lukt dat niet (net geopend), dan naar Vandaag. */
+function eenTerug(){
+  if(DIEPTE>0){ history.back(); return; }
+  view="vDay"; render();
 }
 function render(){
   if(view==="vDay") renderDay();
@@ -6413,7 +6439,7 @@ async function storeScan(blob){
 
 /* ============ NIEUWE VERHUUR ============ */
 function openNew(presetClient, edit){
-  var t=T(); editRental=edit||null;
+  var t=T(); editRental=edit||null; NWOPEN=true;
   if(!CARS.length){ view="vFleet"; render(); return; }
   var extend = !!(edit && edit.depart);
   $("nwH").textContent = edit ? (extend?t.nwExtendH:t.nwEditH) : t.nwH;
@@ -7003,6 +7029,9 @@ function leesD2(){
   return { name:n, licence:$("nwD2Lic").value.trim(), issue:$("nwD2Issue").value||"" };
 }
 async function saveRental(){
+  NWOPEN=false; try{ return await saveRentalEcht(); } finally { if(view==="vNew") NWOPEN=true; }
+}
+async function saveRentalEcht(){
   var t=T(), from=$("nwFrom").value, to=$("nwTo").value;
   if(!from||!to||to<=from){ $("nwTo").focus(); return; }
   var c=car($("nwCar").value), cid=$("nwClient").value, name, tel;
@@ -7242,7 +7271,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="131";
+var ATLASVER="132";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -8475,8 +8504,8 @@ $("newClient").addEventListener("click",function(){ openClient(null); });
 $("bBack").addEventListener("click",function(){
   if(view==="vCar"){ carEdit?delCar():(view="vFleet",render()); return; }
   if(view==="vClient"){ clientEdit?delClient():(view="vClients",render()); return; }
-  if(view==="vNew"){ if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; view="vDay"; render(); return; }
-  stashDraft(); rental=null; draft=null; view="vDay"; render();
+  if(view==="vNew"){ if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; NWOPEN=false; eenTerug(); return; }
+  stashDraft(); rental=null; draft=null; eenTerug();
 });
 $("bGo").addEventListener("click",function(){
   if(view==="vNew"){ saveRental(); return; }
