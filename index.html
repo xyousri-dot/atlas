@@ -1117,6 +1117,7 @@ var TXT = {
   snelWacht:"Even geduld \u2014 de kaart wordt nog gelezen.",
   snelNogId:"neem nu ook een foto van de ACHTERKANT van de ID-kaart voor naam en CIN.",
   snelNrTyp:"nummer niet zeker gelezen \u2014 typ het over van het document",
+  snelNrCheck:"kijk het nummer hieronder even na met het document",
   nwDocNoL:"Nummer paspoort / CIN",
   snelDraaiId:"Dit is de voorkant. Draai de ID-kaart om en neem de achterkant (met de regels <<< onderaan): daar staan naam, nummer, datums en adres.",
   snelDraaiLic:"Rijbewijs: Marokkaans \u2192 neem de achterkant (regel die met D1MA begint). Buitenlands \u2192 typ het nummer hieronder.",
@@ -1515,6 +1516,7 @@ var TXT = {
   snelWacht:"Un instant \u2014 la carte est encore en lecture.",
   snelNogId:"prenez aussi une photo du VERSO de la CIN pour le nom et le num\u00e9ro.",
   snelNrTyp:"num\u00e9ro pas lu avec certitude \u2014 recopiez-le du document",
+  snelNrCheck:"v\u00e9rifiez le num\u00e9ro ci-dessous avec le document",
   nwDocNoL:"Num\u00e9ro passeport / CIN",
   snelDraaiId:"C\u2019est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, num\u00e9ro, dates et adresse y figurent.",
   snelDraaiLic:"Permis : marocain \u2192 photographiez le verso (ligne qui commence par D1MA). \u00c9tranger \u2192 tapez le num\u00e9ro ci-dessous.",
@@ -1946,7 +1948,7 @@ async function sbRoep(pad,opt){
   /* Een verbinding die blijft hangen (slechte 4G, wifi die wegvalt) mag de rij niet
      minutenlang vasthouden: na 15 seconden opgeven, dan probeert de volgende ronde het. */
   var stop=(typeof AbortController!=="undefined")?new AbortController():null;
-  var wekker=stop?setTimeout(function(){ try{ stop.abort(); }catch(e){} },15000):null;
+  var wekker=stop?setTimeout(function(){ try{ stop.abort(); }catch(e){} },opt.wacht||15000):null;
   var res;
   try{ res=await fetch(sbBasis()+pad,{ method:opt.method||"GET", headers:h, body:opt.body, signal:stop?stop.signal:undefined }); }
   finally{ if(wekker) clearTimeout(wekker); }
@@ -6745,6 +6747,86 @@ function zetHuurKnop(){
   if(editRental){ b.textContent=t.nwSaveEdit; return; }
   b.textContent = ($("nwFrom").value && $("nwFrom").value<=today()) ? t.nwContract : t.nwReserve;
 }
+/* ============ SLIMME SCAN (Claude) ============
+   De foto's gaan via onze eigen Supabase-functie naar Claude, die ze leest zoals
+   een mens: scheef, dwars, voorkant, buitenlands. Claude wordt niet blind
+   vertrouwd: waar het document controlecijfers heeft (de regels met < en de
+   D1-regel van het Marokkaanse rijbewijs) rekent Atlas die zelf na. Wat geen
+   controle heeft, komt in een zichtbaar vakje om even na te kijken. Lukt de
+   slimme scan niet (geen internet, niet aangemeld), dan de oude lezer. */
+var AIPAD="/functions/v1/atlas-scan";
+async function fotoVoorAI(f){
+  var img=await laadBeeld(f), m=1600, sc=Math.min(1,m/Math.max(img.width,img.height));
+  var c=document.createElement("canvas"); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+  return c.toDataURL("image/jpeg",0.85).split(",")[1];
+}
+async function aiLees(lijst){
+  if(typeof sbKlaar!=="function" || !sbKlaar() || !lijst.length || lijst.length>6) return null;
+  var fotos=[];
+  for(var i=0;i<lijst.length;i++) fotos.push({ data:await fotoVoorAI(lijst[i]), type:"image/jpeg" });
+  var res=await sbRoep(AIPAD,{ method:"POST", body:JSON.stringify({ fotos:fotos }), wacht:60000 });
+  if(!res || !res.ok) return null;
+  var j=null; try{ j=await res.json(); }catch(e){ j=null; }
+  return (j && Array.isArray(j.fotos)) ? j : null;
+}
+function aiDatum(d){ d=String(d||""); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : ""; }
+function aiSchoon(x){ return String(x||"").toUpperCase().replace(/\s+/g," ").trim(); }
+async function aiVul(j,lijst){
+  var uit={ iets:false, twijfelDoc:false, twijfelLic:false };
+  var id=null, idAI=null, lic=null, licAI=null, adres="", licExp="", licIss="";
+  (j.fotos||[]).forEach(function(p){
+    if(!p || typeof p.foto!=="number" || !lijst[p.foto]) return;
+    p.soort=String(p.soort||"ander");
+    if(p.adres && /^id_achter|^id_voor/.test(p.soort) && !adres) adres=aiSchoon(p.adres);
+    if(aiDatum(p.rijbewijs_geldig_tot) && !licExp) licExp=aiDatum(p.rijbewijs_geldig_tot);
+    if(aiDatum(p.rijbewijs_afgifte) && !licIss) licIss=aiDatum(p.rijbewijs_afgifte);
+    var regels=(Array.isArray(p.mrz)?p.mrz:[]).map(function(r){ return String(r||"").toUpperCase().replace(/[^A-Z0-9<]/g,""); }).filter(function(r){ return r.length>=28; });
+    if(regels.length>=2){ var h=null; try{ h=parseMRZ(regels.join("\n")); }catch(e){ h=null; }
+      if(h && h.kind!=="licence"){ if(!id) id={ hit:h, p:p }; return; } }
+    var L=String(p.d1_regel||"").toUpperCase().replace(/[^A-Z0-9<]/g,"");
+    if(L.length>=30){ var lr=null; try{ lr=licRegel(L.slice(0,30)); }catch(e){ lr=null; } if(lr){ lic={ hit:lr, p:p }; return; } }
+    if(/^id_|^paspoort/.test(p.soort)){ if(!idAI || (idAI.soort==="id_voor" && p.soort!=="id_voor")) idAI=p; }
+    if(/^rijbewijs/.test(p.soort) && (!licAI || (!licAI.rijbewijs_nummer && p.rijbewijs_nummer))) licAI=p;
+  });
+  var zet=function(veld,w){ if(w && $(veld)) $(veld).value=w; };
+  if(id){
+    var h=id.hit, kind=h.kind==="passport"?"passport":"cin";
+    var naam=h.fullName || aiSchoon((id.p.achternaam||"")+" "+(id.p.voornamen||""));
+    zet("cvName",naam); zet("cvBirth",h.birthDate); zet("cvDocExp",h.expiry);
+    if(h.nationality && echtLand(h.nationality)) zet("cvNat",h.nationality);
+    if($("cvDocType")) $("cvDocType").value=kind;
+    var no=usableDocNo(kind,h.docNumber,h.altNumber,h.kind);
+    var aiNo=aiSchoon(id.p.document_nummer).replace(/\s/g,"");
+    if(!no && kind==="cin" && CINNR.test(aiNo)){ no=aiNo; uit.twijfelDoc=true; }
+    zet("cvDocNo",no); if(!no) uit.twijfelDoc=true;
+    uit.iets=true;
+  } else if(idAI){
+    zet("cvName",aiSchoon((idAI.achternaam||"")+" "+(idAI.voornamen||"")));
+    zet("cvBirth",aiDatum(idAI.geboortedatum)); zet("cvDocExp",aiDatum(idAI.geldig_tot));
+    var natAI=aiSchoon(idAI.nationaliteit)||aiSchoon(idAI.land); if(echtLand(natAI)) zet("cvNat",natAI);
+    if($("cvDocType")) $("cvDocType").value = idAI.soort==="paspoort" ? "passport" : "cin";
+    zet("cvDocNo",aiSchoon(idAI.document_nummer).replace(/\s/g,""));
+    uit.twijfelDoc=true; uit.iets=true;
+  }
+  if(adres) zet("cvAddr",adres);
+  if(lic){
+    zet("cvLic",lic.hit.docNumber); zet("cvLicIssue",lic.hit.issue||licIss); zet("cvLicExp",licExp);
+    if(lic.hit.nationality && echtLand(lic.hit.nationality) && !$("cvNat").value) zet("cvNat",lic.hit.nationality);
+    uit.iets=true;
+  } else if(licAI && licAI.rijbewijs_nummer){
+    zet("cvLic",aiSchoon(licAI.rijbewijs_nummer).replace(/\s/g,"")); zet("cvLicIssue",licIss); zet("cvLicExp",licExp);
+    uit.twijfelLic=true; uit.iets=true;
+  }
+  /* alle foto's bij de klant bewaren, met wat ze zijn */
+  var naamVan={ id_achter:"cin", id_voor:"cin-voor", paspoort:"passport", rijbewijs_achter:"licence", rijbewijs_voor:"licence-voor" };
+  for(var i=0;i<lijst.length;i++){
+    var p=(j.fotos||[]).filter(function(x){ return x && x.foto===i; })[0]||{};
+    var sl=naamVan[p.soort]||"foto", n=2, basis=sl;
+    try{ if(clientDraft){ while(clientDraft.scans[sl]) sl=basis+"-"+(n++); clientDraft.scans[sl]=await storeScan(lijst[i]); } }catch(e){}
+  }
+  return uit;
+}
 async function snelScan(bestanden,soort){
   var t=T(); if(!bestanden || !bestanden.length) return;
   var stat=$("nwScanStat"), t0=Date.now();
@@ -6758,6 +6840,12 @@ async function snelScan(bestanden,soort){
   var klaar;
   SNELBEZIG=new Promise(function(r){ klaar=r; });
   var lijst=Array.prototype.slice.call(bestanden), voorkanten=[];
+  /* eerst de slimme scan; lukt die niet, dan de oude lezer per foto */
+  var ai=null, aiUit=null;
+  if(soort==="auto"){ try{ ai=await aiLees(lijst); }catch(e){ ai=null; }
+    if(ai){ try{ aiUit=await aiVul(ai,lijst); }catch(e){ aiUit=null; } } }
+  if(aiUit && aiUit.iets) lijst=[];
+  else aiUit=null;
   for(var fi=0;fi<lijst.length;fi++){
     try{
       var wat = soort==="auto" ? await soortVanFoto(lijst[fi]) : { soort:soort, zijde:(soort==="licence"?"":"achter") };
@@ -6794,7 +6882,7 @@ async function snelScan(bestanden,soort){
   if(k.name) regels.unshift(t.snelOk(k.name, nummer, k.birth?dNum(k.birth):""));
   /* Welke melding: eerst wat er nog ontbreekt (kaart omdraaien), dan wat er is. */
   if($("nwDocWrap")) $("nwDocWrap").hidden=true;
-  if($("nwLicWrap")){ var licVak=!k.licenceNumber && (k.name || k.docNumber || voorkanten.length>0); $("nwLicWrap").hidden=!licVak; if(licVak) $("nwLicNoL").textContent=t.nwLicNoL; }
+  if($("nwLicWrap")){ var licVak=(aiUit&&aiUit.twijfelLic) || (!k.licenceNumber && (k.name || k.docNumber || voorkanten.length>0)); $("nwLicWrap").hidden=!licVak; if(licVak){ $("nwLicNoL").textContent=t.nwLicNoL; $("nwLicNo").value=k.licenceNumber||""; } }
   var idVoor=voorkanten.indexOf("cin")>=0 && !k.docNumber, licVoor=voorkanten.indexOf("licence")>=0 && !k.licenceNumber;
   if(idVoor || licVoor){
     stat.className="snelstat half";
@@ -6810,6 +6898,10 @@ async function snelScan(bestanden,soort){
   else if(!k.docNumber && k.name){ stat.className="snelstat half"; stat.textContent=regels.join("  \u00b7  ")+"  \u00b7  "+t.snelNrTyp;
     $("nwDocNoL").textContent=t.nwDocNoL; $("nwDocNo").value=""; $("nwDocWrap").hidden=false; }
   else { stat.className="snelstat ok"; stat.textContent=regels.join("  \u00b7  "); }
+  if(aiUit && (aiUit.twijfelDoc||aiUit.twijfelLic) && (k.docNumber||k.licenceNumber) && !idVoor){
+    if(aiUit.twijfelDoc && k.docNumber){ $("nwDocNoL").textContent=t.nwDocNoL; $("nwDocNo").value=k.docNumber; $("nwDocWrap").hidden=false; }
+    if(stat.textContent.indexOf(t.snelNrTyp)<0){ stat.className="snelstat half"; stat.textContent+="  \u00b7  "+t.snelNrCheck; }
+  }
   $("nwScanLic").hidden=false; $("nwScanLic").textContent = idVoor ? t.snelKnopAchterId : (licVoor ? t.snelKnopAchterLic : (k.licenceNumber?t.snelLicOk(k.licenceNumber):t.snelLic));
   SNELBEZIG=null; klaar();
 }
@@ -6866,9 +6958,9 @@ async function saveRental(){
        geboortedatum, adres, rijbewijs en de foto's zelf. */
     var extra=Object.assign({},SNELKLANT||{});
     var hand=$("nwDocNo")&&!$("nwDocWrap").hidden ? $("nwDocNo").value.trim().toUpperCase() : "";
-    if(hand && !extra.docNumber) extra.docNumber=hand;
+    if(hand) extra.docNumber=hand;
     var handLic=$("nwLicNo")&&!$("nwLicWrap").hidden ? $("nwLicNo").value.trim().toUpperCase() : "";
-    if(handLic && !extra.licenceNumber) extra.licenceNumber=handLic;
+    if(handLic) extra.licenceNumber=handLic;
     await S.set("clients/"+cid,Object.assign(
       { docType:"cin", docNumber:"", flag:"ok", note:"", scans:{} }, extra,
       { name:name, tel:tel, flag:"ok", note:"", createdAt:new Date().toISOString() }));
@@ -7081,7 +7173,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="126";
+var ATLASVER="127";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
