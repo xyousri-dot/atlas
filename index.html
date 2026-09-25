@@ -758,6 +758,7 @@ details.meer>div{padding:0 12px 12px}
               <div class="f"><label class="lbl" for="nwName" id="nwNameL"></label><input type="text" id="nwName" autocomplete="off"></div>
               <div class="f"><label class="lbl" for="nwTel" id="nwTelL"></label><input type="tel" id="nwTel" autocomplete="off" placeholder="+212 6 ..."></div>
             </div>
+            <div class="f" id="nwLicWrap" hidden><label class="lbl" for="nwLicNo" id="nwLicNoL"></label><input type="text" id="nwLicNo" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase"></div>
             <div class="f" id="nwDocWrap" hidden><label class="lbl" for="nwDocNo" id="nwDocNoL"></label><input type="text" id="nwDocNo" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase"></div>
             <button type="button" class="btn ghost sm" id="nwScan" hidden style="margin:-4px 0 4px"></button>
             <p class="fine" id="nwScanP" hidden style="margin:0 0 10px"></p>
@@ -1118,7 +1119,8 @@ var TXT = {
   snelNrTyp:"nummer niet zeker gelezen \u2014 typ het over van het document",
   nwDocNoL:"Nummer paspoort / CIN",
   snelDraaiId:"Dit is de voorkant. Draai de ID-kaart om en neem de achterkant (met de regels <<< onderaan): daar staan naam, nummer, datums en adres.",
-  snelDraaiLic:"Rijbewijs: het nummer staat achteraan, op de regel die met D1MA begint. Neem de achterkant, recht van boven.",
+  snelDraaiLic:"Rijbewijs: Marokkaans \u2192 neem de achterkant (regel die met D1MA begint). Buitenlands \u2192 typ het nummer hieronder.",
+  nwLicNoL:"Rijbewijsnummer",
   snelKnopAchterId:"\u21bb Achterkant van de ID nemen", snelKnopAchterLic:"\u21bb Achterkant van het rijbewijs nemen",
   snelTip:"Tip: neem de ACHTERKANT van de ID en van het rijbewijs \u2014 daar staat alles op.",
   rFotos:"Foto\u2019s en schade vastleggen (mag ook later)", rSnelKlaar:"Contract klaar", klaarKnop:"Klaar",
@@ -1515,7 +1517,8 @@ var TXT = {
   snelNrTyp:"num\u00e9ro pas lu avec certitude \u2014 recopiez-le du document",
   nwDocNoL:"Num\u00e9ro passeport / CIN",
   snelDraaiId:"C\u2019est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, num\u00e9ro, dates et adresse y figurent.",
-  snelDraaiLic:"Permis : le num\u00e9ro est au verso, sur la ligne qui commence par D1MA. Photographiez le verso, bien de face.",
+  snelDraaiLic:"Permis : marocain \u2192 photographiez le verso (ligne qui commence par D1MA). \u00c9tranger \u2192 tapez le num\u00e9ro ci-dessous.",
+  nwLicNoL:"Num\u00e9ro du permis",
   snelKnopAchterId:"\u21bb Photographier le verso de la CIN", snelKnopAchterLic:"\u21bb Photographier le verso du permis",
   snelTip:"Astuce : photographiez le VERSO de la CIN et du permis \u2014 tout y figure.",
   rFotos:"Photos et dommages (possible plus tard)", rSnelKlaar:"Contrat pr\u00eat", klaarKnop:"Termin\u00e9",
@@ -6637,7 +6640,8 @@ async function soortVanFoto(bestand){
   if(d1) return { soort:"licence", zijde:"" };
   /* 2. de tekst, één snelle lezing */
   var tx=await snelTekst(img);
-  var rijbewijs=/PERMIS|CONDUIRE|DRIVING|رخصة/.test(tx);
+  var rijbewijs=/PERMIS|CONDUIRE|DRIVING|RIJBEWIJS|F[UÜ]HRERSCHEIN|PATENTE|PERMISO|CARTA DE CONDU|رخصة/i.test(tx)
+      || /\bC1E\b|\bD1E\b|\bBE\b[\s\S]{0,40}\bC1\b/.test(tx);   /* achterkant EU: rij categorie\u00ebn */
   var strookTekst=/<<<|<[A-Z]{3}<|P<[A-Z]{3}|I[D<]MAR/.test(tx.replace(/\s/g,""));
   var voorkant=/CARTE\s*NATIONALE|IDENTIT|البطاقة/.test(tx);
   if(rijbewijs && !strookTekst) return { soort:"licence", zijde:"voorkant", tekst:tx };
@@ -6711,7 +6715,7 @@ function klantUitFormulier(){
     nationality:$("cvNat").value.trim(), address:$("cvAddr").value.trim(),
     scans:(clientDraft&&clientDraft.scans)?Object.assign({},clientDraft.scans):{} };
 }
-function snelReset(){ SNELKLANT=null; SNELFORM=false; SNELBEZIG=null; if($("nwDocWrap")){ $("nwDocWrap").hidden=true; $("nwDocNo").value=""; }
+function snelReset(){ SNELKLANT=null; SNELFORM=false; SNELBEZIG=null; if($("nwDocWrap")){ $("nwDocWrap").hidden=true; $("nwDocNo").value=""; } if($("nwLicWrap")){ $("nwLicWrap").hidden=true; $("nwLicNo").value=""; }
   if($("nwScanStat")){ $("nwScanStat").hidden=true; $("nwScanStat").textContent=""; }
   if($("nwScanLic")) $("nwScanLic").hidden=true; }
 /* Het huurscherm weer precies zo zetten als het stond: openClient() hieronder
@@ -6778,11 +6782,13 @@ async function snelScan(bestanden,soort){
   if(k.name) regels.unshift(t.snelOk(k.name, nummer, k.birth?dNum(k.birth):""));
   /* Welke melding: eerst wat er nog ontbreekt (kaart omdraaien), dan wat er is. */
   if($("nwDocWrap")) $("nwDocWrap").hidden=true;
+  if($("nwLicWrap")){ var licVak=voorkanten.indexOf("licence")>=0 && !k.licenceNumber; $("nwLicWrap").hidden=!licVak; if(licVak) $("nwLicNoL").textContent=t.nwLicNoL; }
   var idVoor=voorkanten.indexOf("cin")>=0 && !k.docNumber, licVoor=voorkanten.indexOf("licence")>=0 && !k.licenceNumber;
   if(idVoor || licVoor){
     stat.className="snelstat half";
     var draai = idVoor ? t.snelDraaiId : t.snelDraaiLic;
     stat.textContent = regels.length ? (regels.join("  \u00b7  ")+"  \u00b7  "+draai) : draai;
+    if(!idVoor && k.name && !k.docNumber){ stat.textContent+="  \u00b7  "+t.snelNrTyp; $("nwDocNoL").textContent=t.nwDocNoL; $("nwDocWrap").hidden=false; }
   }
   else if(!k.name && !k.docNumber && !k.licenceNumber){ stat.className="snelstat half"; stat.textContent=t.snelNiets; }
   /* Alleen het rijbewijs gelezen: geen fout — achterop staat de volledige naam
@@ -6849,6 +6855,8 @@ async function saveRental(){
     var extra=Object.assign({},SNELKLANT||{});
     var hand=$("nwDocNo")&&!$("nwDocWrap").hidden ? $("nwDocNo").value.trim().toUpperCase() : "";
     if(hand && !extra.docNumber) extra.docNumber=hand;
+    var handLic=$("nwLicNo")&&!$("nwLicWrap").hidden ? $("nwLicNo").value.trim().toUpperCase() : "";
+    if(handLic && !extra.licenceNumber) extra.licenceNumber=handLic;
     await S.set("clients/"+cid,Object.assign(
       { docType:"cin", docNumber:"", flag:"ok", note:"", scans:{} }, extra,
       { name:name, tel:tel, flag:"ok", note:"", createdAt:new Date().toISOString() }));
@@ -7061,7 +7069,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="124";
+var ATLASVER="125";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
