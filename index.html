@@ -6623,12 +6623,15 @@ function laadBeeld(bestand){
     i.onload=function(){ ok(i); }; i.onerror=function(){ nee(new Error("beeld")); }; i.src=u;
   });
 }
-async function snelTekst(img){
+async function snelTekst(img,hoek){
   try{
     if(!await needLib("ocr")) return "";
-    var w=Math.min(1400,img.width), c=document.createElement("canvas");
-    c.width=w; c.height=Math.round(img.height*w/img.width);
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    var w=Math.min(1400,img.width), h=Math.round(img.height*w/img.width), c=document.createElement("canvas");
+    var dw=hoek?h:w, dh=hoek?w:h; c.width=dw; c.height=dh;
+    var x=c.getContext("2d");
+    /* een kaart die dwars gefotografeerd is (telefoon rechtop, kaart plat) */
+    if(hoek){ x.translate(dw/2,dh/2); x.rotate(hoek*Math.PI/180); x.drawImage(img,-w/2,-h/2,w,h); }
+    else x.drawImage(img,0,0,w,h);
     return String(await ocrLees(c,null,"")||"").toUpperCase();
   }catch(e){ return ""; }
 }
@@ -6640,8 +6643,7 @@ async function soortVanFoto(bestand){
   if(d1) return { soort:"licence", zijde:"" };
   /* 2. de tekst, één snelle lezing */
   var tx=await snelTekst(img);
-  var rijbewijs=/PERMIS|CONDUIRE|DRIVING|RIJBEWIJS|F[UÜ]HRERSCHEIN|PATENTE|PERMISO|CARTA DE CONDU|رخصة/i.test(tx)
-      || /\bC1E\b|\bD1E\b|\bBE\b[\s\S]{0,40}\bC1\b/.test(tx);   /* achterkant EU: rij categorie\u00ebn */
+  var rijbewijs=RIJBEWIJSWOORD.test(tx) || RIJBEWIJSACHTER.test(tx);   /* achterkant EU: rij categorie\u00ebn */
   var strookTekst=/<<<|<[A-Z]{3}<|P<[A-Z]{3}|I[D<]MAR/.test(tx.replace(/\s/g,""));
   var voorkant=/CARTE\s*NATIONALE|IDENTIT|البطاقة/.test(tx);
   if(rijbewijs && !strookTekst) return { soort:"licence", zijde:"voorkant", tekst:tx };
@@ -6656,8 +6658,18 @@ async function soortVanFoto(bestand){
      tekstherkenner betrouwbaar door het veiligheidspatroon heen (op de echte site
      gemeten: pure ruis). Niet een minuut laten zwoegen — meteen vragen om de kaart
      om te draaien. Wat de snelle lezing toevallig wel vond, nemen we mee. */
+  /* Niets herkend? Misschien ligt de kaart dwars op de foto: nog eens gedraaid lezen. */
+  if(!rijbewijs && !voorkant){
+    for(var hk=0;hk<2 && !rijbewijs && !voorkant;hk++){
+      var tr=await snelTekst(img, hk?270:90);
+      if(RIJBEWIJSWOORD.test(tr) || RIJBEWIJSACHTER.test(tr)){ rijbewijs=true; tx=tr; }
+      else if(/CARTE\s*NATIONALE|IDENTIT|البطاقة/.test(tr)) voorkant=true;
+    }
+  }
   return { soort: rijbewijs?"licence":"cin", zijde:"voorkant", tekst:tx };
 }
+var RIJBEWIJSWOORD=/PERMIS|CONDUIRE|DRIVING|RIJBEWIJS|F[UÜ]HRERSCHEIN|PATENTE|PERMISO|CARTA DE CONDU|رخصة/i,
+    RIJBEWIJSACHTER=/\bC1E\b|\bD1E\b|\bBE\b[\s\S]{0,40}\bC1\b|RIJBEWIJSNUMMER|GELDIG VANAF/;
 /* Sleutels meegeven zonder formulier: vertrek vastleggen met de km-stand van de
    auto, volle tank, geen schade — en meteen het contract. Zelfde als "Contract
    maken" bij een nieuwe verhuur, maar dan voor een reservering. */
@@ -6782,7 +6794,7 @@ async function snelScan(bestanden,soort){
   if(k.name) regels.unshift(t.snelOk(k.name, nummer, k.birth?dNum(k.birth):""));
   /* Welke melding: eerst wat er nog ontbreekt (kaart omdraaien), dan wat er is. */
   if($("nwDocWrap")) $("nwDocWrap").hidden=true;
-  if($("nwLicWrap")){ var licVak=voorkanten.indexOf("licence")>=0 && !k.licenceNumber; $("nwLicWrap").hidden=!licVak; if(licVak) $("nwLicNoL").textContent=t.nwLicNoL; }
+  if($("nwLicWrap")){ var licVak=!k.licenceNumber && (k.name || k.docNumber || voorkanten.length>0); $("nwLicWrap").hidden=!licVak; if(licVak) $("nwLicNoL").textContent=t.nwLicNoL; }
   var idVoor=voorkanten.indexOf("cin")>=0 && !k.docNumber, licVoor=voorkanten.indexOf("licence")>=0 && !k.licenceNumber;
   if(idVoor || licVoor){
     stat.className="snelstat half";
@@ -7069,7 +7081,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="125";
+var ATLASVER="126";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
