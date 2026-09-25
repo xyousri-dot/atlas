@@ -6741,12 +6741,9 @@ async function snelScan(bestanden,soort){
         voorkanten.push(wat.soort);
         /* foto toch bij de klant bewaren */
         try{ if(clientDraft){ var sl=wat.soort==="licence"?"licence-voor":"cin-voor", n2=2; while(clientDraft.scans[sl]) sl=(wat.soort==="licence"?"licence-voor-":"cin-voor-")+(n2++); clientDraft.scans[sl]=await storeScan(lijst[fi]); } }catch(e){}
-        /* wat de snelle lezing wel vond (zelden), in lege vakjes */
-        try{ if(wat.soort==="cin" && wat.tekst){ var vk=voorkantUitRegels(plakRegels(wat.tekst));
-          if(vk.birth && !$("cvBirth").value) $("cvBirth").value=vk.birth;
-          if(vk.expiry && !$("cvDocExp").value) $("cvDocExp").value=vk.expiry;
-          if(vk.number && !$("cvDocNo").value) $("cvDocNo").value=vk.number;
-          if(vk.name && !$("cvName").value) $("cvName").value=vk.name; } }catch(e){}
+        /* De voorkant geeft met gewone OCR alleen ruis (veiligheidspatroon): daar vullen we
+           NIETS uit in, anders komt er een verkeerd nummer op het contract. Alleen de
+           achterkant (regels met controlecijfers) is betrouwbaar. */
         continue;
       }
       await verwerkKeuze({ files:[lijst[fi]], value:"" }, wat.soort, wat.zijde);
@@ -7051,7 +7048,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="122";
+var ATLASVER="123";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
