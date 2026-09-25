@@ -3931,6 +3931,18 @@ function keurAlt(hit,lijst){
   hit.altNumber = (c && CINNR.test(c)) ? c : beste;
   return hit;
 }
+/* In een Marokkaanse naam komt de letter V zo goed als nooit voor: de klank "ou"
+   wordt OU of W geschreven (ELOUARRAT, BOUCHRA, MOULAY, YOUSSEF). In de strook
+   lijken U en V op elkaar en de lezer twijfelt daar het vaakst. Bij een
+   Marokkaans document is een V in de naam dus bijna zeker een verkeerd gelezen U.
+   Op de echte site las de kaart van Youss "ELOVARRAT" — dit zet dat recht, zonder
+   extra leestijd. */
+function marokNaam(naam,hit){
+  naam=String(naam||"");
+  var mar = hit && (hit.nationality==="MAR" || /^I.MAR/.test(String(hit.docRaw||"")) || /^D1.MA/.test(String(hit.docRaw||"")));
+  if(!mar || naam.indexOf("V")<0) return naam;
+  return naam.replace(/V/g,"U");
+}
 function keurNaam(hit,namen,lijst,sets,lijstFont){
   if(!hit || !hit.fullName) return hit;
   /* De geleerde vormen kennen sommige letters (T, Y) nog te weinig: die set alleen
@@ -4963,7 +4975,7 @@ function fillFromMRZ(hit,storedKey){
     renameScan(storedKey,"licence"); markCheck("cvLic"); hit.noNumber=false; return;
   }
   /* Persoonsgegevens horen altijd bij de persoon; nummer en vervaldatum bij het gekozen document. */
-  if(hit.fullName) $("cvName").value=hit.fullName;
+  if(hit.fullName){ hit.fullName=marokNaam(hit.fullName,hit); $("cvName").value=hit.fullName; }
   if(hit.birthDate) $("cvBirth").value=hit.birthDate;
   /* De nationaliteit staat in de strook en zit in de totaalcontrole. Wat er eerder
      in het vakje stond — van een vorige poging of een voorbeeld — moet daarvoor
@@ -5959,7 +5971,7 @@ function verwerkTekst(tekst){
     /* De strook draagt zijn eigen controlecijfers: wat hier binnenkomt is juist. */
     var was=pickedDoc();
     if(hit.kind==="passport") setPick("passport"); else if(hit.kind==="id") setPick("cin");
-    if(hit.fullName){ $("cvName").value=hit.fullName; gedaan.push(t.pName); }
+    if(hit.fullName){ hit.fullName=marokNaam(hit.fullName,hit); $("cvName").value=hit.fullName; gedaan.push(t.pName); }
     if(hit.birthDate){ $("cvBirth").value=hit.birthDate; gedaan.push(t.pBirth); }
     if(hit.nationality && echtLand(hit.nationality)){ $("cvNat").value=hit.nationality; gedaan.push(t.pNat); }
     var no=usableDocNo(pickedDoc(),hit.docNumber,hit.altNumber,hit.kind);
@@ -6279,7 +6291,7 @@ async function mrzFallback(blob,storedKey,done,code){
     try{
       p.textContent=t.ocrExtern;
       var nm=await naamUitStrook(hit);
-      if(nm){ $("cvName").value=nm; markCheck("cvName"); showNameRaw(nm,true); }
+      if(nm){ nm=marokNaam(nm,hit); $("cvName").value=nm; markCheck("cvName"); showNameRaw(nm,true); }
     }catch(e){}
   }
   if(!$("cvAddr").value && isKaart){
@@ -6875,7 +6887,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="116";
+var ATLASVER="117";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
