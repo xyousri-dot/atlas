@@ -364,12 +364,38 @@ img,canvas,video,svg,table{max-width:100%}
 /* In een tegel hoeft de plaat geen kadertje: hij mag gewoon op één regel met de
    dagprijs staan. De isolate blijft wel, anders draait de Arabische letter de
    volgorde om. */
+.tegel{padding:10px 12px}
 .tegel .plate{border:0;padding:0;background:none;font-family:inherit;font-size:inherit;color:inherit;gap:4px}
 .tegel[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
 .tegel:disabled{opacity:.5;cursor:not-allowed}
 /* Status van de kaartlezing op het huurscherm zelf. */
 /* Op de telefoon: de knoppen van de bon (contract, WhatsApp) boven de details. */
 @media(max-width:859px){ #vDone .two{display:flex;flex-direction:column} #vDone #rSide{order:-1;margin-bottom:14px} }
+/* ---- compacte formulieren ---- */
+details.kort{margin-top:10px}
+details.kort>summary{cursor:pointer;list-style:none;font-size:14.5px;color:var(--ink2);padding:10px 12px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.035));min-height:44px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+details.kort>summary::-webkit-details-marker{display:none}
+details.kort>summary .pas,details.kort>summary.pas{color:var(--brand);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+details.kort[open]>summary{background:transparent;padding-left:2px}
+.prijsregel{margin-top:12px;padding:14px;border-radius:12px;background:var(--brand-soft);color:var(--ink);font-size:16px;line-height:1.45}
+.prijsregel b{font-size:20px;color:var(--brand)}
+.prijsregel small{display:block;color:var(--ink2);font-size:13.5px;margin-top:2px}
+#vNew #nwP{display:none}
+#vFleet #tagsBtn{display:none}
+.status{display:inline-block;font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.status.vrij{background:var(--brand-soft);color:var(--brand)}
+.status.weg{background:rgba(0,0,0,.06);color:var(--ink2)}
+.status.laat{background:rgba(180,40,40,.1);color:var(--warn)}
+/* ---- klaar-scherm ---- */
+#rSide .wa{display:flex;justify-content:center;align-items:center;width:100%;box-sizing:border-box;margin-top:8px}
+.klaarkop{display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;background:var(--brand-soft);margin-bottom:12px}
+.klaarkop .vink{flex:0 0 44px;height:44px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:24px;font-weight:900}
+.klaarkop b{display:block;font-size:17px}
+.klaarkop span{font-size:14px;color:var(--ink2)}
+.betaald{display:grid;gap:8px;margin-top:12px}
+.betaald .btn{width:100%;min-height:50px;justify-content:space-between;display:flex;align-items:center}
+.borgregel{margin-top:12px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;font-size:14.5px;color:var(--ink2)}
+.borgregel b{color:var(--ink)}
 /* ---- simpel startscherm ---- */
 #vDay .title{flex-direction:column;align-items:stretch;gap:12px}
 #vDay .title .add{width:100%}
@@ -724,8 +750,9 @@ details.meer>div{padding:0 12px 12px}
             <input type="file" id="snelCam" accept="image/*,.heic,.heif" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
             <input type="file" id="snelKies" accept="image/*,.heic,.heif,application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
             <input type="file" id="snelLic" accept="image/*,.heic,.heif,application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
-            <p class="fine" id="nwOf" style="margin:10px 0 6px;text-align:center"></p>
-            <div class="f"><label class="lbl" for="nwClient" id="nwClientL"></label><select id="nwClient"></select></div>
+            <details class="kort" id="nwVaste"><summary id="nwOf"></summary>
+              <div class="f" style="margin-top:8px"><label class="lbl" for="nwClient" id="nwClientL"></label><select id="nwClient"></select></div>
+            </details>
             <div class="grid2" id="nwNewWrap">
               <div class="f"><label class="lbl" for="nwName" id="nwNameL"></label><input type="text" id="nwName" autocomplete="off"></div>
               <div class="f"><label class="lbl" for="nwTel" id="nwTelL"></label><input type="tel" id="nwTel" autocomplete="off" placeholder="+212 6 ..."></div>
@@ -753,7 +780,9 @@ details.meer>div{padding:0 12px 12px}
             <div class="tegels" id="nwCarTegels"></div>
             <label class="lbl" for="nwCar" id="nwCarL" hidden></label>
             <select id="nwCar" hidden></select>
-            <div class="f" id="nwKmWrap" style="margin-top:10px"><label class="lbl" for="nwKm" id="nwKmL"></label><input type="number" id="nwKm" inputmode="numeric"></div>
+            <details class="kort" id="nwKmWrap"><summary><span id="nwKmL"></span> <b id="nwKmToon"></b> <span class="pas" id="nwKmPas"></span></summary>
+              <div class="f" style="margin-top:8px"><input type="number" id="nwKm" inputmode="numeric" aria-labelledby="nwKmL"></div>
+            </details>
           </div>
         </section>
 
@@ -761,20 +790,25 @@ details.meer>div{padding:0 12px 12px}
           <div class="vstap-k"><span class="vstap-nr">3</span><b id="nwS3"></b><span class="vstap-ok" id="nwV3"></span></div>
           <div class="vstap-in">
             <div class="dagen" id="nwDagen"></div>
-            <div class="grid2" style="margin-top:10px">
-              <div class="f"><label class="lbl" for="nwFrom" id="nwFromL"></label><input type="date" id="nwFrom"></div>
-              <div class="f"><label class="lbl" for="nwTo" id="nwToL"></label><input type="date" id="nwTo"></div>
-            </div>
+            <!-- Wat de klant betaalt, in één regel. Andere datums of een andere prijs
+                 zitten onder het klapje: dat is de uitzondering, niet de regel. -->
+            <div class="prijsregel" id="nwSom"></div>
             <div class="none" id="nwClash" hidden></div>
-            <div class="calc" id="nwCalc"></div>
-            <div class="grid2">
-              <div class="f"><label class="lbl" for="nwTotal" id="nwTotalL"></label><input type="number" id="nwTotal" inputmode="numeric"></div>
-              <div class="f"><label class="lbl" for="nwCaution" id="nwCautionL"></label><input type="number" id="nwCaution" inputmode="numeric"></div>
-            </div>
+            <details class="kort" id="nwAnders"><summary id="nwAndersH"></summary>
+              <div class="grid2" style="margin-top:10px">
+                <div class="f"><label class="lbl" for="nwFrom" id="nwFromL"></label><input type="date" id="nwFrom"></div>
+                <div class="f"><label class="lbl" for="nwTo" id="nwToL"></label><input type="date" id="nwTo"></div>
+              </div>
+              <div class="calc" id="nwCalc" hidden></div>
+              <div class="grid2">
+                <div class="f"><label class="lbl" for="nwTotal" id="nwTotalL"></label><input type="number" id="nwTotal" inputmode="numeric"></div>
+                <div class="f"><label class="lbl" for="nwCaution" id="nwCautionL"></label><input type="number" id="nwCaution" inputmode="numeric"></div>
+              </div>
+            </details>
           </div>
         </section>
       </div>
-      <div><p class="fine" id="nwFine"></p></div>
+      <div><p class="fine" id="nwFine" hidden></p></div>
     </div>
   </div>
 
@@ -1057,21 +1091,28 @@ var TXT = {
   hOnderweg:"Onderweg", hReserv:"Gereserveerd", hBorg:"Borg nog terug te geven", hVrij:"Vrij \u2014 tik om te verhuren",
   terugOp:function(d){ return "terug "+d; }, terugVandaag:"vandaag terug", teLaat:function(n){ return n+(n>1?" dagen":" dag")+" te laat"; },
   vertrekt:function(d){ return "vertrekt "+d; }, vertrektVandaag:"vertrekt vandaag",
-  bTerug:"Auto terug", bContract:"Contract", bMee:"Sleutels meegeven", bBorg:"Borg afrekenen",
+  bTerug:"Auto terug", bContract:"Contract", bWijzig:"Wijzig", bMee:"Sleutels meegeven", bBorg:"Borg afrekenen",
   geenOnderweg:"Geen auto\u2019s onderweg.", geenVrij:"Alle auto\u2019s zijn weg.",
   qrH:"Auto terug", qrKmL:"Kilometerstand nu", qrOk:function(b){ return "Alles in orde \u2014 borg "+b+" terug"; }, qrOkZonder:"Alles in orde",
   qrSchade:"Er is schade of er ontbreekt brandstof", qrKlaar:function(b){ return "Auto terug. Borg "+b+" teruggegeven."; }, qrKlaarZonder:"Auto terug.",
   qrKmLaag:"Die kilometerstand is lager dan bij vertrek.",
   newRental:"Nieuw contract", newCar:"+ Auto", newClient:"+ Klant",
   nwS1:"Wie huurt", nwS2:"Welke auto", nwS3:"Hoe lang",
-  nwContract:"Contract maken", nwReserve:"Reservering opslaan", nwKmL:"Km bij vertrek",
+  nwContract:"Contract maken", nwReserve:"Reservering opslaan", nwKmL:"Km bij vertrek:",
+  nwOfVaste:"Vaste klant? Kies hem uit de lijst", nwAndersH:"Andere datum of andere prijs", nwPas:"aanpassen",
+  nwSomRegel:function(d,prijs,tot,borg){ return d+" \u00d7 "+prijs+" = <b>"+tot+"</b><small>Borg "+borg+"</small>"; },
+  stVrij:"Vrij", stWegTot:function(d){ return "Weg tot "+d; }, stTeLaat:"Te laat terug",
+  kkH:"Contract klaar", kkP:function(n,a){ return n+" \u00b7 "+a; },
+  kkBetaald:"Heeft de klant betaald?", kkHuur:function(b){ return ["Huur ontvangen",b]; }, kkBorg:function(b){ return ["Borg ontvangen",b]; },
+  kkAlles:"\u2713 Alles betaald", kkBorgRegel:function(b,d){ return "Borg <b>"+b+"</b> \u2014 teruggeven uiterlijk <b>"+d+"</b>"; },
+  kkDetails:"Details en betalingen",
   snelBezig:function(s){ return "Kaart wordt gelezen\u2026 "+s+" s \u2014 kies intussen de auto en de dagen."; },
   snelOk:function(n,nr,geb){ return "\u2713 "+n+(nr?" \u00b7 "+nr:"")+(geb?" \u00b7 geb. "+geb:""); },
   snelHalf:"De naam was niet leesbaar \u2014 typ hem hieronder. Wat wel gelezen is, gaat mee op het contract.",
   snelNiets:"Op deze foto kon ik niets lezen. Neem de achterkant van de kaart, recht van boven, met de regels onderaan erop.",
   snelLic:"+ Rijbewijs scannen", snelLicOk:function(nr){ return "\u2713 Rijbewijs "+nr; },
   snelWacht:"Even geduld \u2014 de kaart wordt nog gelezen.",
-  rFotos:"Foto\u2019s en schade vastleggen (mag ook later)", rSnelKlaar:"Contract klaar",
+  rFotos:"Foto\u2019s en schade vastleggen (mag ook later)", rSnelKlaar:"Contract klaar", klaarKnop:"Klaar",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwD2H:"Tweede bestuurder toevoegen", nwD2NameL:"Naam tweede bestuurder", nwD2LicL:"Rijbewijsnummer", nwD2IssueL:"Afgegeven op",
   nwScanKaart:"Kaart van de klant scannen",
@@ -1232,7 +1273,7 @@ var TXT = {
   clashExtend:"Die verhuur verlengen",
   nwBlocked:"Deze klant staat op ‘niet meer verhuren’.", nwWarn:"Let op bij deze klant: ",
   nwFine:"De berekende prijs is een voorstel. Pas het bedrag gerust aan — wat je hier invult komt op het contract.",
-  flH:"Wagenpark", flP:"Je auto's, met wat ze opbrengen en kosten.", perDay:"per dag", result:"resultaat",
+  flH:"Auto\u2019s", flP:"Tik op een auto om hem aan te passen.", perDay:"per dag", result:"resultaat",
   cwH:"Auto", cwP:"Gegevens, documenten, aankoop en kosten. Rechts zie je het resultaat.",
   cwSecInfo:"Gegevens", cwSecDocs:"Documenten", cwSecBuy:"Aankoop en lening", cwSecExp:"Kosten",
   cwModelL:"Merk en model", cwPlateL:"Kenteken", cwKmL:"Kilometerstand", cwRateL:"Dagprijs (DH)", cwCautionL:"Standaardborg (DH)", cwFranchiseL:"Eigen risico / franchise (DH)", cwFuelL:"Brandstof", optDiesel:"Diesel", optEssence:"Benzine",
@@ -1440,21 +1481,28 @@ var TXT = {
   hOnderweg:"En location", hReserv:"R\u00e9servations", hBorg:"Caution \u00e0 rendre", hVrij:"Libres \u2014 touchez pour louer",
   terugOp:function(d){ return "retour "+d; }, terugVandaag:"retour aujourd\u2019hui", teLaat:function(n){ return "en retard de "+n+" j"; },
   vertrekt:function(d){ return "d\u00e9part "+d; }, vertrektVandaag:"d\u00e9part aujourd\u2019hui",
-  bTerug:"Voiture rendue", bContract:"Contrat", bMee:"Remettre les cl\u00e9s", bBorg:"Rendre la caution",
+  bTerug:"Voiture rendue", bContract:"Contrat", bWijzig:"Modifier", bMee:"Remettre les cl\u00e9s", bBorg:"Rendre la caution",
   geenOnderweg:"Aucune voiture en location.", geenVrij:"Toutes les voitures sont sorties.",
   qrH:"Voiture rendue", qrKmL:"Kilom\u00e9trage actuel", qrOk:function(b){ return "Tout est en ordre \u2014 rendre "+b; }, qrOkZonder:"Tout est en ordre",
   qrSchade:"Il y a un dommage ou il manque du carburant", qrKlaar:function(b){ return "Voiture rendue. Caution de "+b+" rendue."; }, qrKlaarZonder:"Voiture rendue.",
   qrKmLaag:"Ce kilom\u00e9trage est inf\u00e9rieur \u00e0 celui du d\u00e9part.",
   newRental:"Nouveau contrat", newCar:"+ Voiture", newClient:"+ Client",
   nwS1:"Qui loue", nwS2:"Quelle voiture", nwS3:"Combien de temps",
-  nwContract:"\u00c9tablir le contrat", nwReserve:"Enregistrer la r\u00e9servation", nwKmL:"Km au d\u00e9part",
+  nwContract:"\u00c9tablir le contrat", nwReserve:"Enregistrer la r\u00e9servation", nwKmL:"Km au d\u00e9part :",
+  nwOfVaste:"Client habituel ? Choisissez-le dans la liste", nwAndersH:"Autre date ou autre prix", nwPas:"modifier",
+  nwSomRegel:function(d,prijs,tot,borg){ return d+" \u00d7 "+prijs+" = <b>"+tot+"</b><small>Caution "+borg+"</small>"; },
+  stVrij:"Libre", stWegTot:function(d){ return "Sortie jusqu\u2019au "+d; }, stTeLaat:"En retard",
+  kkH:"Contrat pr\u00eat", kkP:function(n,a){ return n+" \u00b7 "+a; },
+  kkBetaald:"Le client a-t-il pay\u00e9 ?", kkHuur:function(b){ return ["Location re\u00e7ue",b]; }, kkBorg:function(b){ return ["Caution re\u00e7ue",b]; },
+  kkAlles:"\u2713 Tout est pay\u00e9", kkBorgRegel:function(b,d){ return "Caution <b>"+b+"</b> \u2014 \u00e0 rendre au plus tard le <b>"+d+"</b>"; },
+  kkDetails:"D\u00e9tails et paiements",
   snelBezig:function(s){ return "Lecture de la carte\u2026 "+s+" s \u2014 choisissez la voiture et les jours en attendant."; },
   snelOk:function(n,nr,geb){ return "\u2713 "+n+(nr?" \u00b7 "+nr:"")+(geb?" \u00b7 n\u00e9(e) le "+geb:""); },
   snelHalf:"Le nom n\u2019\u00e9tait pas lisible \u2014 tapez-le ci-dessous. Ce qui a \u00e9t\u00e9 lu figure sur le contrat.",
   snelNiets:"Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
   snelLic:"+ Scanner le permis", snelLicOk:function(nr){ return "\u2713 Permis "+nr; },
   snelWacht:"Un instant \u2014 la carte est encore en lecture.",
-  rFotos:"Photos et dommages (possible plus tard)", rSnelKlaar:"Contrat pr\u00eat",
+  rFotos:"Photos et dommages (possible plus tard)", rSnelKlaar:"Contrat pr\u00eat", klaarKnop:"Termin\u00e9",
   nwD2H:"Ajouter un 2ème conducteur", nwD2NameL:"Nom du 2ème conducteur", nwD2LicL:"N° de permis", nwD2IssueL:"Délivré le",
   nwScanKaart:"Scanner la carte du client",
   nwOf:"ou choisissez un client existant",
@@ -1559,7 +1607,7 @@ var TXT = {
   clashExtend:"Prolonger cette location",
   nwBlocked:"Ce client est marqué « ne plus louer ».", nwWarn:"Attention avec ce client : ",
   nwFine:"Le prix calculé est une proposition. Modifiez-le librement — ce que vous mettez ici apparaît sur le contrat.",
-  flH:"Parc auto", flP:"Vos voitures, avec ce qu'elles rapportent et coûtent.", perDay:"par jour", result:"résultat",
+  flH:"Voitures", flP:"Touchez une voiture pour la modifier.", perDay:"par jour", result:"résultat",
   cwH:"Voiture", cwP:"Données, documents, achat et coûts. À droite, le résultat.",
   cwSecInfo:"Données", cwSecDocs:"Documents", cwSecBuy:"Achat et crédit", cwSecExp:"Coûts",
   cwModelL:"Marque et modèle", cwPlateL:"Immatriculation", cwKmL:"Kilométrage", cwRateL:"Prix par jour (DH)", cwCautionL:"Caution par défaut (DH)", cwFranchiseL:"La franchise (DH)", cwFuelL:"Carburant", optDiesel:"Gasoil", optEssence:"Sans plomb",
@@ -2373,7 +2421,7 @@ function renderDay(){
       var vandaag=r.from<=nu;
       kaart(r, vandaag?t.vertrektVandaag:t.vertrekt(dDay(r.from)), vandaag?"vandaag":"",
         [{label:t.bMee, fn:function(){ snelVertrek(r); }},
-         {label:"✎", ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]);
+         {label:t.bWijzig, ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]);
     });
   }
   /* Vrije auto's: tik erop en het contract begint met die auto al gekozen. */
@@ -6357,7 +6405,10 @@ function openNew(presetClient, edit){
   $("bGo").textContent=edit?t.nwSaveEdit:t.nwSave; $("bGo").disabled=!$("nwClash").hidden; $("note").textContent="";
   if($("nwS1")){
     $("nwS1").textContent=t.nwS1; $("nwS2").textContent=t.nwS2; $("nwS3").textContent=t.nwS3;
-    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOf;
+    $("nwScanKaart").textContent=t.nwScanKaart; $("nwOf").textContent=t.nwOfVaste;
+    $("nwAndersH").textContent=t.nwAndersH; $("nwKmPas").textContent=t.nwPas;
+    $("nwVaste").open = ($("nwClient").value!=="new");
+    $("nwAnders").open = !!edit;
     $("nwScanKaart").hidden=extend;
     $("nwD2H").textContent=t.nwD2H; $("nwD2NameL").textContent=t.nwD2NameL;
     $("nwD2LicL").textContent=t.nwD2LicL; $("nwD2IssueL").textContent=t.nwD2IssueL;
@@ -6437,7 +6488,17 @@ function recalc(){
   var clash = (from&&to)?RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to) && !(editRental&&r.id===editRental.id); })[0]:null;
   paintClash(clash);
   $("bGo").disabled=!!clash;
+  tekenPrijsRegel();
 }
+/* De prijs in één zin: "3 dagen \u00d7 700 DH = 2.100 DH \u00b7 borg 5.000 DH". Past de
+   verhuurder het bedrag aan onder het klapje, dan volgt deze regel mee. */
+function tekenPrijsRegel(){
+  var t=T(), box=$("nwSom"); if(!box) return;
+  var c=car($("nwCar").value), from=$("nwFrom").value, to=$("nwTo").value;
+  var d=(from&&to)?Math.max(1,dayDiff(from,to)):1;
+  box.innerHTML=t.nwSomRegel(t.nwDag(d), dh(c.rate), dh(Number($("nwTotal").value)||0), dh(Number($("nwCaution").value)||0));
+}
+["nwTotal","nwCaution"].forEach(function(id){ $(id).addEventListener("input",tekenPrijsRegel); });
 ["nwCar","nwFrom","nwTo"].forEach(function(id){ $(id).addEventListener("change",recalc); });
 
 /* ============ HET VERHUURSCHERM: KIJKEN EN TIKKEN ============
@@ -6463,7 +6524,8 @@ function tekenAutoTegels(){
     e.appendChild(b1); e.appendChild(b2); doos.appendChild(e);
     return;
   }
-  CARS.forEach(function(c){
+  /* Vrije auto's vooraan: daar kiest hij uit. Bezette staan grijs achteraan. */
+  CARS.slice().sort(function(a,b){ return (vrijeAuto(b,van,tot)?1:0)-(vrijeAuto(a,van,tot)?1:0); }).forEach(function(c){
     var vrij=vrijeAuto(c,van,tot), b=el("button","tegel");
     b.type="button"; b.disabled=sel.disabled || (!vrij && sel.value!==c.id);
     b.setAttribute("aria-pressed", sel.value===c.id ? "true" : "false");
@@ -6640,7 +6702,9 @@ $("snelCam").addEventListener("change",function(){ var i=this, f=i.files; snelSc
 $("snelLic").addEventListener("change",function(){ var i=this, f=i.files; snelScan(f,"licence").then(function(){ try{ i.value=""; }catch(e){} }); });
 $("nwFrom").addEventListener("change",zetHuurKnop);
 /* Km bij vertrek: staat al op wat de auto laatst had. Alleen aanpassen als het niet klopt. */
-function zetKm(){ var c=car($("nwCar").value); if($("nwKm")) $("nwKm").value = c && c.km ? c.km : ""; }
+function zetKm(){ var c=car($("nwCar").value); if($("nwKm")) $("nwKm").value = c && c.km ? c.km : ""; toonKm(); }
+function toonKm(){ if($("nwKmToon")) $("nwKmToon").textContent = $("nwKm").value ? kmf($("nwKm").value) : "\u2014"; }
+$("nwKm").addEventListener("input",toonKm);
 $("nwCar").addEventListener("change",zetKm);
 function markKlantKlaar(){
   var sel=$("nwClient"), naam=$("nwName").value.trim();
@@ -6808,7 +6872,11 @@ function renderFleet(){
     var who=el("div","who"); who.appendChild(el("b",null,c.model));
     var cl=el("div","car"); var pp=document.createElement("span"); pp.innerHTML=plateHTML(c); cl.appendChild(pp); cl.appendChild(el("span",null,kmf(c.km)+" · "+dh(c.rate)+" "+t.perDay)); who.appendChild(cl);
     b.appendChild(who);
-    var a=el("div","amt"); var nb=el("b",null,(pl.net<0?"− ":"")+dh(Math.abs(pl.net))); if(pl.net<0) nb.className="neg"; a.appendChild(nb); a.appendChild(el("span",null,t.result));
+    /* Wat de verhuurder over een auto wil weten: staat hij hier of is hij weg? */
+    var a=el("div","amt"), nu=today();
+    var bij=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stepOf(r)===2; })[0];
+    var st = !bij ? el("span","status vrij",t.stVrij) : (bij.to<nu ? el("span","status laat",t.stTeLaat) : el("span","status weg",t.stWegTot(dDay(bij.to))));
+    a.appendChild(st);
     b.appendChild(a); b.appendChild(el("span","chev","›"));
     b.addEventListener("click",function(){ openCar(c); });
     list.appendChild(b);
@@ -6889,7 +6957,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="118";
+var ATLASVER="120";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7096,6 +7164,27 @@ async function finishHandover(){
 }
 
 /* ============ BON ============ */
+function betaaldBlok(r){
+  var t=T(), box=el("div","betaald");
+  var huur=dueRent(r), borg=dueCaution(r);
+  if(huur<=0 && borg<=0){ box.appendChild(Object.assign(el("div","borgregel"),{textContent:t.kkAlles})); return box; }
+  box.appendChild(Object.assign(el("p","sh"),{textContent:t.kkBetaald,style:"margin:14px 2px 0"}));
+  function knop(soort,bedrag,label){
+    var b=el("button","btn ghost"); b.type="button";
+    b.appendChild(el("span",null,label[0])); b.appendChild(el("b",null,label[1]));
+    b.addEventListener("click",async function(){
+      b.disabled=true;
+      var list=pays(r).slice(); list.push({ id:uid(), amount:bedrag, kind:soort, method:"cash", date:today(), note:"" });
+      await S.set("rentals/"+r.id,stripId(Object.assign({},r,{payments:list}))); await reload();
+      var vers=RENTALS.filter(function(z){ return z.id===r.id; })[0]||r;
+      toast(t.saved); receipt(vers, vers.retour?"retour":"depart");
+    });
+    box.appendChild(b);
+  }
+  if(huur>0) knop("rent",huur,t.kkHuur(dh(huur)));
+  if(borg>0) knop("caution",borg,t.kkBorg(dh(borg)));
+  return box;
+}
 function receipt(r,kind){
   var t=T(), c=car(r.vehicleId), rec=r[kind]||null;
   rental=r;
@@ -7117,6 +7206,14 @@ function receipt(r,kind){
     main.appendChild(card);
   }
   main.appendChild(payPanel(r));
+  /* Bij het vertrek hoeft de verhuurder dit niet te lezen: het staat op het
+     contract. Het blijft bereikbaar onder één klapje. */
+  if(kind==="depart" && rec){
+    var dt=document.createElement("details"); dt.className="kort";
+    var sm=el("summary",null,t.kkDetails); dt.appendChild(sm);
+    while(main.firstChild) dt.appendChild(main.firstChild);
+    main.appendChild(dt);
+  }
   if(rec && kind==="retour"){
     var cc=el("div","card"); cc.appendChild(Object.assign(el("h2","ch"),{textContent:t.cmpH})); var any=false;
     angles().forEach(function(a){
@@ -7135,15 +7232,17 @@ function receipt(r,kind){
        en als volle knop. De borgbelofte en de rest lezen mag daarna. */
     var lim=r.limit||limitDate(r);
     var pb=el("button","btn",t.pdf); pb.style.cssText="width:100%"; pb.addEventListener("click",function(){ makeContract(r,pb); }); side.appendChild(pb);
+    if(r.clientTel){ var a=el("a","wa",t.wa); a.href="https://wa.me/"+r.clientTel.replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(t.waMsg(r,c,AG,dShort(lim))); a.target="_blank"; a.rel="noreferrer"; side.appendChild(a); }
+    /* Betaald? Eén tik per bedrag, contant. Zo klopt de kas 's avonds zonder dat
+       iemand een formulier moet invullen. Andere betaalwijze: onder "Details". */
+    side.appendChild(betaaldBlok(r));
+    var br=el("div","borgregel"); br.innerHTML=t.kkBorgRegel(esc(dh(r.caution)), esc(dLong(lim))); side.appendChild(br);
     /* Snel contract gemaakt zonder foto's? Dan kan het hier alsnog, maar het hoeft niet. */
     if(rec && rec.snel){
       var fb=el("button","btn ghost",t.rFotos); fb.style.cssText="width:100%;margin-top:8px";
       fb.addEventListener("click",function(){ openForm(r,"depart"); });
       side.appendChild(fb);
     }
-    var p=el("div"); p.innerHTML=promiseHTML(r.caution,lim); side.appendChild(p.firstChild);
-    if(r.clientTel){ var a=el("a","wa",t.wa); a.href="https://wa.me/"+r.clientTel.replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(t.waMsg(r,c,AG,dShort(lim))); a.target="_blank"; a.rel="noreferrer"; side.appendChild(a); }
-    var ab=el("button","btn ghost",t.attBtn); ab.style.cssText="margin-top:10px;width:100%"; ab.addEventListener("click",function(){ makeAttestation(r,ab); }); side.appendChild(ab);
   } else {
     if(rec){
       var v=el("div","verdict"); v.id="verdict"; side.appendChild(v);
@@ -7153,11 +7252,11 @@ function receipt(r,kind){
     }
     if(!r.released && r.caution>0) side.appendChild(settlePanel(r));
   }
-  var kb=el("button","btn ghost",t.kcBtn); kb.style.cssText="margin-top:10px;width:100%"; kb.addEventListener("click",function(){ openCard(r); }); side.appendChild(kb);
+  if(kind!=="depart"){ var kb=el("button","btn ghost",t.kcBtn); kb.style.cssText="margin-top:10px;width:100%"; kb.addEventListener("click",function(){ openCard(r); }); side.appendChild(kb); }
   show("vDone"); $("prog").hidden=true;
-  $("bBack").hidden=false; $("bBack").className="btn ghost"; $("bBack").textContent=t.back;
-  $("bGo").disabled=false; $("bGo").textContent=t.toDay;
-  $("note").textContent = !rec?t.rNoteMoney:(kind==="depart"?t.rNoteDep:t.rNoteRet); draft=null;
+  $("bBack").hidden=true;
+  $("bGo").disabled=false; $("bGo").textContent=t.klaarKnop;
+  $("note").textContent=""; draft=null;
 }
 
 /* ============ borg afrekenen (exact bedrag, geen schatting) ============ */
