@@ -1008,7 +1008,7 @@ details.meer>div{padding:0 12px 12px}
             <button class="btn ghost sm" id="stCloudNu" hidden></button>
             <button class="btn ghost sm" id="stCloudUit" hidden></button>
           </div>
-          <details class="meer" style="margin-top:12px">
+          <details class="meer" style="margin-top:12px" hidden>
             <summary id="stCloudSetH"></summary>
             <div class="form" style="margin-top:8px">
               <div class="f"><label class="lbl" for="stCloudUrl" id="stCloudUrlL"></label><input type="url" id="stCloudUrl" autocomplete="off" placeholder="https://xxxx.supabase.co"></div>
@@ -1846,8 +1846,19 @@ try{ SB=JSON.parse(localStorage.getItem(SBKEY)||"null")||{url:"",key:""}; }catch
    ingesteld, dan blijft dat staan. */
 var SBSTANDAARD={ url:"https://mimpyfbitoiotxuqoymj.supabase.co", key:"sb_publishable_ULPcv7mCZw_95ClYn2PVSA_UGBaHeTu" };
 (function(){
-  var eigen=String((SB&&SB.url)||"").replace(/\/+$/,"");
-  if(!eigen || eigen===SBSTANDAARD.url) SB={ url:SBSTANDAARD.url, key:SBSTANDAARD.key };
+  /* Alleen een ECHT ander Supabase-project (https://<20 letters>.supabase.co met een
+     geldige sleutel) mag het vaste project vervangen. Een half geplakt adres, het
+     adres van het beheerscherm of een afgekapte sleutel van vroeger wordt genegeerd
+     — anders zegt de app "geen contact" terwijl alles in orde is. */
+  var eigen=String((SB&&SB.url)||"").trim().replace(/\/+$/,"");
+  var sleutel=String((SB&&SB.key)||"").trim();
+  var echtAnder = /^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(eigen) && eigen!==SBSTANDAARD.url
+                  && /^[\x21-\x7e]{20,}$/.test(sleutel);
+  if(!echtAnder){
+    if(eigen && eigen!==SBSTANDAARD.url){ SBSES=null; try{ localStorage.removeItem(SBSKEY); }catch(e){} }
+    SB={ url:SBSTANDAARD.url, key:SBSTANDAARD.key };
+    try{ localStorage.setItem(SBKEY,JSON.stringify(SB)); }catch(e){}
+  }
 })();
 try{ SBSES=JSON.parse(localStorage.getItem(SBSKEY)||"null"); }catch(e){}
 try{ SBQ=JSON.parse(localStorage.getItem(SBQKEY)||"[]")||[]; }catch(e){}
@@ -6864,7 +6875,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="115";
+var ATLASVER="116";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
