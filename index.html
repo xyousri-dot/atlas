@@ -1117,7 +1117,7 @@ var TXT = {
   snelWacht:"Even geduld \u2014 de kaart wordt nog gelezen.",
   snelNogId:"neem nu ook een foto van de ACHTERKANT van de ID-kaart voor naam en CIN.",
   snelNrTyp:"nummer niet zeker gelezen \u2014 typ het over van het document",
-  snelNrCheck:"kijk het nummer hieronder even na met het document",
+  snelNrCheck:"kijk nummer en geboortedatum even na met het document",
   nwDocNoL:"Nummer paspoort / CIN",
   snelDraaiId:"Dit is de voorkant. Draai de ID-kaart om en neem de achterkant (met de regels <<< onderaan): daar staan naam, nummer, datums en adres.",
   snelDraaiLic:"Rijbewijs: Marokkaans \u2192 neem de achterkant (regel die met D1MA begint). Buitenlands \u2192 typ het nummer hieronder.",
@@ -1516,7 +1516,7 @@ var TXT = {
   snelWacht:"Un instant \u2014 la carte est encore en lecture.",
   snelNogId:"prenez aussi une photo du VERSO de la CIN pour le nom et le num\u00e9ro.",
   snelNrTyp:"num\u00e9ro pas lu avec certitude \u2014 recopiez-le du document",
-  snelNrCheck:"v\u00e9rifiez le num\u00e9ro ci-dessous avec le document",
+  snelNrCheck:"v\u00e9rifiez num\u00e9ro et date de naissance avec le document",
   nwDocNoL:"Num\u00e9ro passeport / CIN",
   snelDraaiId:"C\u2019est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, num\u00e9ro, dates et adresse y figurent.",
   snelDraaiLic:"Permis : marocain \u2192 photographiez le verso (ligne qui commence par D1MA). \u00c9tranger \u2192 tapez le num\u00e9ro ci-dessous.",
@@ -6770,6 +6770,24 @@ async function aiLees(lijst){
   var j=null; try{ j=await res.json(); }catch(e){ j=null; }
   return (j && Array.isArray(j.fotos)) ? j : null;
 }
+/* De AI telt de opvultekens (<) soms één te veel of te weinig. De controlecijfers
+   staan op vaste plekken, dus we zetten de regel op de juiste lengte door de
+   laatste reeks < korter of langer te maken, en laten parseMRZ daarna rekenen. */
+function mrzOpLengte(r,len){
+  if(r.length===len) return r;
+  var m=null, re=/<{2,}/g, x; while((x=re.exec(r))) m={ i:x.index, n:x[0].length };
+  if(!m) return r.length>len ? r.slice(0,len) : (r+"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").slice(0,len);
+  var verschil=len-r.length, nieuw=Math.max(1,m.n+verschil);
+  return (r.slice(0,m.i)+"<".repeat(nieuw)+r.slice(m.i+m.n)).slice(0,len);
+}
+function aiMrz(regels){
+  var lens = regels.length>=3 ? [30] : (regels[0].length>=40 ? [44] : [36,44]);
+  for(var k=0;k<lens.length;k++){
+    var h=null; try{ h=parseMRZ(regels.map(function(r){ return mrzOpLengte(r,lens[k]); }).join("\n")); }catch(e){ h=null; }
+    if(h) return h;
+  }
+  try{ return parseMRZ(regels.join("\n")); }catch(e){ return null; }
+}
 function aiDatum(d){ d=String(d||""); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : ""; }
 function aiSchoon(x){ return String(x||"").toUpperCase().replace(/\s+/g," ").trim(); }
 async function aiVul(j,lijst){
@@ -6782,7 +6800,7 @@ async function aiVul(j,lijst){
     if(aiDatum(p.rijbewijs_geldig_tot) && !licExp) licExp=aiDatum(p.rijbewijs_geldig_tot);
     if(aiDatum(p.rijbewijs_afgifte) && !licIss) licIss=aiDatum(p.rijbewijs_afgifte);
     var regels=(Array.isArray(p.mrz)?p.mrz:[]).map(function(r){ return String(r||"").toUpperCase().replace(/[^A-Z0-9<]/g,""); }).filter(function(r){ return r.length>=28; });
-    if(regels.length>=2){ var h=null; try{ h=parseMRZ(regels.join("\n")); }catch(e){ h=null; }
+    if(regels.length>=2){ var h=aiMrz(regels);
       if(h && h.kind!=="licence"){ if(!id) id={ hit:h, p:p }; return; } }
     var L=String(p.d1_regel||"").toUpperCase().replace(/[^A-Z0-9<]/g,"");
     if(L.length>=30){ var lr=null; try{ lr=licRegel(L.slice(0,30)); }catch(e){ lr=null; } if(lr){ lic={ hit:lr, p:p }; return; } }
@@ -7173,7 +7191,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ view="vFleet"; render(); return; } await S.del("vehicles/"+carEdit.id); await reload(); view="vFleet"; render(); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="127";
+var ATLASVER="128";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
