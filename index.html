@@ -554,6 +554,33 @@ details.meer>div{padding:0 12px 12px}
   .find .fields{grid-template-columns:1fr 1fr auto;align-items:end}
   .title h1{font-size:33px}
 }
+
+/* ===== Menu onderaan, voor de duim (zoals de host-apps van Airbnb en Turo) ===== */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;max-width:none;margin:0;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));
+  display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);overflow:visible}
+.tabs button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none!important;color:var(--ink3)!important;
+  border-radius:12px;padding:6px 2px!important;font-size:11.5px;font-weight:600;min-height:54px}
+.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-current="true"]{color:var(--brand)!important}
+.tabs button[data-v="vLed"],.tabs button[data-v="vCash"],.tabs button[data-v="vSet"]{display:none!important}
+.tabs[hidden]{display:none!important}
+.wrap{padding-bottom:110px}
+/* knoppenbalk: grote hoofdknop, kleine terugknop op één regel */
+.dock #bGo{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock #bBack{flex:0 0 auto}
+#bGo small.knopprijs{display:block;font-size:13px;font-weight:600;opacity:.85;line-height:1.1;margin-top:1px}
+@media (max-width:640px){ .dock-in{flex-wrap:nowrap} .dock .note{display:none} .dock #bBack{padding-left:16px;padding-right:16px} }
+.meerblad{position:fixed;inset:0;z-index:70;background:rgba(20,30,20,.35);display:flex;align-items:flex-end}
+.meerblad .in{background:var(--card);width:100%;border-radius:20px 20px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.15)}
+.meerblad .greep{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+.meerblad button.rij{display:flex;align-items:center;gap:14px;width:100%;font:inherit;font-size:17px;font-weight:600;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:16px 6px;color:var(--ink);cursor:pointer}
+.meerblad button.rij svg{width:24px;height:24px;stroke:var(--brand);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.meerblad .talen{display:flex;gap:8px;margin-top:14px}
+.meerblad .talen button{flex:1;font:inherit;font-weight:700;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.meerblad .talen button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bar .lang{display:none}
+/* Planning op de telefoon: smallere naamkolom, grotere vakken */
+@media (max-width:640px){ .plan .hc{min-width:96px;padding:6px 8px 6px 12px;font-size:12.5px} .plan .hd,.plan .cell{width:40px} .plan .cell{height:52px} }
 </style>
 
 <div class="bar">
@@ -745,7 +772,7 @@ details.meer>div{padding:0 12px 12px}
             <!-- De kaart wordt hier gelezen, op dit scherm. Geen apart klantscherm meer
                  en geen tweede opslaanknop: terwijl de kaart gelezen wordt kiest de
                  verhuurder de auto en de dagen. -->
-            <p class="fine" id="nwScanTip" style="margin:8px 2px 0;text-align:center"></p>
+            <p class="fine" id="nwScanTip" style="margin:8px 2px 0;text-align:center" hidden></p>
             <p id="nwAILamp" style="margin:6px 2px 0;text-align:center;font-size:13px;font-weight:600;cursor:pointer"></p>
             <div class="snelstat" id="nwScanStat" hidden role="status" aria-live="polite"></div>
             <button type="button" class="btn ghost sm" id="nwScanLic" hidden style="width:100%;margin-top:8px"></button>
@@ -953,7 +980,7 @@ details.meer>div{padding:0 12px 12px}
           </div>
           <div class="grid2">
             <div class="f"><label class="lbl" for="cwCaution" id="cwCautionL"></label><input type="number" id="cwCaution" inputmode="numeric"></div>
-            <div class="f"><label class="lbl" for="cwFranchise" id="cwFranchiseL"></label><input type="number" id="cwFranchise" inputmode="numeric" placeholder="19103"></div>
+            <div class="f"><label class="lbl" for="cwFranchise" id="cwFranchiseL"></label><input type="number" id="cwFranchise" inputmode="numeric" placeholder="10000"></div>
           </div>
           <div class="f"><label class="lbl" for="cwFuel" id="cwFuelL"></label>
             <select id="cwFuel"><option value="diesel" id="optDiesel"></option><option value="essence" id="optEssence"></option></select></div>
@@ -1021,7 +1048,7 @@ details.meer>div{padding:0 12px 12px}
           <div class="f"><label class="lbl" for="stCaution" id="stCautionL"></label><input type="number" id="stCaution" inputmode="numeric"></div>
           <div class="f"><label class="lbl" for="stWindow" id="stWindowL"></label><input type="number" id="stWindow" inputmode="numeric"></div>
         </div>
-        <div class="f"><label class="lbl" for="stFranchise" id="stFranchiseL"></label><input type="number" id="stFranchise" inputmode="numeric" placeholder="19103"></div>
+        <div class="f"><label class="lbl" for="stFranchise" id="stFranchiseL"></label><input type="number" id="stFranchise" inputmode="numeric" placeholder="10000"></div>
         <div class="f"><label class="lbl" id="stOptL"></label>
           <button type="button" class="confirm" id="stPromise" style="margin-top:0;text-align:left"></button>
           <button type="button" class="confirm" id="stLoyal" style="text-align:left"></button>
@@ -1056,16 +1083,17 @@ details.meer>div{padding:0 12px 12px}
             <p class="fine" id="stCloudHelp" style="margin-top:10px;white-space:pre-line"></p>
           </details>
         </div>
-        <div class="card"><h2 class="ch" id="stDemoH"></h2><p class="sub" id="stDemoP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="stDemoBtn"></button><button class="btn dangerish sm" id="stWipeBtn"></button></div></div>
-        <button type="button" class="link" id="stToolsBtn" style="margin-top:14px"></button>
+                <button type="button" class="link" id="stToolsBtn" style="margin-top:14px"></button>
         <div id="stTools" hidden>
-          <div class="card"><h2 class="ch" id="stCheckH"></h2><p class="sub" id="stCheckP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><button class="btn ghost sm" id="stCheckBtn"></button><div id="stCheckOut" style="margin-top:12px"></div></div>
-          <div class="card"><h2 class="ch" id="stTrustH"></h2><p class="sub" id="stTrustP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><button class="btn ghost sm" id="stTrustBtn"></button></div>
-        </div>
-        <div class="card" id="stOcrCard"><h2 class="ch" id="stOcrH"></h2>
+          <div class="card"><h2 class="ch" id="stDemoH"></h2><p class="sub" id="stDemoP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="stDemoBtn"></button><button class="btn dangerish sm" id="stWipeBtn"></button></div></div>
+          <div class="card" id="stOcrCard" hidden><h2 class="ch" id="stOcrH"></h2>
           <p class="sub" id="stOcrP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p>
           <input type="text" id="stOcrKey" autocomplete="off" spellcheck="false" placeholder="K8\u2026">
           <p class="fine" id="stOcrS" style="margin:8px 0 0"></p></div>
+          <div class="card"><h2 class="ch" id="stCheckH"></h2><p class="sub" id="stCheckP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><button class="btn ghost sm" id="stCheckBtn"></button><div id="stCheckOut" style="margin-top:12px"></div></div>
+          <div class="card"><h2 class="ch" id="stTrustH"></h2><p class="sub" id="stTrustP" style="margin:0 0 12px;color:var(--ink2);font-size:14.5px"></p><button class="btn ghost sm" id="stTrustBtn"></button></div>
+        </div>
+        
         <p class="fine" id="stFine"></p>
         <p class="fine" id="stVer" style="margin-top:6px;opacity:.7"></p>
       </div>
@@ -1090,9 +1118,10 @@ details.meer>div{padding:0 12px 12px}
 /* ============ TEKSTEN ============ */
 var TXT = {
  nl:{ loc:"nl-NL",
-  tabs:["Vandaag","Planning","Klanten","Auto\u2019s","Borgen","Kas","Instellingen","Meer \u25be"], tabMinder:"Minder \u25b4",
+  tabs:["Vandaag","Planning","Klanten","Auto\u2019s","Borgen","Kas","Instellingen","Meer \u25be"], tabMinder:"Minder \u25b4", tabMeer:"Meer",
   dayH:"Vandaag", dayP:"",
   hOnderweg:"Onderweg", hReserv:"Gereserveerd", hBorg:"Borg nog terug te geven", hVrij:"Vrij \u2014 tik om te verhuren",
+  hNu:"Vandaag te doen", geenNu:"Niets te doen vandaag \u2713", hBorgKort:"Borg terug:",
   terugOp:function(d){ return "terug "+d; }, terugVandaag:"vandaag terug", teLaat:function(n){ return n+(n>1?" dagen":" dag")+" te laat"; },
   vertrekt:function(d){ return "vertrekt "+d; }, vertrektVandaag:"vertrekt vandaag",
   bTerug:"Auto terug", bContract:"Contract", bWijzig:"Wijzig", bMee:"Sleutels meegeven", bBorg:"Borg afrekenen",
@@ -1496,9 +1525,10 @@ var TXT = {
         dl:"op" }
  },
  fr:{ loc:"fr-FR",
-  tabs:["Aujourd\u2019hui","Planning","Clients","Voitures","Cautions","Caisse","R\u00e9glages","Plus \u25be"], tabMinder:"Moins \u25b4",
+  tabs:["Aujourd\u2019hui","Planning","Clients","Voitures","Cautions","Caisse","R\u00e9glages","Plus \u25be"], tabMinder:"Moins \u25b4", tabMeer:"Plus",
   dayH:"Aujourd\u2019hui", dayP:"",
   hOnderweg:"En location", hReserv:"R\u00e9servations", hBorg:"Caution \u00e0 rendre", hVrij:"Libres \u2014 touchez pour louer",
+  hNu:"\u00c0 faire aujourd\u2019hui", geenNu:"Rien \u00e0 faire aujourd\u2019hui \u2713", hBorgKort:"Caution \u00e0 rendre :",
   terugOp:function(d){ return "retour "+d; }, terugVandaag:"retour aujourd\u2019hui", teLaat:function(n){ return "en retard de "+n+" j"; },
   vertrekt:function(d){ return "d\u00e9part "+d; }, vertrektVandaag:"d\u00e9part aujourd\u2019hui",
   bTerug:"Voiture rendue", bContract:"Contrat", bWijzig:"Modifier", bMee:"Remettre les cl\u00e9s", bBorg:"Rendre la caution",
@@ -1895,7 +1925,7 @@ TXT.fr.licAchterDat="\u2713 Photo enregistr\u00e9e \u2014 ceci est le verso du p
 TXT.fr.licAchter="\u2713 Photo enregistr\u00e9e \u2014 mais ceci ressemble au verso du permis : on n\u2019y trouve que le tableau des cat\u00e9gories. Le num\u00e9ro, le nom et la date de validit\u00e9 sont au recto. Prenez-en une photo aussi. Les deux photos peuvent rester ici.";
 (function(){ for(var k in TXT.nl) if(!(k in TXT.fr)) TXT.fr[k]=TXT.nl[k]; })();
 var LKEY="atlas-lang";
-var L=(function(){ try{ return localStorage.getItem(LKEY)==="fr"?"fr":"nl"; }catch(e){ return "nl"; } })();
+var L=(function(){ try{ return localStorage.getItem(LKEY)==="nl"?"nl":"fr"; }catch(e){ return "fr"; } })();
 function T(){ return TXT[L]; }
 
 /* ============ opslag ============ */
@@ -2282,7 +2312,7 @@ function applyLang(){
   var t=T();
   document.documentElement.lang=L;
   $("lnNL").setAttribute("aria-pressed",L==="nl"); $("lnFR").setAttribute("aria-pressed",L==="fr");
-  Array.prototype.forEach.call($("tabs").children,function(b,i){ b.textContent=t.tabs[i]; });
+  tekenTabs();
   var ids={dayH:"dayH",dayP:"dayP",newRental:"newRental",newCar:"newCar",newClient:"newClient",scanKey:"scanKey",tagsBtn:"tagsBtn",
     plH:"plH",plP:"plP",plFine:"plFine",clH:"clH",clP:"clP",cvP:"cvP",scanT:"scanT",scanBtn:"scanBtn",scanPick:"scanPick",secPersonH:"secPersonH",secIdH:"secIdH",secLicH:"secLicH",secIdP:"secIdP",secLicP:"secLicP",mrzToggle:"mrzToggle",
     cvNameL:"cvNameL",cvTelL:"cvTelL",cvDocTypeL:"cvDocTypeL",optPass:"optPass",cvDocNoL:"cvDocNoL",cvBirthL:"cvBirthL",cvDocExpL:"cvDocExpL",
@@ -2333,6 +2363,7 @@ function show(v){
   VIEWS.forEach(function(x){ $(x).hidden = x!==v; });
   $("prog").hidden = v!=="vForm";
   $("dock").hidden = ["vDay","vLed","vCash","vFleet","vClients","vPlan","vCard","vTrust"].indexOf(v)>=0;
+  $("tabs").hidden = !$("dock").hidden;
   Array.prototype.forEach.call($("tabs").children,function(b){ b.setAttribute("aria-current", b.dataset.v===TABOF[v]); });
   window.scrollTo(0,0);
 }
@@ -2343,7 +2374,7 @@ try{ history.replaceState({ v:"vDay", i:0, s:1 },""); history.pushState({ v:"vDa
    terugknop van de telefoon alleen het venster sluit en Atlas niet verlaat. */
 var MODALSTAAT=false, SLUITPOP=false;
 try{ new MutationObserver(function(){
-  var open=document.querySelectorAll(".ask").length>0;
+  var open=document.querySelectorAll(".ask,.meerblad").length>0;
   if(open && !MODALSTAAT){ MODALSTAAT=true; try{ STAPEL=STAPEL.slice(0,IDX+1); STAPEL.push(view); IDX++; DIEPTE=IDX; history.pushState({ v:view, i:IDX, m:1 },""); }catch(e){} }
   else if(!open && MODALSTAAT){ MODALSTAAT=false;
     if(!SLUITPOP){ try{ STAPEL[IDX]=view; history.replaceState({ v:view, i:IDX },""); }catch(e){} } SLUITPOP=false; }
@@ -2357,7 +2388,7 @@ window.addEventListener("popstate",function(e){
     return;
   }
   if(e.state && typeof e.state.i==="number"){ IDX=e.state.i; DIEPTE=e.state.i; }
-  var open=document.querySelectorAll(".ask");
+  var open=document.querySelectorAll(".ask,.meerblad");
   if(open.length){ SLUITPOP=true; Array.prototype.forEach.call(open,function(x){ x.remove(); }); return; }
   var doel=(e.state && e.state.v) || "vDay";
   /* Dubbele plek (venster dat met een knop gesloten werd): meteen nog een stap terug. */
@@ -2393,11 +2424,44 @@ function render(){
   if(view==="vSet"){ fillSettings(); paintTools(); sbVerf(); }
   show(view);
 }
+/* ===== Menu onderaan: iconen en het blad "Meer" ===== */
+var TABICOON={
+  vDay:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+  vPlan:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  vClients:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
+  vFleet:'<svg viewBox="0 0 24 24"><path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="15" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="19.5" r="1.5"/><circle cx="16.5" cy="19.5" r="1.5"/></svg>',
+  meer:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+  vLed:'<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M7 15h3"/></svg>',
+  vCash:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>',
+  vSet:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.9-1.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
+};
+function tekenTabs(){
+  var t=T();
+  Array.prototype.forEach.call($("tabs").children,function(b,i){
+    var v=b.dataset.v, label = v==="meer" ? t.tabMeer : t.tabs[i];
+    b.innerHTML=(TABICOON[v]||"")+"<span>"+esc(label)+"</span>";
+  });
+}
+function openMeer(){
+  var t=T(), w=el("div","meerblad"), b=el("div","in"); b.appendChild(el("div","greep"));
+  [["vLed",t.tabs[4]],["vCash",t.tabs[5]],["vSet",t.tabs[6]]].forEach(function(x){
+    var k=el("button","rij"); k.type="button"; k.innerHTML=TABICOON[x[0]]+"<span>"+esc(x[1])+"</span>";
+    k.addEventListener("click",function(){ w.remove(); stashDraft(); rental=null; draft=null; view=x[0]; render(); });
+    b.appendChild(k);
+  });
+  var tl=el("div","talen");
+  [["fr","Fran\u00e7ais"],["nl","Nederlands"]].forEach(function(x){
+    var k=el("button",null,x[1]); k.type="button"; k.setAttribute("aria-pressed",L===x[0]?"true":"false");
+    k.addEventListener("click",function(){ w.remove(); setLang(x[0]); }); tl.appendChild(k);
+  });
+  b.appendChild(tl); w.appendChild(b);
+  w.addEventListener("click",function(e){ if(e.target===w) w.remove(); });
+  document.body.appendChild(w);
+}
 $("tabs").addEventListener("click",function(e){
   var b=e.target.closest("button"); if(!b) return;
   /* "Meer" toont de tabbladen die een gewone verhuurder zelden nodig heeft. */
-  if(b.dataset.v==="meer"){ var open=!$("tabs").classList.contains("alles"); $("tabs").classList.toggle("alles",open);
-    b.setAttribute("aria-expanded",open?"true":"false"); b.textContent=open?T().tabMinder:T().tabs[7]; return; }
+  if(b.dataset.v==="meer"){ openMeer(); return; }
   stashDraft(); rental=null; draft=null; view=b.dataset.v; render(); });
 $("lnNL").addEventListener("click",function(){ setLang("nl"); });
 $("lnFR").addEventListener("click",function(){ setLang("fr"); });
@@ -2496,27 +2560,25 @@ function renderDay(){
   var gepland=live2.filter(function(r){ return stepOf(r)===1; }).sort(function(a,b){ return a.from.localeCompare(b.from); });
   var borg=live2.filter(function(r){ return stepOf(r)===3; });
 
-  kop(t.hOnderweg+(weg.length?" ("+weg.length+")":""));
-  if(!weg.length) box.appendChild(el("p","leegtje",t.geenOnderweg));
-  weg.forEach(function(r){
-    var laat=r.to<nu, vandaag=r.to===nu;
+  /* Eerst wat vandaag moet gebeuren (te laat, terug, vertrek, borg), dan de rest. */
+  function terugKaart(r){ var laat=r.to<nu, vandaag=r.to===nu;
     kaart(r, laat?t.teLaat(dayDiff(r.to,nu)):(vandaag?t.terugVandaag:t.terugOp(dDay(r.to))), laat?"laat":(vandaag?"vandaag":""),
       [{label:t.bTerug, fn:function(){ snelTerug(r); }},
-       {label:t.bContract, ghost:true, fn:function(){ receipt(r,"depart"); }}]);
-  });
-  if(borg.length){
-    kop(t.hBorg);
-    borg.forEach(function(r){ kaart(r, dh(r.caution), "", [{label:t.bBorg, fn:function(){ receipt(r,"retour"); }}]); });
-  }
-  if(gepland.length){
-    kop(t.hReserv);
-    gepland.forEach(function(r){
-      var vandaag=r.from<=nu;
-      kaart(r, vandaag?t.vertrektVandaag:t.vertrekt(dDay(r.from)), vandaag?"vandaag":"",
-        [{label:t.bMee, fn:function(){ snelVertrek(r); }},
-         {label:t.bWijzig, ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]);
-    });
-  }
+       {label:t.bContract, ghost:true, fn:function(){ receipt(r,"depart"); }}]); }
+  function vertrekKaart(r){ var vandaag=r.from<=nu;
+    kaart(r, vandaag?t.vertrektVandaag:t.vertrekt(dDay(r.from)), vandaag?"vandaag":"",
+      [{label:t.bMee, fn:function(){ snelVertrek(r); }},
+       {label:t.bWijzig, ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]); }
+  var nuTerug=weg.filter(function(r){ return r.to<=nu; }), laterTerug=weg.filter(function(r){ return r.to>nu; });
+  var nuWeg=gepland.filter(function(r){ return r.from<=nu; }), laterWeg=gepland.filter(function(r){ return r.from>nu; });
+  var aantalNu=nuTerug.length+nuWeg.length+borg.length;
+  kop(t.hNu+(aantalNu?" ("+aantalNu+")":""));
+  if(!aantalNu) box.appendChild(el("p","leegtje",t.geenNu));
+  nuTerug.forEach(terugKaart);
+  nuWeg.forEach(vertrekKaart);
+  borg.forEach(function(r){ kaart(r, t.hBorgKort+" "+dh(r.caution), "", [{label:t.bBorg, fn:function(){ receipt(r,"retour"); }}]); });
+  if(laterTerug.length){ kop(t.hOnderweg+" ("+laterTerug.length+")"); laterTerug.forEach(terugKaart); }
+  if(laterWeg.length){ kop(t.hReserv+" ("+laterWeg.length+")"); laterWeg.forEach(vertrekKaart); }
   /* Vrije auto's: tik erop en het contract begint met die auto al gekozen. */
   var vrij=CARS.filter(function(c){ return vrijeAuto(c,nu,plus(nu,1)); });
   kop(t.hVrij);
@@ -2615,7 +2677,8 @@ function renderPlan(){
   var first=planMonth+"-01", nDays=new Date(Date.UTC(y,m,0)).getUTCDate();
   $("plMonth").textContent = new Date(first+"T12:00:00Z").toLocaleDateString(t.loc,{month:"long",year:"numeric",timeZone:"UTC"});
   var g=$("plan"); g.innerHTML="";
-  g.style.gridTemplateColumns="150px repeat("+nDays+",34px)";
+  var smal=window.innerWidth<=640, kolom=smal?96:150, vak=smal?40:34;
+  g.style.gridTemplateColumns=kolom+"px repeat("+nDays+","+vak+"px)";
   g.appendChild(el("div","hc",""));
   for(var d=1; d<=nDays; d++){
     var ds=planMonth+"-"+String(d).padStart(2,"0"), dow=new Date(ds+"T12:00:00Z").getUTCDay();
@@ -2633,11 +2696,14 @@ function renderPlan(){
       var s=Math.max(0,dayDiff(first,r.from)), e=Math.min(nDays-1,dayDiff(first,r.to));
       var st=stage(r), cls = st==="done"?"fin":st==="depart"?"res":(r.to<today()?"late":"out");
       var bar=el("button","bar "+cls,r.clientName); bar.type="button";
-      bar.style.left="2px"; bar.style.width=((e-s+1)*34-4)+"px";
+      bar.style.left="2px"; bar.style.width=((e-s+1)*vak-4)+"px";
       bar.addEventListener("click",function(){ st==="done"?receipt(r,"retour"):openForm(r,st); });
       rowCells[s].appendChild(bar);
     });
   });
+  /* meteen naar vandaag schuiven (een paar dagen ervoor blijven zichtbaar) */
+  if(planMonth===today().slice(0,7)){ var wrapP=g.parentNode, dNu=Number(today().slice(8,10));
+    setTimeout(function(){ try{ wrapP.scrollLeft=Math.max(0,(dNu-2)*vak); }catch(e){} },30); }
 }
 $("plPrev").addEventListener("click",function(){ var y=Number(planMonth.slice(0,4)), m=Number(planMonth.slice(5,7))-1; if(m<1){m=12;y--;} planMonth=y+"-"+String(m).padStart(2,"0"); renderPlan(); });
 $("plNext").addEventListener("click",function(){ var y=Number(planMonth.slice(0,4)), m=Number(planMonth.slice(5,7))+1; if(m>12){m=1;y++;} planMonth=y+"-"+String(m).padStart(2,"0"); renderPlan(); });
@@ -6597,6 +6663,7 @@ function tekenPrijsRegel(){
   var c=car($("nwCar").value), from=$("nwFrom").value, to=$("nwTo").value;
   var d=(from&&to)?Math.max(1,dayDiff(from,to)):1;
   box.innerHTML=t.nwSomRegel(t.nwDag(d), dh(c.rate), dh(Number($("nwTotal").value)||0), dh(Number($("nwCaution").value)||0));
+  try{ zetHuurKnop(); }catch(e){}
 }
 ["nwTotal","nwCaution"].forEach(function(id){ $(id).addEventListener("input",tekenPrijsRegel); });
 ["nwCar","nwFrom","nwTo"].forEach(function(id){ $(id).addEventListener("change",recalc); });
@@ -6817,7 +6884,9 @@ function terugNaarHuur(){
 function zetHuurKnop(){
   var t=T(), b=$("bGo"); if(!b || view!=="vNew") return;
   if(editRental){ b.textContent=t.nwSaveEdit; return; }
-  b.textContent = ($("nwFrom").value && $("nwFrom").value<=today()) ? t.nwContract : t.nwReserve;
+  var tot=Number($("nwTotal").value)||0;
+  var lab=(($("nwFrom").value && $("nwFrom").value<=today()) ? t.nwContract : t.nwReserve);
+  b.innerHTML = esc(lab) + (tot>0 ? '<small class="knopprijs">'+esc(dh(tot))+'</small>' : "");
 }
 /* ============ SLIMME SCAN (Claude) ============
    De foto's gaan via onze eigen Supabase-functie naar Claude, die ze leest zoals
@@ -7304,7 +7373,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ naarKlaar("vFleet"); return; } await S.del("vehicles/"+carEdit.id); await reload(); naarKlaar("vFleet"); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="133";
+var ATLASVER="134";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
