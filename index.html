@@ -66,6 +66,15 @@ h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.022em;line-height:1.14;
   border:1px solid var(--line2);background:var(--card);color:var(--ink2);border-radius:99px;padding:4px 10px;display:flex;align-items:center;gap:5px}
 .prog-stappen button em{font-style:normal;font-weight:700;color:var(--ink)}
 .prog-stappen button.af{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+.prog-stappen button.nu{border-color:var(--ink);background:var(--ink);color:#fff}
+.prog-stappen button.nu em{color:#fff}
+/* Stappen: één kaart per scherm (zoals Turo) */
+#vForm .stapuit{display:none!important}
+#vForm .two.stappen{grid-template-columns:1fr}
+.samenvat{list-style:none;padding:0;margin:0 0 14px}
+.samenvat li{display:flex;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line);font-size:15.5px}
+.samenvat li b{font-weight:700}
+.samenvat li button{font:inherit;font-size:14px;color:var(--brand);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0}
 .prog-stappen button.af em{color:var(--brand)}
 
 .wrap{max-width:1100px;margin:0 auto;padding:4px 20px 130px}
@@ -1419,6 +1428,7 @@ var TXT = {
   missing:{s1:"staat",s2:"foto's",s3:"kilometerstand",s4:"handtekening"}, stillNeed:"Nog nodig: ",
   noteDepart:"De klant vertrekt met een datum op papier.", noteRetour:"Er wordt niets automatisch ingehouden.",
   goDepart:"Tekenen en sleutels meegeven", goRetour:"Terugkomst vastleggen",
+  fVolgende:"Volgende", fVorige:"Vorige", fOverzicht:"Overzicht", fWijzig:"wijzig", fStapVan:function(a,b){ return "Stap "+a+" van "+b; },
   back:"Terug", toDay:"Terug naar de dag", cancel:"Annuleren",
   promCap:"Wat de klant meekrijgt", promCap2:"Borg die je teruggeeft",
   promP:"Terug bij het inleveren, na samen controleren. Inhouden mag alleen voor:",
@@ -1770,6 +1780,7 @@ var TXT = {
   missing:{s1:"état",s2:"photos",s3:"compteur",s4:"signature"}, stillNeed:"Encore : ",
   noteDepart:"Le client repart avec une date écrite.", noteRetour:"Rien n'est retenu automatiquement.",
   goDepart:"Signer et remettre les clés", goRetour:"Enregistrer la reprise",
+  fVolgende:"Suivant", fVorige:"Pr\u00e9c\u00e9dent", fOverzicht:"R\u00e9capitulatif", fWijzig:"modifier", fStapVan:function(a,b){ return "\u00c9tape "+a+" sur "+b; },
   back:"Retour", toDay:"Retour à la journée", cancel:"Annuler",
   promCap:"Ce que le client emporte", promCap2:"Caution à restituer",
   promP:"Rendue à la reprise, après contrôle ensemble. Retenue possible uniquement pour :",
@@ -7373,7 +7384,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ naarKlaar("vFleet"); return; } await S.del("vehicles/"+carEdit.id); await reload(); naarKlaar("vFleet"); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="134";
+var ATLASVER="135";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -7420,7 +7431,8 @@ function openForm(r,kind){
   $("bBack").hidden=false; $("bBack").className="btn ghost"; $("bBack").textContent=t.back;
   $("bGo").textContent = kind==="depart"?t.goDepart:t.goRetour;
   setTimeout(function(){ sizeSig(); if(keep&&keep.sig) paintSig(keep.sig); },30);
-  refresh();
+  var st0=steps(), eerste=0; while(eerste<st0.length && st0[eerste].ok) eerste++;
+  FSTAP=eerste; toonStap();
   if(keep) toast(t.draftBack);
 }
 function limitDate(r){ return plus(r.to, AG.window||30); }
@@ -7550,23 +7562,54 @@ function tekenStapKnoppen(st){
   var doos=$("progStappen"); if(!doos) return;
   doos.innerHTML="";
   st.forEach(function(s,i){
-    var b=el("button"); b.type="button"; b.className=s.ok?"af":"";
+    var b=el("button"); b.type="button"; b.className=(i===FSTAP?"nu":(s.ok?"af":""));
     var n=el("em"); n.textContent=s.ok?"✓":String(i+1);
     b.appendChild(n); b.appendChild(document.createTextNode(stapNaam(i)));
-    b.addEventListener("click",function(){
-      var kaart=$(s.id)?$(s.id).closest(".card"):null;
-      if(kaart) kaart.scrollIntoView({behavior:"smooth",block:"start"});
-    });
+    b.addEventListener("click",function(){ FSTAP=i; toonStap(); });
     doos.appendChild(b);
   });
 }
+/* ============ STAP VOOR STAP (zoals Turo) ============
+   Vertrek en terugkomst: één kaart per scherm, met Volgende / Vorige. De vijfde
+   stap is het overzicht met de borg; daar staat de knop om af te ronden. */
+var FSTAP=0;
+function formKaarten(){ return Array.prototype.slice.call($("vForm").querySelectorAll(".two > div:first-child > .card")); }
+function toonStap(){
+  var t=T(), kaarten=formKaarten(), laatste=kaarten.length;
+  $("vForm").querySelector(".two").classList.add("stappen");
+  kaarten.forEach(function(k,i){ k.classList.toggle("stapuit", i!==FSTAP); });
+  $("side").classList.toggle("stapuit", FSTAP!==laatste);
+  var sv=$("fSamenvat"); if(sv) sv.remove();
+  if(FSTAP===laatste){
+    var st=steps(), ul=el("ul","samenvat"); ul.id="fSamenvat";
+    st.forEach(function(x,i){ var li=el("li"); li.appendChild(el("span",null,(x.ok?"\u2713 ":"\u25cb ")+stapNaam(i)));
+      var r=el("span"); r.appendChild(el("b",null,x.txt+" "));
+      var w=el("button",null,t.fWijzig); w.type="button"; w.addEventListener("click",function(){ FSTAP=i; toonStap(); }); r.appendChild(w);
+      li.appendChild(r); ul.appendChild(li); });
+    var kop=el("h2","ch",t.fOverzicht); var doos=el("div","card"); doos.id="fSamenvat"; doos.appendChild(kop); doos.appendChild(ul);
+    $("side").insertBefore(doos,$("side").firstChild);
+  }
+  if(FSTAP===3) setTimeout(function(){ sizeSig(); if(draft && draft.sig) paintSig(draft.sig); },30);
+  window.scrollTo(0,0);
+  refresh();
+}
+function stapVooruit(){ var st=steps(); if(FSTAP<formKaarten().length && st[FSTAP] && st[FSTAP].ok){ FSTAP++; toonStap(); return true; } return false; }
 function refresh(){
   if(!draft) return;
   var t=T(), st=steps(), done=st.filter(function(s){return s.ok;}).length;
   st.forEach(function(s,i){ $(s.id).className="step"+(s.ok?" on":""); $(s.id).textContent=s.ok?"✓":String(i+1); var n=$(s.state); n.textContent=s.txt; n.className="state"+(s.ok?" ok":""); });
   $("prog").hidden=false; $("progTxt").textContent=done===4?t.progAll:done+" "+t.progDone; $("progWho").textContent=rental?rental.clientName:""; $("progBar").style.width=(done/4*100)+"%";
   tekenStapKnoppen(st);
-  $("bGo").disabled=done<4;
+  var laatste=formKaarten().length;
+  if(FSTAP<laatste){
+    $("bGo").textContent=t.fVolgende; $("bGo").disabled=!st[FSTAP].ok;
+    $("bBack").textContent = FSTAP>0 ? t.fVorige : t.back;
+    $("progTxt").textContent=t.fStapVan(FSTAP+1,laatste+1);
+  } else {
+    $("bGo").textContent = mode==="depart"?t.goDepart:t.goRetour; $("bGo").disabled=done<4;
+    $("bBack").textContent=t.fVorige;
+    $("progTxt").textContent=t.fStapVan(laatste+1,laatste+1)+" \u00b7 "+t.fOverzicht;
+  }
   $("note").textContent = done===4?(mode==="depart"?t.noteDepart:t.noteRetour):t.stillNeed+st.filter(function(s){return !s.ok;}).map(function(s){ return t.missing[s.id]; }).join(", ");
 }
 async function finishHandover(){
@@ -8607,6 +8650,7 @@ $("bBack").addEventListener("click",function(){
   if(view==="vCar"){ carEdit?delCar():eenTerug(); return; }
   if(view==="vClient"){ clientEdit?delClient():eenTerug(); return; }
   if(view==="vNew"){ if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; NWOPEN=false; eenTerug(); return; }
+  if(view==="vForm" && FSTAP>0){ FSTAP--; toonStap(); return; }
   stashDraft(); rental=null; draft=null; eenTerug();
 });
 $("bGo").addEventListener("click",function(){
@@ -8615,7 +8659,10 @@ $("bGo").addEventListener("click",function(){
   if(view==="vClient"){ saveClient(); return; }
   if(view==="vSet"){ saveSettings(); return; }
   if(view==="vDone"){ rental=null; naarKlaar("vDay"); return; }
-  if(view==="vForm" && draft && steps().every(function(s){ return s.ok; })) finishHandover();
+  if(view==="vForm" && draft){
+    if(FSTAP<formKaarten().length){ stapVooruit(); return; }
+    if(steps().every(function(s){ return s.ok; })) finishHandover();
+  }
 });
 $("km").addEventListener("input",function(){ if(draft){ draft.km=this.value; updateVerdict(); refresh(); } });
 $("fuel").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b||!draft) return; Array.prototype.forEach.call(this.children,function(x){ x.setAttribute("aria-pressed","false"); }); b.setAttribute("aria-pressed","true"); draft.fuel=b.dataset.v; updateVerdict(); refresh(); });
