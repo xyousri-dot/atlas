@@ -120,7 +120,7 @@ for (const taal of ["fr", "ar"]) test(`Boete (${taal}): zoeken → verklaring (F
   assert.equal(opgeslagen.length, 1); assert.equal(opgeslagen[0].ref, "R-2026-55871"); assert.equal(opgeslagen[0].verstuurd, null);
   /* Vandaag toont de termijn */
   await page.evaluate(() => { view = "vDay"; render(); });
-  const kaart = await page.evaluate(() => [...document.querySelectorAll("#dayBody .kaartje")].map(k => k.textContent).find(x => /Déclaration|التصريح/.test(x)));
+  const kaart = await page.evaluate(() => [...document.querySelectorAll("#dayBody .kaartje")].map(k => k.textContent).find(x => /déclaration|التصريح/i.test(x)));
   assert.ok(kaart, "boetekaart op Vandaag");
   await B.foto(page, taal + "-boete-vandaag");
   /* Verstuurd: weg van Vandaag, bewaard bij de verhuur */
@@ -251,6 +251,16 @@ test("Terug: contract maken → Photos et dommages → terug = Contrat prêt →
   assert.equal(await v(), "vDone", "terugknop telefoon → Contrat prêt");
   await page.goBack(); await wacht();
   assert.equal(await v(), "vDay", "nog eens terug → Vandaag, niet het oude formulier");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+test("Vandaag: één knop per kaart; tik op de kaart = contract", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const kaarten = await page.evaluate(() => [...document.querySelectorAll("#dayBody .kaartje")].map(k => k.querySelectorAll(".knoppen .btn").length));
+  assert.ok(kaarten.length >= 3 && kaarten.every(n => n === 1), "één knop per kaart: " + kaarten);
+  await page.evaluate(() => [...document.querySelectorAll("#dayBody .kaartje")].find(k => /Dacia Logan/.test(k.textContent)).querySelector(".kaartkop").click());
+  assert.equal(await page.evaluate(() => view), "vDone");
   assert.deepEqual(fouten, []);
   await page.close();
 });

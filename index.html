@@ -614,6 +614,22 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .job .winst{font-size:13.5px;font-weight:700;margin-top:4px}
 .job .winst.plus{color:var(--brand)}
 .job .winst.min{color:var(--warn)}
+/* ===== Rust (ronde 3): zoals Square en Airbnb =====
+   Geen uitlegzinnen onder de titels, geen kleine lettertjes onderaan, kopjes in
+   gewone zinnen in plaats van HOOFDLETTERS. Het klantscherm (scanner) blijft zoals
+   het was. */
+#vPlan .title p, #vClients .title p, #vFleet .title p, #vLed .title p, #vCash .title p, #vSet .title p, #vCar .title p, #vNew .title p{display:none}
+#ledFine, #cashFine, #stFine{display:none}
+.sh{text-transform:none;letter-spacing:-.01em;font-size:18px;font-weight:800;color:var(--ink);margin:26px 2px 10px}
+.wrap > div:not(#vClient) .lbl{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:600;color:var(--ink2)}
+.stgroep{margin-bottom:12px}
+.stgroep .ch{font-size:17px;margin-bottom:12px}
+/* Vandaag: kaartkop is zelf een knop (contract / wijzigen) */
+.kaartje .kaartkop{display:block;width:100%;background:none;border:none;padding:0;font:inherit;color:inherit;text-align:start;cursor:pointer;position:relative;padding-inline-end:18px}
+.kaartje .kaartkop .boven, .kaartje .kaartkop .wie{display:flex}
+.kaartje .kaartkop .boven{justify-content:space-between;gap:10px;align-items:baseline}
+.kaartje .kaartkop .chev{position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:20px}
+.kaartje .knoppen .btn{width:100%}
 /* Ochtendstrook op Vandaag */
 .strook{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 4px}
 .strook button{background:var(--card);border:none;border-radius:var(--rs);box-shadow:var(--sh);padding:12px 12px 11px;text-align:start;font:inherit;color:inherit;cursor:pointer;min-width:0}
@@ -624,7 +640,6 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 .onderaan{margin-top:26px;border-top:1px solid var(--line)}
 .voetregel{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;background:none;border:none;border-bottom:1px solid var(--line);padding:14px 2px;font:inherit;font-size:14.5px;color:var(--ink2);text-align:start;cursor:pointer}
 .voetregel .chev{color:var(--ink3);font-size:18px}
-[dir="rtl"] .voetregel .chev{transform:scaleX(-1)}
 /* Borg op maat: kop erboven, vier knoppen op één rij. */
 .borgen{flex-wrap:nowrap!important}
 .borgen .lbl{display:none}
@@ -1093,28 +1108,36 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
   <div id="vSet" hidden>
     <div class="title"><div><h1 id="stH"></h1><p id="stP"></p></div></div>
     <div class="two">
-      <div class="card"><div class="form">
+      <div>
+      <!-- Instellingen in kleine groepen, elk met een kop: zoals de instellingen van
+           een telefoon. Zelfde velden en id's als voorheen. -->
+      <div class="card stgroep"><h2 class="ch" id="stGrpAg"></h2><div class="form">
         <div class="f"><label class="lbl" for="stName" id="stNameL"></label><input type="text" id="stName" autocomplete="off"></div>
         <div class="grid2">
           <div class="f"><label class="lbl" for="stCity" id="stCityL"></label><input type="text" id="stCity" autocomplete="off"></div>
           <div class="f"><label class="lbl" for="stInit" id="stInitL"></label><input type="text" id="stInit" maxlength="2"></div>
         </div>
+      </div></div>
+      <div class="card stgroep"><h2 class="ch" id="stGrpLoc"></h2><div class="form">
         <div class="grid2">
           <div class="f"><label class="lbl" for="stCaution" id="stCautionL"></label><input type="number" id="stCaution" inputmode="numeric"></div>
-          <div class="f"><label class="lbl" for="stWindow" id="stWindowL"></label><input type="number" id="stWindow" inputmode="numeric"></div>
+          <div class="f"><label class="lbl" for="stFranchise" id="stFranchiseL"></label><input type="number" id="stFranchise" inputmode="numeric" placeholder="10000"></div>
         </div>
-        <div class="f"><label class="lbl" for="stFranchise" id="stFranchiseL"></label><input type="number" id="stFranchise" inputmode="numeric" placeholder="10000"></div>
+        <div class="f"><label class="lbl" for="stWindow" id="stWindowL"></label><input type="number" id="stWindow" inputmode="numeric"></div>
+      </div></div>
+      <div class="card stgroep"><h2 class="ch" id="stGrpPay"></h2><div class="form">
         <!-- Betalen zonder terminal: de klant schrijft over naar dit RIB. -->
         <div class="grid2">
           <div class="f"><label class="lbl" for="stRib" id="stRibL"></label><input type="text" id="stRib" inputmode="numeric" autocomplete="off" placeholder="000 000 0000000000000000 00"></div>
           <div class="f"><label class="lbl" for="stBank" id="stBankL"></label><input type="text" id="stBank" autocomplete="off" placeholder="CIH, Attijariwafa, BMCE…"></div>
         </div>
         <p class="fine" id="stRibP" style="margin:-4px 0 0"></p>
-        <div class="f"><label class="lbl" id="stOptL"></label>
-          <button type="button" class="confirm" id="stPromise" style="margin-top:0;text-align:left"></button>
-          <button type="button" class="confirm" id="stLoyal" style="text-align:left"></button>
-        </div>
       </div></div>
+      <div class="card stgroep"><h2 class="ch" id="stOptL"></h2><div class="form">
+          <button type="button" class="confirm" id="stPromise" style="margin-top:0;text-align:start"></button>
+          <button type="button" class="confirm" id="stLoyal" style="margin-top:0;text-align:start"></button>
+      </div></div>
+      </div>
       <div>
         <!-- Cloudopslag: zonder dit staan de gegevens alleen in deze browser. -->
         <div class="card" id="stCloudCard">
@@ -2422,6 +2445,8 @@ zetTekst("strVrij",{ nl:"auto’s vrij", fr:"voitures libres", ar:"سيارات 
 zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" papier verloopt")+" binnenkort — eerste op "+d; },
                        fr:function(n,d){ return n+(n>1?" documents à renouveler":" document à renouveler")+" — le premier le "+d; },
                        ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
+zetTekst("stGrpAg",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
+zetTekst("stGrpLoc",{ nl:"Verhuur", fr:"Location", ar:"الكراء" });
 zetTekst("stRibL",{ nl:"RIB voor overschrijvingen", fr:"RIB pour les virements", ar:"رقم الحساب البنكي (RIB) للتحويلات" });
 zetTekst("stBankL",{ nl:"Bank", fr:"Banque", ar:"البنك" });
 zetTekst("stRibP",{ nl:"Klanten betalen dan met hun bankapp, zonder terminal. Atlas zet het RIB in het betaalverzoek.", fr:"Vos clients paient alors avec leur application bancaire, sans terminal. Atlas met ce RIB dans la demande de paiement.", ar:"يؤدي زبناؤك عبر تطبيق البنك، بدون جهاز أداء. أطلس يضع هذا الرقم في طلب الأداء." });
@@ -3113,13 +3138,20 @@ function renderDay(){
     onder.unshift(voetregel(t.docStraks(straks.length,dShort(straks[0].date)),function(){ lijst.hidden=!lijst.hidden; }));
   }
   function kop(tekst){ box.appendChild(el("p","sh",tekst)); }
+  /* Eén kaart = één auto, één grote knop. De tweede handeling (contract,
+     wijzigen) zit onder de kaart zelf: tik op de kop. Zoals Airbnb en Square:
+     nooit twee knoppen naast elkaar die om aandacht vragen. */
   function kaart(r,wanneer,klasse,knoppen){
     var c=car(r.vehicleId), k=el("div","kaartje"+(klasse==="laat"?" laat":""));
-    var bo=el("div","boven"); bo.appendChild(el("span","auto",c.model));
-    bo.appendChild(el("span","wanneer"+(klasse?" "+klasse:""),wanneer)); k.appendChild(bo);
-    var wie=el("div","wie"); wie.innerHTML=esc(r.clientName)+" · "+plateHTML(c); k.appendChild(wie);
+    var kop=el("button","kaartkop"); kop.type="button";
+    if(knoppen[1]){ kop.setAttribute("aria-label",knoppen[1].label+" \u2014 "+c.model); kop.addEventListener("click",knoppen[1].fn); }
+    var bo=el("span","boven"); bo.appendChild(el("span","auto",c.model));
+    bo.appendChild(el("span","wanneer"+(klasse?" "+klasse:""),wanneer)); kop.appendChild(bo);
+    var wie=el("span","wie"); wie.innerHTML=esc(r.clientName)+" · "+plateHTML(c); kop.appendChild(wie);
+    if(knoppen[1]) kop.appendChild(el("span","chev","\u203a"));
+    k.appendChild(kop);
     var kn=el("div","knoppen");
-    knoppen.forEach(function(x){ var b=el("button","btn"+(x.ghost?" ghost":""),x.label); b.type="button"; b.addEventListener("click",x.fn); kn.appendChild(b); });
+    var b=el("button","btn",knoppen[0].label); b.type="button"; b.addEventListener("click",knoppen[0].fn); kn.appendChild(b);
     k.appendChild(kn); box.appendChild(k);
   }
   var live2=RENTALS.filter(function(r){ return live(r); });
@@ -8017,6 +8049,7 @@ function fillSettings(){
   $("stOcrS").textContent = ocrSleutel() ? t.stOcrAan : t.stOcrUit;
   var t=T();
   $("stName").value=AG.name||""; $("stCity").value=AG.city||""; $("stInit").value=AG.init||"A"; $("stCaution").value=AG.caution||3000; $("stWindow").value=AG.window||30; $("stFranchise").value=AG.franchise||"";
+  $("stGrpAg").textContent=t.stGrpAg; $("stGrpLoc").textContent=t.stGrpLoc; $("stGrpPay").textContent=t.bzH;
   $("stRibL").textContent=t.stRibL; $("stBankL").textContent=t.stBankL; $("stRibP").textContent=t.stRibP;
   $("stRib").value=AG.rib||""; $("stBank").value=AG.bank||"";
   paintToggles();

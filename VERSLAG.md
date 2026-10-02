@@ -98,3 +98,19 @@ Niet aangeraakt: het klantscherm (daar zit de scanner) en het contract.
 Tests: 22/22 groen, exitcode 0 (nieuw: indeling van Vandaag in FR en AR, en de te late auto). De testopstart breekt nu af na 60 s per test, zodat een fout nooit meer blijft hangen.
 
 **Derde fout uit v135 (door jou gemeld):** contract maken → "Contrat prêt" → "Photos et dommages" → terug bracht je naar Vandaag in plaats van terug naar het contract. Dat gold voor de terugknop van de telefoon en voor de knop "Retour". Oorzaak: de terug-logica kende alleen een vaste lijst schermen, en "Contrat prêt" en de klantkaart stonden daar niet in. Nu onthoudt de app bij welk contract je was. Terug → "Contrat prêt", nog eens terug → Vandaag (niet het oude formulier). Getest met precies jouw route; ook nagespeeld op v135, waar de fout bestaat. Tests: 23/23 groen.
+
+---
+
+## Ronde 3 — voelt als een simpele app (alles blijft)
+
+Jouw punt: alle functies mogen blijven, maar het moet aanvoelen als de simpele apps. Vergeleken: Agencar presenteert zich als groot dashboard met een lange lijst onderdelen. Square en Airbnb doen het andersom: weinig op het scherm, korte woorden, geen uitleg, één knop per ding.
+
+| Wat | Was | Is nu |
+|---|---|---|
+| Uitleg onder elke titel | een of twee zinnen per scherm | weg (behalve de datum op Vandaag) |
+| Kleine lettertjes onderaan (kas, borgen, instellingen) | uitlegalinea's | weg |
+| Kopjes en veldnamen | HOOFDLETTERS met spatiëring | gewone zinnen |
+| Vandaag, per auto | twee knoppen (bv. "Voiture rendue" + "Contrat") | **één grote knop**; tik op de kaart zelf (›) voor contract of wijzigen |
+| Instellingen | één lange lijst velden | groepjes: Votre agence · Location · Paiement sans terminal · Options · Compte |
+
+Niets verwijderd, alleen anders geordend. Het klantscherm (scanner) en het contract zijn niet aangeraakt. Tests: 24/24 groen (nieuw: één knop per kaart, tik op de kaart opent het contract).
