@@ -11,7 +11,7 @@
 <title>Atlas Verhuur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -590,6 +590,28 @@ details.meer>div{padding:0 12px 12px}
 .bar .lang{display:none}
 /* Planning op de telefoon: smallere naamkolom, grotere vakken */
 @media (max-width:640px){ .plan .hc{min-width:96px;padding:6px 8px 6px 12px;font-size:12.5px} .plan .hd,.plan .cell{width:40px} .plan .cell{height:52px} }
+
+/* ===== Arabisch: van rechts naar links ===== */
+html[lang="ar"] body, html[lang="ar"] button, html[lang="ar"] input, html[lang="ar"] select, html[lang="ar"] textarea{font-family:"Noto Sans Arabic",Figtree,system-ui,sans-serif}
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3{font-family:"Noto Sans Arabic","Bricolage Grotesque",sans-serif;letter-spacing:0}
+html[lang="ar"] .lbl, html[lang="ar"] .groep-k b{letter-spacing:0;text-transform:none}
+[dir="rtl"] .prog-row span, [dir="rtl"] .title .add, [dir="rtl"] .state, [dir="rtl"] .vstap-ok, [dir="rtl"] .tl small{margin-left:0;margin-right:auto}
+[dir="rtl"] .job, [dir="rtl"] .slot, [dir="rtl"] .tegel, [dir="rtl"] .meerblad button.rij{text-align:right}
+[dir="rtl"] .job .amt, [dir="rtl"] .row .v, [dir="rtl"] .lrow .age, [dir="rtl"] .lrow .st, [dir="rtl"] .advice .kv span:nth-child(even), [dir="rtl"] .vstap-ok{text-align:left}
+[dir="rtl"] .search input{padding-left:14px;padding-right:40px}
+[dir="rtl"] .search::before{left:auto;right:14px}
+[dir="rtl"] .search::after{left:auto;right:25px;transform:rotate(-45deg)}
+[dir="rtl"] .promise ul, [dir="rtl"] .verdict ul{padding-left:0;padding-right:20px}
+[dir="rtl"] .shot .tick{right:auto;left:7px}
+[dir="rtl"] .thumb-x{right:auto;left:-7px}
+[dir="rtl"] .shot.on .cp{text-align:right}
+[dir="rtl"] details.kort[open]>summary{padding-left:0;padding-right:2px}
+/* De planning is een kalender: die blijft van links naar rechts lopen. */
+[dir="rtl"] .planwrap, [dir="rtl"] .plan-nav{direction:ltr}
+/* Een Marokkaanse plaat leest altijd: nummer · letter · regio, van links naar rechts. */
+[dir="rtl"] .plate{direction:ltr}
+/* Kentekens, bedragen en nummers blijven leesbaar in hun eigen richting. */
+[dir="rtl"] input[type="tel"], [dir="rtl"] input[type="number"], [dir="rtl"] input[type="email"], [dir="rtl"] input[type="url"]{direction:ltr;text-align:right}
 </style>
 
 <div class="bar">
@@ -1935,8 +1957,418 @@ TXT.fr.licRap="Pourquoi \u00e7a ne marche pas ? Voir le rapport";
 TXT.fr.licAchterDat="\u2713 Photo enregistr\u00e9e \u2014 ceci est le verso du permis. J\u2019ai repris la date, mais le num\u00e9ro et le nom sont au recto. Prenez-en une photo aussi ; les deux peuvent rester ici.";
 TXT.fr.licAchter="\u2713 Photo enregistr\u00e9e \u2014 mais ceci ressemble au verso du permis : on n\u2019y trouve que le tableau des cat\u00e9gories. Le num\u00e9ro, le nom et la date de validit\u00e9 sont au recto. Prenez-en une photo aussi. Les deux photos peuvent rester ici.";
 (function(){ for(var k in TXT.nl) if(!(k in TXT.fr)) TXT.fr[k]=TXT.nl[k]; })();
+/* ============ ONTBREKEND FRANS ============
+   Deze teksten bestonden alleen in het Nederlands en verschenen daardoor in het
+   Nederlands midden in de Franse app. */
+TXT.fr.scanTry=function(n,tot){ return "Lecture en cours — essai "+n+" sur "+tot+"…"; };
+TXT.fr.scanMismatch={ id:"Attention : vous avez choisi Passeport, mais ceci est une carte d’identité. Touchez la bonne case si les données sont au mauvais endroit.",
+                      passport:"Attention : vous avez choisi Carte d’identité, mais ceci est un passeport. Touchez la bonne case si les données sont au mauvais endroit." };
+TXT.fr.scanBar="Recherche du code-barres…";
+TXT.fr.scanBarOk=function(f){ return "✓ Code-barres ("+f+") lu. Numéro et date sont remplis — vérifiez-les sur la carte."; };
+TXT.fr.scanBarRaw=function(f){ return "La carte porte un code-barres ("+f+"), mais sans numéro ni date reconnaissable. Son contenu est ci-dessous ; recopiez ce dont vous avez besoin."; };
+TXT.fr.scanLic="✓ Photo du permis enregistrée. Un permis n’a pas de bande lisible par machine — ni le marocain ni la plupart des autres — rien ne peut donc être rempli automatiquement. Recopiez le numéro et la date de validité depuis votre photo ci-dessus.";
+TXT.fr.diagP="Ce que le lecteur a trouvé sur cette photo. Transmettez-le si vous voulez qu’on y regarde — il contient les données du document.";
+TXT.fr.diagCopy="Copier le rapport"; TXT.fr.diagCopied="Copié.";
+TXT.fr.scanPdf="Ouverture du PDF…";
+TXT.fr.scanPdfFail="Ce PDF n’a pas pu être ouvert. Faites-en une photo ou une capture d’écran, ou envoyez-le comme image.";
+TXT.fr.scanPage=function(n,tot){ return "Page "+n+" sur "+tot; };
+TXT.fr.nameUse=function(n){ return "Remplir « "+n+" » et vérifier"; };
+TXT.fr.nameUsed="Rempli — vérifiez les lettres.";
+
+/* ============ ARABISCH ============
+   Volledig Arabisch, van rechts naar links. Het contract en de documenten voor de
+   politie blijven Frans (KENI-CAR-vorm): die sleutels (ctr, ctr2) staan hier
+   bewust niet in en vallen terug op het Frans. Getallen blijven westers (1 2 3),
+   zoals op Marokkaanse contracten en kentekens. */
+TXT.ar={ loc:"ar-MA-u-nu-latn",
+  tabs:["اليوم","التخطيط","الزبناء","السيارات","الضمانات","الصندوق","الإعدادات","المزيد ▾"], tabMinder:"أقل ▴", tabMeer:"المزيد",
+  dayH:"اليوم", dayP:"",
+  hOnderweg:"في الكراء", hReserv:"الحجوزات", hBorg:"ضمانة يجب إرجاعها", hVrij:"متاحة — المس للكراء",
+  hNu:"المهام اليوم", geenNu:"لا شيء اليوم ✓", hBorgKort:"ضمانة للإرجاع:",
+  terugOp:function(d){ return "ترجع "+d; }, terugVandaag:"ترجع اليوم", teLaat:function(n){ return "متأخرة "+n+" يوم"; },
+  vertrekt:function(d){ return "تخرج "+d; }, vertrektVandaag:"تخرج اليوم",
+  bTerug:"رجعت السيارة", bContract:"العقد", bWijzig:"تعديل", bMee:"تسليم المفاتيح", bBorg:"إرجاع الضمانة",
+  geenOnderweg:"لا توجد سيارة في الكراء.", geenVrij:"كل السيارات خارج الوكالة.",
+  qrH:"رجعت السيارة", qrKmL:"عدد الكيلومترات الآن", qrOk:function(b){ return "كل شيء سليم — إرجاع "+b; }, qrOkZonder:"كل شيء سليم",
+  qrSchade:"هناك ضرر أو نقص في الوقود", qrKlaar:function(b){ return "رجعت السيارة. تم إرجاع ضمانة "+b+"."; }, qrKlaarZonder:"رجعت السيارة.",
+  qrKmLaag:"هذا العداد أقل من عداد الخروج.",
+  newRental:"عقد جديد", newCar:"+ سيارة", newClient:"+ زبون",
+  nwS1:"من يكتري", nwS2:"أي سيارة", nwS3:"كم من يوم",
+  nwContract:"إنشاء العقد", nwReserve:"تسجيل الحجز", nwKmL:"الكيلومترات عند الخروج:",
+  nwOfVaste:"زبون معروف؟ اختره من اللائحة", nwAndersH:"تاريخ آخر أو ثمن آخر", nwPas:"تعديل",
+  nwSomRegel:function(d,prijs,tot,borg){ return d+" × "+prijs+" = <b>"+tot+"</b><small>الضمانة "+borg+"</small>"; },
+  stVrij:"متاحة", stWegTot:function(d){ return "خارجة إلى "+d; }, stTeLaat:"متأخرة",
+  kkH:"العقد جاهز", kkP:function(n,a){ return n+" · "+a; },
+  kkBetaald:"هل أدى الزبون؟", kkHuur:function(b){ return ["تم قبض الكراء",b]; }, kkBorg:function(b){ return ["تم قبض الضمانة",b]; },
+  kkAlles:"✓ كل شيء مؤدى", kkBorgRegel:function(b,d){ return "الضمانة <b>"+b+"</b> — ترجع على أبعد تقدير يوم <b>"+d+"</b>"; },
+  kkDetails:"التفاصيل والأداءات",
+  snelBezig:function(s){ return "جاري قراءة البطاقة… "+s+" ث — اختر السيارة والأيام في الأثناء."; },
+  snelOk:function(n,nr,geb){ return "✓ "+n+(nr?" · "+nr:"")+(geb?" · مزداد في "+geb:""); },
+  snelHalf:"الاسم لم يكن مقروءا — اكتبه أسفله. ما تمت قراءته موجود في العقد.",
+  snelNiets:"لا شيء مقروء في هذه الصورة. صور ظهر البطاقة من الأمام، مع الأسطر السفلى.",
+  snelLic:"+ صورة أخرى (الوجه الآخر أو الرخصة)", snelLicOk:function(nr){ return "✓ رخصة السياقة "+nr; },
+  snelWacht:"لحظة — البطاقة ما زالت قيد القراءة.",
+  snelNogId:"صور أيضا ظهر البطاقة الوطنية للاسم والرقم.",
+  snelNrTyp:"الرقم غير مؤكد — انقله من الوثيقة",
+  snelNrCheck:"تحقق من الرقم وتاريخ الازدياد مع الوثيقة",
+  nogEensTerug:"اضغط رجوع مرة أخرى لإغلاق أطلس",
+  snelLicTyp:"رقم الرخصة غير مؤكد — اكتبه أسفله",
+  snelAIUit:"المسح الذكي متوقف: لم تسجل الدخول (الإعدادات ← السحابة). تم استعمال المسح العادي.",
+  snelAIFout:"المسح الذكي غير متاح (رمز {c}) — تم استعمال المسح العادي.",
+  nwDocNoL:"رقم جواز السفر / البطاقة الوطنية",
+  snelDraaiId:"هذا هو الوجه الأمامي. اقلب البطاقة وصور الظهر (مع أسطر <<< في الأسفل): الاسم والرقم والتواريخ والعنوان موجودة هناك.",
+  snelDraaiLic:"رخصة مغربية ← صور الظهر (السطر الذي يبدأ بـ D1MA). رخصة أجنبية ← اكتب الرقم أسفله.",
+  nwLicNoL:"رقم رخصة السياقة",
+  snelKnopAchterId:"↻ صور ظهر البطاقة الوطنية", snelKnopAchterLic:"↻ صور ظهر الرخصة",
+  snelTip:"نصيحة: صور ظهر البطاقة الوطنية وظهر الرخصة — كل المعلومات هناك.",
+  rFotos:"الصور والأضرار (ممكن لاحقا)", rSnelKlaar:"العقد جاهز", klaarKnop:"انتهى",
+  nwD2H:"إضافة سائق ثان", nwD2NameL:"اسم السائق الثاني", nwD2LicL:"رقم الرخصة", nwD2IssueL:"تاريخ التسليم",
+  nwScanKaart:"مسح البطاقة الوطنية والرخصة",
+  nwOf:"أو اختر زبونا موجودا",
+  nwDag:function(n){ return n+(n===1?" يوم":" أيام"); },
+  nwBezet:"محجوزة",
+  depart:"تسليم", retour:"استلام", done:"انتهى", caution:"ضمانة", late:"متأخرة",
+  stepName:{1:"تسليم",2:"استلام",3:"تسوية الضمانة",4:"انتهى"},
+  stepOf4:function(n){ return "المرحلة "+n+" من 4"; },
+  nwScan:"مسح الوثيقة وملف كامل", nwScanP:"الاسم والهاتف يكفيان للبدء. لقراءة البطاقة أو جواز السفر أو الرخصة الآن، اضغط أعلاه — ستعود هنا تلقائيا.",
+  nwScanBack:"تمت إضافة الزبون واختياره.",
+  seeDepart:"عرض وصل الخروج", draftBack:"سبق أن ملأت هذه الاستمارة — كل شيء ما زال هنا.",
+  actPay:"أداء", actExtend:"تمديد", actEdit:"تعديل", actCard:"بطاقة الزبون", actCancel:"إلغاء",
+  cancelAsk:function(n,d){ return "إلغاء كراء "+n+" المقرر يوم "+d+"؟"; },
+  cancelGot:"ما تم قبضه من الزبون", cancelBackL:"للإرجاع (درهم)", cancelKeepL:"تحتفظ به (مصاريف الإلغاء)",
+  cancelNoMoney:"الزبون لم يؤد شيئا بعد: لا حركة مالية.",
+  cancelDo:"نعم، ألغ", cancelDone:"تم إلغاء الكراء.", cancelNote:"إرجاع بعد الإلغاء",
+  cancelledH:"ملغاة",
+  cancelKept:function(a){ return "احتفظت بـ "+a+" كمصاريف إلغاء. تظهر في صندوق يوم الإلغاء."; },
+  cancelNothing:"لم يبق عندك أي مال.",
+  dayChain:"كل كراء يمر بأربع مراحل: تسليم ← استلام ← تسوية الضمانة ← انتهى. السطر يبين أين وصل؛ المسه للمرحلة التالية.",
+  emptyCarsH:"لا توجد سيارات", emptyCarsP:"أضف سياراتك أولا. بعد ذلك يمكنك إنشاء عقود الكراء.",
+  emptyCarsB:"إضافة سيارة", demoB:"تحميل مثال",
+  emptyRentH:"لا شيء جار", emptyRentP:"أنشئ كراء بمجرد أن يأخذ زبون سيارة.",
+  alInsurance:"التأمين", alInspection:"الفحص التقني", alVignette:"الضريبة السنوية (الفينييت)",
+  alExpired:"انتهت يوم", alExpires:"تنتهي يوم", alLate:function(n){ return "تأخير "+n+" يوم"; },
+  plH:"التخطيط", plP:"كل سيارة، كل يوم. المس شريطا لفتح الكراء.",
+  plFine:"رمادي أخضر: محجوزة. أخضر: جارية. أحمر: كان يجب أن ترجع.",
+  clH:"الزبناء", clP:"من سبق لهم الكراء، مع الوثائق والسجل.", clQ:"الاسم أو الهاتف أو رقم الوثيقة",
+  clEmpty:"لا يوجد زبناء. الأول يأتي مع أول كراء، أو امسح وثيقة هنا.",
+  cvNew:"زبون جديد", cvP:"امسح وثيقة أو املأ بنفسك. تتحقق ثم تسجل.",
+  secPersonH:"الشخص", secIdH:"وثيقة الهوية", secLicH:"رخصة السياقة",
+  secIdP:"البطاقة الوطنية أو جواز السفر — رقم هذه الوثيقة وصلاحيتها.",
+  secLicP:"منفصلة عن وثيقة الهوية: لها رقمها وتاريخ انتهائها.",
+  scanPick:"ماذا في يدك؟", docPick:["البطاقة الوطنية","جواز السفر","الرخصة"],
+  stap1T:"وثيقة الهوية — الظهر",
+  stap1P:"الوجه الذي فيه أسطر « < » (لجواز السفر: صفحة الصورة). هذه الصورة وحدها تكفي: الرقم، تاريخ الازدياد، الصلاحية، الجنسية والعنوان.",
+  stap2T:"رخصة السياقة — الظهر",
+  stap2P:"الوجه الذي فيه الجدول والسطر الطويل الذي يبدأ بـ D1MA. لهذا السطر رقم مراقبة: الرقم المستخرج منه مضمون.",
+  dzIdT:"ضع الصورة هنا — أو:",
+  dzLicT:"ضع الصورة هنا — أو:",
+  dzKies:"اختيار صورة",
+  meerT:"المزيد: الوجه الأمامي ولصق نص",
+  meerP:"غير ضروري لكراء عادي. الوجه الأمامي يحفظ صورة الهوية ويمكن أن يؤكد العنوان؛ لصق النص يفيد إذا لم تكن الصورة مقروءة.",
+  slotIdT:"2. صورة البطاقة الوطنية أو جواز السفر", slotIdP:"صور الوجه الذي فيه أسطر « < » — الظهر للبطاقة، وصفحة الصورة لجواز السفر. التطبيق يتعرف بنفسه على نوع الوثيقة.",
+  slotIdB:"الظهر (الشريط)", slotIdVoor:"الوجه الأمامي",
+  voorNiets:"✓ تم حفظ الوجه الأمامي. النص غير واضح بما يكفي — انقل الاسم وتاريخ الازدياد والعنوان من الصورة، أو أحط منطقة النص أسفله.",
+  voorGeenLezer:"✓ تم حفظ الوجه الأمامي. قارئ النص غير متاح هنا (على الموقع فقط). انقل الاسم وتاريخ الازدياد والعنوان.",
+  slotLicT:"3. صورة رخصة السياقة", slotLicP:"منفصلة عن وثيقة الهوية. ليس للرخصة منطقة مقروءة آليا؛ الصورة تحفظ ويمكنك بعد ذلك قراءة بياناتها.",
+  slotLicB:"صورة الرخصة",
+  scanPId:"صور الوجه الذي فيه أسطر مملوءة بـ « < » — الظهر للبطاقة، والصفحة ذات الصورة لجواز السفر. قرب الوثيقة من العدسة.",
+  scanPLic:"ليس للرخصة أسطر مقروءة آليا. الصورة محفوظة في الملف؛ اكتب الرقم والتاريخ بنفسك.",
+  thumbLab:{cin:"البطاقة الوطنية",passport:"جواز السفر",licence:"الرخصة",doc:"وثيقة"},
+  thumbDel:"حذف الصورة", thumbAsk:"حذف هذه الصورة من ملف الزبون؟",
+  cropP:"ارسم إطارا حول الوثيقة — أو بإحكام حول الأسطر المملوءة بـ « < ».",
+  cropP2:"وجدت الوثيقة هنا. الإطار غير مناسب؟ ارسم إطارا آخر — حول البطاقة كلها، أو بإحكام على الجزء المراد قراءته.",
+  cropOk:"✓ تمت القراءة في المنطقة المحددة. تحقق من الحقول على الصورة.",
+  cropStrook:"التواريخ مقروءة، لكن الرقم أو الاسم غير مؤكد بعد. الإطار على الشريط — ضيقه حول أسطر « < » واضغط على الزر.",
+  cropGo:"قراءة المنطقة المحددة", cropFail:"تعذرت قراءة الأسطر. ضيق الإطار حول الأسطر، أو التقط صورة واضحة من قريب.",
+  scanT:"مسح وثيقة", scanP:"البطاقة الوطنية أو جواز السفر أو الرخصة. التقط صورة — الحقول تمتلئ.",
+  scanBtn:"التقاط أو اختيار صورة", scanBusy:"جاري القراءة…", scanNo:"المسح غير متاح هنا. املأ الحقول.",
+  scanDone:"تم ملء الحقول تلقائيا — تحقق منها.", scanCheck:"غير مؤكد، تحقق جيدا", scanFail:"فشل. جرب صورة أوضح.",
+  scanSaving:"جاري حفظ الصورة…", scanSaveFail:"تعذر حفظ الصورة. حاول مرة أخرى.",
+  scanNoAi:"✓ تم حفظ الصورة في ملف الزبون. املأ الحقول أسفله.",
+  scanNoMrz:"✓ تم حفظ الصورة، لكن الأسطر السفلى لم تكن مقروءة. غالبا تكفي واحدة من هذه: قرب الوثيقة حتى تملأ الصورة، ضعها مستقيمة لا مائلة، أو أبعدها عن الظل أو اللمعان. هل الوجه الذي فيه أسطر « < » ظاهر؟ في البطاقة هو الظهر، وفي جواز السفر صفحة الصورة.",
+  scanNoAiIdle:"التقط صورة: تحفظ دائما في ملف الزبون. يتم تجريب الملء التلقائي، لكنه لا يعمل في كل الحسابات — وإلا املأ الحقول بنفسك.",
+  scanMrzOk:"تمت القراءة من الوثيقة. التواريخ متحقق منها — راجع رقم الوثيقة بنفسك.",
+  scanMrzMaybe:"تمت القراءة، لكن الصورة لم تكن مثالية. التواريخ متحقق منها؛ راجع جيدا الرقم المبرز.",
+  scanNoNum:"الاسم والتواريخ مقروءة. رقم الشريط الآلي ليس الرقم الذي تحتاجه — انقل الرقم المطبوع في الوجه الأمامي بجانب N° / رقم.",
+  mrzToggle:"المسح لا ينجح؟ انقل الأسطر السفلى بنفسك",
+  mrzHPass:"جواز سفر أجنبي؟ انقل السطرين السفليين",
+  mrzHOther:"أسطر فيها « < » في الأسفل؟ انقلها",
+  mrzPPass:"افتح الصفحة ذات الصورة. في الأسفل سطران طويلان مملوءان بـ « < ». انقلهما هنا: الاسم والرقم وتاريخ الازدياد والصلاحية والجنسية تمتلئ وحدها ويتم التحقق منها.",
+  mrzPOther:"جواز السفر فيه دائما هذه الأسطر (تحت الصورة). البطاقة الحديثة فيها على الظهر. البطاقة القديمة ليس فيها — املأ الحقول بنفسك.",
+  mrzDemoL:"هكذا تبدو", nameRawL:"هذا سطر الاسم كما تمت قراءته — قارن وصحح عند الحاجة",
+  nameRawBad:"سطر الاسم لم يكن مقروءا، لذلك لم يملأ الاسم. اكتبه بنفسك. هذا ما قرأته الكاميرا:",
+  mrzPlace:"اكتب هنا السطر الأول، اضغط إدخال، ثم الثاني…",
+  mrzTyping:function(n){ return "بقي "+n+" حرفا — انقل كل شيء، بما في ذلك « < »."; },
+  mrzBad:"ليس صحيحا بعد — هناك حرف خاطئ. قارن حرفا بحرف؛ التطبيق يتحقق ويفضل الرفض على تسجيل خطأ.",
+  mrzGood:function(n,d){ return "✓ صحيح: "+n+"، رقم "+d+". الحقول أسفله ممتلئة."; },
+  cvNameL:"الاسم الكامل", cvTelL:"الهاتف", cvDocTypeL:"وثيقة الهوية", optPass:"جواز السفر",
+  cvDocNoL:"رقم الوثيقة — N° / رقم", cvBirthL:"تاريخ الازدياد", cvDocExpL:"صالحة إلى", cvLicL:"رقم الرخصة", cvLicExpL:"الرخصة صالحة إلى", cvLicIssueL:"تاريخ تسليم الرخصة",
+  addrRead:"قراءة العنوان من الصورة", licRead:"قراءة بيانات الرخصة",
+  ocrStart:"تحميل قارئ النص… أطول في المرة الأولى.",
+  ocrBezig:function(p){ return "جاري القراءة… "+p+"%"; },
+  ocrKlaar:"تمت القراءة — تحقق على البطاقة.",
+  ocrNiets:"لا شيء قابل للاستعمال. انقل من الصورة أعلاه.",
+  ocrFout:"تعذر تحميل قارئ النص. انقل من الصورة أعلاه.",
+  addrShotP:"العنوان موجود في هذا الجزء من بطاقتك — المس للتكبير.",
+  addrUse:"ملء العنوان المقروء والتحقق",
+  thumbBig:"تكبير", thumbBigP:"العنوان والرقم المطبوع على البطاقة، ليسا في المنطقة المقروءة آليا. اقرأهما هنا وانقلهما.", close:"إغلاق",
+  cvNatL:"الجنسية", docRawL:"هذا سطر الرقم كما تمت قراءته — قارن حرفا بحرف", cvAddrL:"العنوان", cvAddrP:"العنوان ليس في المنطقة المقروءة آليا — فقط في الوجه الأمامي للبطاقة. انقله من صورتك أعلاه.", cvFlagL:"الحالة", flags:["سليم","انتبه","لا تكري له"],
+  cvNoteL:"ملاحظة", cvHistH:"السجل", cvNoHist:"لا يوجد كراء.",
+  cvSave:"حفظ الزبون", cvDel:"حذف الزبون",
+  cvFine:"الوثائق معطيات شخصية. احفظها فقط المدة اللازمة واذكر موافقة الزبون في العقد.",
+  nwH:"كراء جديد", nwP:"الزبون والسيارة والمدة. الثمن يحسب تلقائيا.",
+  nwClientL:"الزبون", nwNewClient:"+ زبون جديد", nwNameL:"اسم الزبون", nwTelL:"الهاتف", nwCarL:"السيارة", nwFromL:"من", nwToL:"إلى",
+  nwTotalL:"مجموع الكراء (درهم)", nwCautionL:"الضمانة (درهم)",
+  nwDays:"أيام", nwRate:"الثمن لليوم", nwCalcTot:"محسوب", nwSave:"حفظ الكراء",
+  nwClash:"هذه السيارة مكتراة في هذه المدة.",
+  clashWho:function(n,a,b){ return "هذه السيارة عند "+n+" من "+a+" إلى "+b+"."; },
+  clashWhy:"لا تنشئ كراء ثانيا بجانبه. ستخرج نفس السيارة مرتين، وتطلب ضمانتين، ولن يتطابق صندوقك. إذا بقي الزبون مدة أطول، مدد الكراء الجاري: نفس العقد، نفس الضمانة، تسوية واحدة.",
+  clashExtend:"تمديد هذا الكراء",
+  nwBlocked:"هذا الزبون مسجل « لا تكري له ».", nwWarn:"انتبه مع هذا الزبون: ",
+  nwFine:"الثمن المحسوب اقتراح. غيره كما تشاء — ما تضعه هنا يظهر في العقد.",
+  flH:"السيارات", flP:"المس سيارة لتعديلها.", perDay:"لليوم", result:"النتيجة",
+  cwH:"سيارة", cwP:"البيانات والوثائق والشراء والمصاريف. النتيجة على الجانب.",
+  cwSecInfo:"البيانات", cwSecDocs:"الوثائق", cwSecBuy:"الشراء والقرض", cwSecExp:"المصاريف",
+  cwModelL:"العلامة والطراز", cwPlateL:"رقم التسجيل", cwKmL:"الكيلومترات", cwRateL:"الثمن لليوم (درهم)", cwCautionL:"الضمانة الافتراضية (درهم)", cwFranchiseL:"الفرانشيز (درهم)", cwFuelL:"الوقود", optDiesel:"غازوال", optEssence:"بنزين",
+  cwInsL:"التأمين إلى", cwInspL:"الفحص التقني إلى", cwVigL:"الفينييت إلى",
+  cwPriceL:"ثمن الشراء (درهم)", cwBoughtL:"تاريخ الشراء", cwLoanL:"القسط الشهري (درهم)", cwLoanNL:"الأشهر المتبقية",
+  exCatL:"النوع", exAmtL:"المبلغ (درهم)", exDateL:"التاريخ", exNoteL:"الوصف", exAdd:"إضافة المصروف",
+  exCats:{loan:"قسط القرض",insurance:"التأمين",vignette:"الفينييت",inspection:"الفحص التقني",maintenance:"الصيانة",tires:"العجلات",repair:"الإصلاح",fine:"مخالفة",fuel:"الوقود",wash:"الغسيل",other:"أخرى"},
+  exEmpty:"لا توجد مصاريف مسجلة.",
+  cwSave:"حفظ السيارة", cwDel:"حذف السيارة",
+  plMore:"أرقام أكثر", plLess:"أرقام أقل",
+  plH2:"النتيجة", plDue:"باقي للقبض", plRev:"المداخيل (المقبوضة)", plCost:"المصاريف", plNet:"النتيجة", plDays:"أيام الكراء", plUtil:"نسبة الاستعمال منذ الشراء",
+  plBuy:"الشراء", plLoanLeft:"الباقي للأداء", plPayback:"تم استرجاع ثمن الشراء بنسبة", plNoData:"أدخل الشراء والمصاريف لرؤية النتيجة.",
+  sbBalk:"سجل الدخول — سياراتك وزبناؤك وعقودك على كل أجهزتك.",
+  stCloudH:"معطياتك على كل أجهزتك",
+  stCloudP:"بدون هذا، يبقى كل شيء في هذا المتصفح. مع تسجيل الدخول، يرى هاتفك نفس ما يراه حاسوبك، ولا يضيع شيء إذا مسحت المتصفح.",
+  stCloudMailL:"البريد الإلكتروني", stCloudWwL:"كلمة السر", stCloudIn:"تسجيل الدخول", stCloudUit:"تسجيل الخروج", stCloudNu:"تحديث",
+  stCloudNieuw:"إنشاء حساب", stCloudTest:"اختبار الاتصال",
+  stCloudNieuwOk:"تم إنشاء الحساب وتسجيل الدخول.",
+  stCloudBevestig:"تم إنشاء الحساب. رسالة تأكيد في بريدك — اضغط عليها ثم سجل الدخول. وإلا عطل التأكيد في Authentication ← Providers ← Email.",
+  sbTest0:"أدخل أولا رابط المشروع والمفتاح العمومي، تحت « إعداد الاتصال ».",
+  sbTestUrl:"رابط المشروع غير صحيح. يشبه https://xxxx.supabase.co",
+  sbTestNet:"لا اتصال بقاعدة البيانات. تحقق من الإنترنت ومن الرابط.",
+  sbTestTabel:"قاعدة البيانات تجيب، لكن الجدول غير موجود بعد. نفذ SQL في SQL Editor لمشروعك.",
+  sbTestKlaar:"قاعدة البيانات جاهزة ومحمية. أنشئ حسابا أو سجل الدخول.",
+  sbTestOpen:"انتبه: الجدول مقروء بدون تسجيل الدخول. نفذ SQL مرة أخرى — الحماية غير مفعلة.",
+  sbTestRechten:function(c){ return "متصل، لكن هذا المستخدم ليس له حق الوصول (HTTP "+c+"). نفذ SQL لضبط الحقوق."; },
+  sbTestSchrijven:function(c){ return "القراءة ممكنة، التسجيل لا (HTTP "+c+"). نفذ SQL مرة أخرى."; },
+  sbTestGoed:"كل شيء يعمل: القراءة والكتابة والحذف. افعل نفس الشيء على جهازك الآخر.",
+  sbTestSleutel:"المفتاح غير صحيح. انسخه مرة أخرى في Supabase بأيقونة النسخ والصقه في « المفتاح العمومي ».",
+  sbFoutMailVerbod:"لا يستطيع Supabase إرسال رسالة تأكيد لهذا العنوان. الحل: Supabase ← Authentication ← Sign In / Providers ← Email ← عطل « Confirm email » واضغط Save.",
+  sbFoutTeVeel:"أرسل Supabase رسائل كثيرة. عطل « Confirm email » في Authentication ← Sign In / Providers ← Email.",
+  sbFoutKort:"يجب أن تحتوي كلمة السر على 6 أحرف على الأقل.",
+  sbFoutBestaat:"هذا العنوان له حساب. اضغط « تسجيل الدخول ».",
+  sbFoutGeenNieuw:"الحسابات الجديدة معطلة في Supabase. فعل « Allow new users to sign up ».",
+  sbFoutLogin:"البريد أو كلمة السر غير صحيحة. ليس لديك حساب؟ اضغط « إنشاء حساب ».",
+  sbFoutBevestig:"بريدك لم يؤكد بعد. اضغط على الرابط الذي توصلت به، أو عطل « Confirm email » في Supabase.",
+  sbFoutMail:"هذا البريد غير مقبول. تحقق من الكتابة.",
+  stCloudSetH:"إعداد الاتصال", stCloudUrlL:"رابط المشروع", stCloudKeyL:"المفتاح العمومي (anon key)", stCloudSave:"حفظ الاتصال",
+  stCloudUit0:"غير معد بعد — كل شيء يبقى في هذا الجهاز.",
+  stCloudAan:function(n){ return "متصل. معطياتك على كل أجهزتك."+(n?" بقي "+n+" للإرسال.":""); },
+  aiAan:function(m){ return "● المسح الذكي مفعل"+(m?" — متصل: "+m:""); },
+  aiUitLamp:"○ المسح الذكي متوقف — المس هنا لتسجيل الدخول",
+  stAls:function(m){ return "متصل: "+m; },
+  stCloudBezig:"جاري التحديث…",
+  stCloudFout:function(f){ return "الاتصال لا يعمل ("+f+"). عملك محفوظ هنا وسيرسل في أقرب وقت."; },
+  stCloudUitLog:"معد، لكن غير متصل. سجل الدخول لمشاركة معطياتك بين الأجهزة.",
+  stCloudOk:"متصل — جاري جلب المعطيات.", stCloudMis:function(f){ return "فشل الاتصال: "+f; },
+  stCloudHelp:"مرة واحدة لكل وكالة:\n1. أنشئ مشروعا مجانيا على supabase.com.\n2. في المشروع افتح SQL Editor، الصق SQL الذي يعطيه أطلس واضغط Run.\n3. في Project Settings ← API انسخ Project URL و anon public key أعلاه.\n4. اضغط « اختبار الاتصال ». أطلس يخبرك بما ينقص.\n5. أنشئ حسابا أعلاه ببريدك وكلمة سر. موظفوك يفعلون نفس الشيء على أجهزتهم.",
+  stH:"الإعدادات", stP:"هذا يظهر في التطبيق وفي العقد.",
+  stNameL:"اسم الوكالة", stCityL:"المدينة", stInitL:"حرف الشعار", stCautionL:"الضمانة الافتراضية (درهم)", stWindowL:"مهلة المخالفات (أيام)", stFranchiseL:"الفرانشيز في العقد (درهم)", stSave:"حفظ",
+  stFine:"مهلة المخالفات تحدد التاريخ في العقد الذي لا يقتطع بعده أي شيء. ثلاثون يوما بعد نهاية الكراء أمر معتاد.",
+  stOptL:"اختيارات الوكالة",
+  stToolsShow:"عرض أدوات أخرى", stToolsHide:"إخفاء الأدوات",
+  stDemoH:"مثال", stDemoP:"خمس سيارات، لا شيء آخر. لا زبناء، لا كراء، الصندوق صفر. الكراء الأول تنشئه بنفسك — هكذا ترى كل رقم وهو يتكون. امسح كل شيء قبل إدخال معطياتك الحقيقية.",
+  guideH:"كيف تعالج كراء", guideHide:"إخفاء",
+  guideSteps:["أنشئ كراء: زر « عقد جديد ». اختر السيارة والزبون والتواريخ. الثمن يحسب تلقائيا.",
+              "يظهر الكراء أسفله في المرحلة 1 من 4. اضغط عليه وسجل الخروج: الكيلومترات، الوقود، الصور، التوقيع.",
+              "تحت هذا السطر، اضغط « أداء » وسجل ما سلمه الزبون: الكراء والضمانة.",
+              "انظر إلى الصندوق. سترى هذا المبلغ بالضبط، لا أكثر.",
+              "رجعت السيارة؟ اضغط السطر (المرحلة 2 من 4) وسجل الرجوع.",
+              "ينتقل السطر إلى المرحلة 3: تسوية الضمانة. إذا اقتطعت شيئا، أدخل المبلغ الذي ترجعه.",
+              "انظر إلى الصندوق مرة أخرى. الضمانة المرجعة تظهر كخروج. الصافي هو ما تبقى من اليوم."],
+  stDemoBtn:"مسح الكل وتحميل المثال", stWipeBtn:"مسح الكل", confirmWipe:"مسح كل السيارات والزبناء والكراءات والمصاريف؟ لا رجعة فيه.", wiping:"جاري المسح…", loading:"جاري التحميل…",
+  stPromiseOn:"✓ التزام بإرجاع الضمانة مع تاريخ نهائي في العقد", stPromiseOff:"التزام بإرجاع الضمانة مع تاريخ نهائي في العقد — معطل",
+  stLoyalOn:"✓ الزبناء الأوفياء: اقتراح ضمانة مخفضة", stLoyalOff:"الزبناء الأوفياء: اقتراح ضمانة مخفضة — معطل",
+  noPromP:"ترجع عند الاستلام، بعد المراقبة معا.",
+  loyal:function(n,ok,dmg){ return "الكراء رقم "+n+" · "+(ok?"دائما في الوقت":"ليس دائما في الوقت")+" · "+(dmg?"ضرر في السابق":"لا ضرر جديد أبدا"); },
+  loyalSug:function(a,b){ return "الضمانة المقترحة: "+a+" بدل "+b+" — زبون وفي"; },
+  attBtn:"شهادة للشرطة (المراقبة الطرقية)", attBusy:"جاري الإنشاء…",
+  editRental:"تعديل", extendRental:"تمديد", cancelRental:"إلغاء الكراء", cancelled:"ملغى",
+  nwEditH:"تعديل الكراء", nwExtendH:"تمديد الكراء", nwExtendP:"يتغير تاريخ النهاية فقط. الثمن يعاد حسابه؛ عدل المبلغ إذا اتفقتما على غير ذلك.",
+  nwSaveEdit:"حفظ التعديل", confirmCancel:"إلغاء هذا الكراء؟ سيبقى ظاهرا في سجل الزبون.",
+  scanKey:"مسح المفتاح", tagsBtn:"حاملات المفاتيح (PDF)", tagsBusy:"جاري إنشاء حاملات المفاتيح…",
+  qrNone:"لم يتم التعرف على أي رمز أطلس. وجه الكاميرا نحو رمز QR في حامل المفاتيح.", qrUnknown:"هذا الرمز لا يطابق أي سيارة في أسطولك.",
+  qrFree:"لا يوجد كراء جار لهذه السيارة.", tagHint:"امسح عند الخروج أو الرجوع",
+  advH:"الاحتفاظ أو البيع", advEarly:"مبكر للحكم", advEarlyP:"أدخل ثمن وتاريخ الشراء واترك السيارة تعمل شهرا على الأقل.",
+  advKeep:"احتفظ بها", advWatch:"نقطة انتباه",
+  advKeepP:function(n){ return "هذه السيارة تربح صافيا "+n+" في اليوم، مع احتساب كل المصاريف والاستهلاك."; },
+  advWatchP:function(n,u){ return "هذه السيارة تكلفك "+n+" في اليوم أكثر مما تربح. يجب كراؤها "+u+"% من الوقت للتوازن."; },
+  advRevDay:"المدخول لكل يوم كراء", advCostDay:"التكلفة اليومية (مع الاستهلاك)", advUtil:"الاستعمال الحالي", advBreak:"الاستعمال اللازم للتوازن",
+  advNote:"الاستهلاك محسوب بـ 15% سنويا من ثمن الشراء. أقساط القرض غير محسوبة هنا — فهي الشراء نفسه.",
+  hDepart:"التسليم للزبون", hRetour:"استلام السيارة",
+  c1depart:"الحالة قبل التسليم", c1retour:"الحالة عند الرجوع",
+  p1depart:"كل ما لم يحدد هنا سيعتبر جديدا عند الرجوع.", p1retour:"النقط الرمادية من الخروج. أضف ما هو جديد.",
+  tap:"المس السيارة في مكان الضرر", carAria:"رسم السيارة من الأعلى. المس مكان الضرر.",
+  kinds:["خدش","صدمة","كسر","نقص"], kindsLbl:"نوع النقطة التالية",
+  noneDepart:"لا يوجد ضرر محدد.", noneRetour:"لا شيء جديد.",
+  markDepart:"موجود قبل التسليم", markNew:"جديد عند الرجوع", markOld:"كان موجودا عند الخروج",
+  confirmDepart:"تأكيد: لا ضرر ظاهر", confirmRetour:"تأكيد: لا شيء جديد", confirmed:"✓ مؤكد: لا ضرر ظاهر",
+  c2:"الصور", p2:"أربع زوايا، نفسها عند الخروج والرجوع.", angles:["الأمام","الخلف","الجانب الأيمن","الجانب الأيسر"],
+  c3:"العداد والوقود", p3last:"آخر قراءة: ", kmK:"الكيلومترات", fuelK:"مستوى الوقود", full:"ممتلئ",
+  fuelTxt:{"0":"فارغ","25":"¼","50":"½","75":"¾","100":"ممتلئ"},
+  c4:"توقيع الزبون", p4depart:"يوقع أيضا على تاريخ إرجاع ضمانته.", p4retour:"يوقع على الحالة المسجلة عند الرجوع.",
+  signHere:"اجعل الزبون يوقع هنا", clear:"مسح",
+  stepState:{toConfirm:"للتأكيد",done:"تم",toFill:"للملء",toSign:"للتوقيع",signed:"موقع"},
+  point:"نقطة", points:"نقط", progDone:"من 4 منتهية", progAll:"كل شيء جاهز",
+  missing:{s1:"الحالة",s2:"الصور",s3:"العداد",s4:"التوقيع"}, stillNeed:"بقي: ",
+  noteDepart:"الزبون يذهب ومعه تاريخ مكتوب.", noteRetour:"لا يقتطع أي شيء تلقائيا.",
+  goDepart:"التوقيع وتسليم المفاتيح", goRetour:"تسجيل الاستلام",
+  fVolgende:"التالي", fVorige:"السابق", fOverzicht:"الملخص", fWijzig:"تعديل", fStapVan:function(a,b){ return "المرحلة "+a+" من "+b; },
+  back:"رجوع", toDay:"الرجوع إلى اليوم", cancel:"إلغاء",
+  promCap:"ما يأخذه الزبون معه", promCap2:"الضمانة للإرجاع",
+  promP:"ترجع عند الاستلام، بعد المراقبة معا. الاقتطاع ممكن فقط من أجل:",
+  promLi:["ضرر <strong>غير مذكور في هذه الورقة</strong>؛","نقص في الوقود؛","مخالفة بتاريخ مدة الكراء."],
+  promWhen:"لا اقتطاع بعد",
+  promFine:"تاريخ مكتوب هو الشيء الوحيد الذي سيتذكره الزبون عن وكالتك. لا أحد من المنافسين يعطيه.",
+  wa:"إرسال عبر واتساب", pdf:"تحميل العقد", pdfBusy:"جاري إنشاء العقد…",
+  waMsg:function(r,c,ag,lim){ return "مرحبا "+r.clientName+"، تم تسجيل كرائك "+r.code+" ("+c.model+"). الضمانة "+r.caution+" درهم، ترجع عند الاستلام بعد المراقبة."+(ag.promise!==false?" لا اقتطاع بعد "+lim+".":"")+" "+ag.name+"، "+ag.city+"."; },
+  vCap:"الضمانة المحتفظ بها", vNoRef:"لا توجد ورقة خروج: لا يمكن إثبات ما هو جديد.",
+  vNew:function(n){ return "<strong>"+n+" ضرر جديد</strong> مقارنة بالخروج."; },
+  vNone:"لا ضرر جديد.", vFuel:function(a,b){ return "الوقود: "+a+" عند الخروج، "+b+" عند الرجوع."; },
+  vFuelOk:"الوقود مطابق.", vDist:function(k){ return "المسافة المقطوعة: "+k+"."; },
+  vGive:function(m){ return "اقتراح: إرجاع "+m+" كاملة."; }, vHold:"اقتراح: اقتطاع جزء، بالاتفاق مع الزبون.",
+  vFoot:"أطلس لا يقتطع شيئا وحده ولا يسحب أي أداء.",
+  rDepart:"تم تسليم المفاتيح", rRetour:"تم استلام السيارة", rWhat:"ما تم تسجيله",
+  rKm:"الكيلومترات", rFuel:"الوقود", rDmg:"الأضرار المحددة", rPhotos:"الصور", rSign:"التوقيع", rSignPapier:"على الورق", rCaution:"الضمانة",
+  rNone:"لا شيء", rPts:function(n){ return n+" نقطة"; },
+  cmpH:"الخروج / الرجوع", cmpDep:"الخروج", cmpRet:"الرجوع", cmpNo:"لا صورة", cmpNoDep:"لا توجد صورة خروج لهذا الكراء.",
+  rNoteDep:"الضمانة مسجلة، مع تاريخها النهائي.", rNoteRet:"بين أسفله كم ترجع — الباقي يسجل تلقائيا كمقتطع.", release:"تم إرجاع الضمانة",
+  settleH:"تسوية الضمانة", settleReturnedL:"المرجع للزبون (درهم)", settleWithheldL:"المقتطع (أضرار)",
+  settleNoteL:"سبب الاقتطاع (اختياري، مثلا الزجاج الأمامي)", settleBtn:"تأكيد التسوية",
+  settleBad:"مبلغ غير صحيح — لا يمكن أن يكون سالبا أو أكبر من الضمانة.",
+  settleGap:function(a,b){ return "الضمانة المتفق عليها "+a+"، المقبوضة فعلا "+b+". لا يمكنك إرجاع إلا ما قبضته. إذا لم يكن هذا صحيحا، سجل الضمانة أولا في الأداءات."; },
+  rReturned:"المرجع للزبون", rWithheld:"المقتطع (أضرار)", rWithholdNote:"السبب",
+  qPartial:function(ret,held){ return "تمت التسوية: <strong>"+ret+"</strong> مرجعة، <strong>"+held+"</strong> مقتطعة للأضرار."; },
+  cashH:"الصندوق", cashP:"ما دخل وما خرج اليوم. لمطابقة الصندوق في المساء.",
+  cashNetL:"صافي اليوم", cashInL:"المداخيل", cashOutL:"الضمانات المرجعة", cashCashL:"منها نقدا", cashCardL:"منها بالبطاقة",
+  cashEmpty:"لا حركة في هذا اليوم.", cashOpenH:"باقي للقبض", cashNoOpen:"كل شيء مؤدى.",
+  cashFine:"الضمانة المحتفظ بها ليست رقم معاملات. تدخل عندما تقبضها وتخرج عندما ترجعها. ما تقتطعه للأضرار لا يخرج أبدا ويبقى في الصندوق.",
+  rNoDoc:"هذا الكراء لم يخرج بعد. يمكنك تسجيل تسبيق أو الضمانة الآن.", rNoteMoney:"أداءات هذا الكراء.",
+  payH:"الأداءات", payRent:"الكراء المتفق عليه", payPaid:"المؤدى", payDue:"الباقي للأداء", payDueShort:"للأداء",
+  payCaution:"الضمانة المتفق عليها", payCautionPaid:"الضمانة المقبوضة",
+  payAmount:"المبلغ (درهم)", payWhat:"مقابل ماذا", payHow:"طريقة الأداء", payAdd:"إضافة الأداء",
+  askYes:"نعم، نفذ", askNo:"لا، رجوع",
+  payDel:"حذف الأداء", payDelAsk:"حذف هذا الأداء؟",
+  payKinds:{rent:"الكراء",caution:"الضمانة",extra:"إضافي",refund:"ضمانة مرجعة",cancelback:"مرجع (إلغاء)"},
+  payMethods:{cash:"نقدا",card:"بطاقة",transfer:"تحويل بنكي"},
+  ledH:"الضمانات المحتفظ بها", ledP:"مال ما زال في ملك زبنائك. ليس رقم معاملاتك، ويقدم مع الوقت.",
+  ledTotL:"المجموع الذي عندك", ledNumL:"العقود", ledLateL:"للتسوية (تجاوز الأجل)", ledOldL:"الأقدم", ledWithheldL:"مجموع المقتطع للأضرار",
+  days:"أيام", ledEmpty:"ليس عندك أي ضمانة حاليا.",
+  stWait:"في انتظار المخالفات", stLate:"متأخرة", stToday:"للإرجاع", stOpen:"جارية",
+  blocked:"محجوزة إلى ", whyOut:"السيارة ما زالت في الكراء", whyBack:"تمت معالجة الرجوع",
+  findL:"وصلت مخالفة", findH:"من كان يسوق، وهل ما زالت عندي ضمانته؟",
+  qPL:"رقم التسجيل", qDL:"التاريخ والساعة", qGo:"بحث",
+  qBadH:"حقول ناقصة", qBadP:"أدخل على الأقل رقم التسجيل والتاريخ.",
+  qUnkH:"رقم تسجيل غير معروف", qUnkP:"لا توجد سيارة بهذا الرقم في أسطولك.",
+  qNoH:"لا أحد", qNoP:"السيارة لم تكن مكتراة في ذلك الوقت. المخالفة على الوكالة.",
+  qHeld:function(m){ return "ما زالت عندك ضمانته بمبلغ <strong>"+m+"</strong>. قرر قبل إرجاعها."; },
+  qGone:function(m){ return "تم إرجاع ضمانته بمبلغ "+m+". يجب أن تتصل به بنفسك."; },
+  ledFine:"المخالفات المغربية تصل إلى مالك السيارة، غالبا بعد أسابيع. السؤال الحقيقي ليس فقط من كان يسوق، بل هل ما زال في يدك شيء.",
+  saved:"تم الحفظ", deleted:"تم الحذف", noDb:"لا اتصال بالتخزين — التغييرات تبقى في هذا الجهاز.",
+  kcBtn:"عرض بطاقة الزبون", kcH:"كراؤك", kcP:"ما يراه الزبون. أره إياها، أو أرسلها PDF.",
+  kcSteps:["محجوز","تم تسليم المفاتيح","رجعت السيارة","تم إرجاع الضمانة"], kcStepPartial:"تمت تسوية الضمانة (اقتطاع جزئي)",
+  kcPhotos:"صور الخروج", kcPhotosR:"صور الرجوع", kcDmg:"الأضرار المسجلة عند الخروج", kcNoDmg:"لا ضرر مسجل عند الخروج",
+  kcContact:"سؤال؟ اتصل بنا أو راسلنا.", kcPdf:"بطاقة الزبون PDF", kcWa:"إرسال عبر واتساب",
+  kcWaMsg:function(r,c,ag,lim){ return "مرحبا "+r.clientName+"، هذه بطاقة كرائك عند "+ag.name+": "+c.model+"، من "+r.from+" إلى "+r.to+". الضمانة "+r.caution+" درهم، ترجع بعد المراقبة عند الاستلام."+(ag.promise!==false?" لا اقتطاع بعد "+lim+".":"")+" صور السيارة التقطت عند الخروج."; },
+  kcFine:"على خادمك الخاص، تصبح هذه رابطا يفتحه الزبون بنفسه. كل ما هنا سيكون هناك.",
+  stCheckH:"فحص النظام", stCheckP:"اختبر بنقرة واحدة إن كان كل عنصر يعمل على هذا الجهاز: التخزين، PDF، رموز QR، الكاميرا وقراءة الوثائق.", stCheckBtn:"فحص الكل",
+  ckBusy:"جاري الفحص…", ckOk:"يعمل", ckLibNo:"المكتبة لم تحمل — تحقق من الإنترنت وأعد التحميل",
+  ckViaBackup:" (عبر مصدر احتياطي)", ckQrNative:"يعمل — هذا المتصفح يقرأ QR وحده، بدون مكتبة",
+  pdfNoLib:"تعذر تحميل وحدة PDF. تحقق من الإنترنت وحاول مرة أخرى.",
+  ckDb:"تخزين المعطيات", ckDbOk:"متصل — المعطيات آمنة في السحابة", ckDbNo:"غير متصل — المعطيات تبقى في هذا الجهاز",
+  ckAssets:"تخزين الصور", ckAssetsNo:"الصور تحفظ بحجم مصغر في الملف (يعمل، بجودة أقل)",
+  ckDl:"حفظ الملفات", ckDlNo:"عبر التحميل العادي للمتصفح",
+  ckPdf:"إنشاء PDF (العقد، الشهادة، بطاقة الزبون)", ckQrMake:"إنشاء QR (حاملات المفاتيح)", ckQrRead:"قراءة QR (مسح المفتاح)",
+  ckQrRound:"اختبار حامل المفاتيح: إنشاء QR وإعادة قراءته", ckQrRoundOk:"تم الإنشاء والقراءة بشكل صحيح — حاملات المفاتيح تعمل على هذا الجهاز", ckQrRoundNo:"الإنشاء سليم، فشلت إعادة القراءة",
+  ckCam:"الكاميرا / اختيار صورة", ckCamNo:"لا كاميرا — اختيار صورة من الملفات يعمل",
+  ckAi:"قراءة الوثيقة عبر Claude", ckAiNo:"غير متاح في هذا الحساب — الصورة تحفظ مع ذلك",
+  ckOcr:"التعرف على النص في المتصفح", ckOcrNo:"ليس في هذا المتصفح (متاح في أغلب هواتف أندرويد)",
+  ckMrz:"نقل الأسطر السفلى لجواز السفر", ckMrzOk:"يعمل دائما، بدون إنترنت — مع مراقبة أخطاء الكتابة",
+  ckSummaryOk:"كل شيء يعمل على هذا الجهاز.", ckSummaryBad:function(n){ return n+" عنصر لا يعمل أو يعمل جزئيا هنا — انظر أعلاه."; },
+  stTrustH:"صفحة الثقة الخاصة بك", stTrustP:"ما يجعل وكالتك أفضل من الجار، بأرقام حقيقية من هذا النظام.", stTrustBtn:"عرض الصفحة",
+  trH:"صفحتك", trP:"أرقام حقيقية. ضعها في إنستغرام وغوغل وحالة واتساب.",
+  trRentals:"عمليات الكراء", trReleased:"ضمانات مرجعة", trAvg:"ترجع في المتوسط بعد", trWithin:"خلال 7 أيام",
+  trBadgeH:"ضمانة مضمونة", trBadgeP:"في كل كراء: صور السيارة عند الخروج والرجوع، عقد واضح، وتاريخ مكتوب لا يقتطع بعده أي شيء.",
+  trCopyH:"نص للنسخ",
+  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nضمانة مضمونة. "+(st.released?"ترجع في المتوسط بعد "+st.avg+" أيام، "+st.within+"% خلال 7 أيام ("+st.released+" زبون).":"صور عند الخروج والرجوع، وتاريخ إرجاع مكتوب في كل عقد.")+"\nعقد مع صور وتاريخ إرجاع محدد في كل كراء."; },
+  trPdf:"الصفحة PDF", trNoData:"لا يوجد كراء منته بعد. الأرقام تمتلئ وحدها.",
+  trFine:"هذه أرقام تسييرك أنت. تصبح قوية إذا أرجعت الضمانة في وقتها، دائما — النظام يكافئ ذلك.",
+  /* scanner: lezen van het rijbewijs, camera en plakken */
+  licLees:"جاري قراءة الرخصة…",
+  licOk:"✓ تمت قراءة الرخصة. تحقق من الرقم والتاريخ على الصورة — صحح ما ليس صحيحا.",
+  licRegelOk:function(nr,d){ return "✓ رقم الرخصة "+nr+" مقروء من السطر في الظهر — له رقم مراقبة، إذن هو صحيح. "+(d?"تاريخ الصلاحية "+d+" مقروء: تحقق منه على الصورة.":"تاريخ الصلاحية (Fin de validité) في الأسفل يمينا من هذا الوجه: انقله من صورتك."); },
+  licTipAchter:"نصيحة: ظهر الرخصة فيه سطر بحروف آلية (D1MA…) مع رقم مراقبة. صورة هذا الوجه تقرأ الرقم دائما جيدا.",
+  licNiets:"✓ تم حفظ صورة الرخصة. النص لم يكن واضحا بما يكفي. انقل الرقم وتاريخ الصلاحية، أو أعد الصورة: مستوية، البطاقة كاملة، بدون ظل.",
+  licUitH:"ما أقرؤه في الرخصة",
+  licUitP:"مباشرة من الصورة. تحقق — لا يملأ أي شيء لا يشبه رقما أو تاريخا.",
+  licNaam:function(n){ return "استعمال هذا الاسم: "+n; },
+  licNrGok:function(n){ return "قرئ مرة واحدة كـ « "+n+" » — املأ وتحقق"; },
+  licDatGok:function(d){ return "التاريخ المقروء: "+d+" — املأه كصلاحية الرخصة"; },
+  plakT:"1. لصق نص البطاقة — الأسرع والأضمن",
+  ocrExtern:"جاري التعرف على النص…",
+  ocrExternOk:function(w){ return "✓ تمت القراءة: "+w+". تحقق على البطاقة."; },
+  stOcrH:"التعرف على النص (OCR.space)",
+  stOcrP:"مفتاح مجاني: اذهب إلى ocr.space/ocrapi/freekey، أدخل بريدك والصق المفتاح هنا. يحصل الماسح حينها على قارئ ثان عبر الإنترنت عندما لا ينجح القارئ المدمج.",
+  stOcrAan:"✓ المفتاح محفوظ — القارئ الثاني مفعل.",
+  stOcrUit:"لا مفتاح — القارئ المدمج فقط.",
+  plakP:"هاتفك يقرأ النص أفضل من أي صفحة ويب. آيفون: افتح الصورة في الصور، المس أيقونة النص، « تحديد الكل »، نسخ. أندرويد: صور غوغل ← Lens ← نص ← نسخ. الصق هنا وأستخرج كل شيء. إذا كان الشريط الآلي موجودا، أتحقق منه بأرقام المراقبة.",
+  plakGo:"استخراج المعطيات من هذا النص",
+  plakPlace:"الصق هنا نص البطاقة…",
+  plakLeeg:"الصق أولا نص البطاقة أعلاه.",
+  camKnop:"📷 الكاميرا",
+  fileWaarschuwing:"أطلس مفتوح كملف محلي. المسح والكاميرا والتعرف على النص لا تعمل إلا عبر الموقع: xyousri-dot.github.io/atlas",
+  camZoek:"ضع البطاقة داخل الإطار. للوجه الذي فيه « < »، تلتقط الصورة وحدها بمجرد أن تصبح مقروءة.",
+  camTip:"غير مقروءة بعد. أقرب قليلا، مستوية، بدون ظل — أو التقط الصورة بنفسك.",
+  camLicTip:"الرخصة أو الوجه الأمامي: ضع البطاقة داخل الإطار والتقط الصورة.",
+  camRaak:"✓ تمت قراءة الشريط — الصورة ملتقطة.",
+  camGenomen:"تم التقاط الصورة — جاري القراءة…",
+  camFoto:"التقاط الصورة",
+  camLamp:"المصباح", camLampUit:"إطفاء",
+  camGeen:"لا كاميرا هنا — اختر صورة.",
+  plakGelezen:"هذا ما قرأه القارئ في الصورة. لا رقم ولا تاريخ صالح. صحح أعلاه ما قرئ خطأ (خاصة الأسطر التي فيها « < ») واضغط الزر.",
+  plakNiets:"لا أتعرف هنا على رقم ولا تاريخ ولا عنوان. هل البطاقة كاملة — بما في ذلك الأسطر السفلى التي فيها « < »؟",
+  plakOk:function(w){ return "✓ تم الملء: "+w+". تحقق على البطاقة."; },
+  pName:"الاسم", pBirth:"تاريخ الازدياد", pNat:"الجنسية", pDoc:"رقم الوثيقة", pExp:"تاريخ الصلاحية",
+  pLic:"رقم الرخصة", pLicExp:"صلاحية الرخصة", pAddr:"العنوان",
+  licIsId:"هذه لا تبدو رخصة بل وثيقة هوية — أقرؤها على هذا الأساس…",
+  licWasId:"✓ كانت وثيقة هوية، لا رخصة. قرأتها على هذا الأساس ونقلت الصورة إلى الإطار الأول. حقول الرخصة تبقى فارغة.",
+  licWasIdGeen:"هذه تبدو وثيقة هوية، لا رخصة. لذلك لم يوضع شيء في حقول الرخصة. الشريط لم يكن مقروءا: أحطه أسفله، أو ضع الصورة في الإطار الأول.",
+  licLeeg:"— لم يوجد أي سطر مقروء —",
+  licRap:"لماذا لا يعمل؟ انظر التقرير",
+  licAchterDat:"✓ تم حفظ الصورة — هذا ظهر الرخصة. أخذت التاريخ، لكن الرقم والاسم في الوجه الأمامي. التقط له صورة أيضا؛ يمكن أن تبقى الصورتان هنا.",
+  licAchter:"✓ تم حفظ الصورة — لكن هذا يشبه ظهر الرخصة: لا يوجد فيه إلا جدول الأصناف. الرقم والاسم وتاريخ الصلاحية في الوجه الأمامي. التقط له صورة أيضا. يمكن أن تبقى الصورتان هنا.",
+  scanTry:function(n,tot){ return "جاري القراءة — المحاولة "+n+" من "+tot+"…"; },
+  scanMismatch:{ id:"انتبه: اخترت جواز السفر، لكن هذه بطاقة هوية. المس الخانة الصحيحة إذا كانت المعطيات في المكان الخطأ.",
+                 passport:"انتبه: اخترت البطاقة الوطنية، لكن هذا جواز سفر. المس الخانة الصحيحة إذا كانت المعطيات في المكان الخطأ." },
+  scanBar:"البحث عن الرمز الشريطي…",
+  scanBarOk:function(f){ return "✓ تمت قراءة الرمز الشريطي ("+f+"). الرقم والتاريخ ممتلئان — تحقق منهما على البطاقة."; },
+  scanBarRaw:function(f){ return "على البطاقة رمز شريطي ("+f+")، لكن بدون رقم أو تاريخ معروف. محتواه أسفله؛ انقل ما تحتاجه."; },
+  scanLic:"✓ تم حفظ صورة الرخصة. ليس للرخصة شريط مقروء آليا — لا المغربية ولا أغلب الأخرى — لذلك لا يمكن ملء شيء تلقائيا. انقل الرقم وتاريخ الصلاحية من صورتك أعلاه.",
+  diagP:"ما وجده القارئ في هذه الصورة. أرسله إذا أردت أن ينظر فيه أحد — فيه معطيات الوثيقة.",
+  diagCopy:"نسخ التقرير", diagCopied:"تم النسخ.",
+  scanPdf:"جاري فتح PDF…",
+  scanPdfFail:"تعذر فتح هذا الـ PDF. التقط له صورة أو لقطة شاشة، أو أرسله كصورة.",
+  scanPage:function(n,tot){ return "الصفحة "+n+" من "+tot; },
+  nameUse:function(n){ return "ملء « "+n+" » والتحقق"; },
+  nameUsed:"تم الملء — تحقق من الحروف."
+};
+/* Wat nog niet vertaald is, valt terug op het Frans (en het contract blijft Frans). */
+(function(){ for(var k in TXT.fr) if(!(k in TXT.ar)) TXT.ar[k]=TXT.fr[k]; })();
 var LKEY="atlas-lang";
-var L=(function(){ try{ return localStorage.getItem(LKEY)==="nl"?"nl":"fr"; }catch(e){ return "fr"; } })();
+var L=(function(){ try{ var x=localStorage.getItem(LKEY); return x==="nl"||x==="ar"?x:"fr"; }catch(e){ return "fr"; } })();
 function T(){ return TXT[L]; }
 
 /* ============ opslag ============ */
@@ -2208,17 +2640,29 @@ var view="vDay", rental=null, mode=null, draft=null, carEdit=null, clientEdit=nu
 /* ============ helpers ============ */
 function $(i){ return document.getElementById(i); }
 function el(t,c,x){ var n=document.createElement(t); if(c)n.className=c; if(x!==undefined)n.textContent=x; return n; }
-function dh(n){ return (Number(n)||0).toLocaleString(T().loc)+" DH"; }
-function kmf(n){ return (Number(n)||0).toLocaleString(T().loc)+" km"; }
+/* In het Arabisch (van rechts naar links) blijven bedragen, kilometers en datums
+   één blok dat van links naar rechts leest: anders schuift "450 DH" door de zin
+   heen. Het teken eromheen is onzichtbaar; in FR en NL verandert er niets. */
+function ltr(x){ return L==="ar" ? "\u2066"+x+"\u2069" : x; }
+function dh(n){ return ltr((Number(n)||0).toLocaleString(T().loc)+" DH"); }
+function kmf(n){ return ltr((Number(n)||0).toLocaleString(T().loc)+" km"); }
 function uid(){ return "x"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function today(){ return new Date().toISOString().slice(0,10); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]; }); }
 function plateHTML(c){ var mid=c.plateLtr?'<i>·</i><bdi>'+esc(c.plateLtr)+'</bdi>':''; return '<span class="plate"><bdi>'+esc(c.plateNum)+'</bdi>'+mid+'<i>·</i><bdi>'+esc(c.plateReg)+'</bdi></span>'; }
 function plateTxt(c){ return [c.plateNum,c.plateLtr,c.plateReg].filter(Boolean).join(" · "); }
 function fuelTxt(v){ return T().fuelTxt[String(v)]||"—"; }
-function dLong(d){ return new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
-function dDay(d){ return new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"numeric",month:"long",timeZone:"UTC"}); }
-function dShort(d){ return new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"2-digit",month:"2-digit",year:"2-digit",timeZone:"UTC"}); }
+function dLong(d){ return datum(new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})); }
+function dDay(d){ return datum(new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"numeric",month:"long",timeZone:"UTC"})); }
+function dShort(d){ return datum(new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"2-digit",month:"2-digit",year:"2-digit",timeZone:"UTC"})); }
+/* Arabische datums: de onzichtbare richtingstekens eruit (die draaiden 22/10/26
+   om tot 26/10/22). Alleen cijfers: één blok van links naar rechts. Met een
+   Arabische maandnaam: één blok van rechts naar links. */
+function datum(x){
+  if(L!=="ar") return x;
+  x=x.replace(/[\u200e\u200f\u061c]/g,"");
+  return /[\u0600-\u06ff]/.test(x) ? "\u2067"+x+"\u2069" : ltr(x);
+}
 function dayDiff(a,b){ return Math.round((Date.parse(b.slice(0,10))-Date.parse(a.slice(0,10)))/86400000); }
 function plus(d,n){ var t=new Date(d.slice(0,10)+"T12:00:00Z"); t.setUTCDate(t.getUTCDate()+n); return t.toISOString().slice(0,10); }
 function car(id){ return CARS.filter(function(c){ return c.id===id; })[0]||{model:"?",plateNum:"?",plateReg:"?"}; }
@@ -2322,6 +2766,8 @@ async function reload(){
 function applyLang(){
   var t=T();
   document.documentElement.lang=L;
+  /* Arabisch leest van rechts naar links: de hele app spiegelt mee. */
+  document.documentElement.dir = L==="ar" ? "rtl" : "ltr";
   $("lnNL").setAttribute("aria-pressed",L==="nl"); $("lnFR").setAttribute("aria-pressed",L==="fr");
   tekenTabs();
   var ids={dayH:"dayH",dayP:"dayP",newRental:"newRental",newCar:"newCar",newClient:"newClient",scanKey:"scanKey",tagsBtn:"tagsBtn",
@@ -2461,7 +2907,7 @@ function openMeer(){
     b.appendChild(k);
   });
   var tl=el("div","talen");
-  [["fr","Fran\u00e7ais"],["nl","Nederlands"]].forEach(function(x){
+  [["fr","Fran\u00e7ais"],["ar","\u0627\u0644\u0639\u0631\u0628\u064a\u0629"],["nl","Nederlands"]].forEach(function(x){
     var k=el("button",null,x[1]); k.type="button"; k.setAttribute("aria-pressed",L===x[0]?"true":"false");
     k.addEventListener("click",function(){ w.remove(); setLang(x[0]); }); tl.appendChild(k);
   });
@@ -2476,6 +2922,17 @@ $("tabs").addEventListener("click",function(e){
   stashDraft(); rental=null; draft=null; view=b.dataset.v; render(); });
 $("lnNL").addEventListener("click",function(){ setLang("nl"); });
 $("lnFR").addEventListener("click",function(){ setLang("fr"); });
+/* Het contract (KENI-CAR-vorm) en de attestation voor de politie blijven Frans,
+   ook als de app in het Arabisch staat: zo kent iedere verhuurder, klant en agent
+   ze. De functies zelf blijven ongemoeid; alleen de taal staat even op Frans. */
+function inHetFrans(fn){
+  return async function(){
+    if(L!=="ar") return fn.apply(this,arguments);
+    L="fr"; try{ return await fn.apply(this,arguments); } finally { L="ar"; }
+  };
+}
+makeContract=inHetFrans(makeContract);
+makeAttestation=inHetFrans(makeAttestation);
 function setLang(x){ L=x; try{ localStorage.setItem(LKEY,x); }catch(e){} stashDraft(); applyLang(); view="vDay"; rental=null; draft=null; render(); }
 
 /* ============ DAG ============ */
@@ -6560,7 +7017,7 @@ function openNew(presetClient, edit){
   cs.value=edit?(edit.clientId||"new"):(presetClient||"new"); syncClientPick();
   $("nwName").value=""; $("nwTel").value="";
   var sel=$("nwCar"); sel.innerHTML="";
-  CARS.forEach(function(c){ var o=document.createElement("option"); o.value=c.id; o.textContent=c.model+" — "+plateTxt(c)+" — "+dh(c.rate)+"/"+(L==="nl"?"dag":"jour"); sel.appendChild(o); });
+  CARS.forEach(function(c){ var o=document.createElement("option"); o.value=c.id; o.textContent=c.model+" — "+plateTxt(c)+" — "+dh(c.rate)+"/"+({nl:"dag",ar:"\u064a\u0648\u0645"}[L]||"jour"); sel.appendChild(o); });
   if(edit){ sel.value=edit.vehicleId; $("nwFrom").value=edit.from; $("nwTo").value=edit.to; }
   else {
     $("nwFrom").value=today(); $("nwTo").value=plus(today(),3);
@@ -7776,6 +8233,8 @@ async function pdfFromSheet(html,name,btn,busyTxt){
   if(!ready){ toast(t.pdfNoLib); btn.textContent=old; btn.disabled=false; return; }
   try{
     var sheet=$("sheet"); sheet.innerHTML=html;
+    /* Een Frans document (contract) blijft links-naar-rechts, ook in de Arabische app. */
+    sheet.dir = L==="ar" ? "rtl" : "ltr";
     var canvas=await html2canvas(sheet,{scale:2,backgroundColor:"#ffffff",logging:false,useCORS:true});
     var img=canvas.toDataURL("image/jpeg",0.9), jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
     var pdf=new jsPDF({unit:"pt",format:"a4"}), pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight(), h=canvas.height*pw/canvas.width;
@@ -8351,8 +8810,8 @@ function openTrust(){
   var side=$("trSide"); side.innerHTML="";
   var c=el("div","card"); c.appendChild(Object.assign(el("h2","ch"),{textContent:t.trCopyH}));
   var box=el("div","copybox",t.trCopy(AG,st)); c.appendChild(box);
-  var cp=el("button","btn ghost sm",L==="nl"?"Kopiëren":"Copier"); cp.style.marginTop="10px";
-  cp.addEventListener("click",async function(){ try{ await navigator.clipboard.writeText(box.textContent); toast(L==="nl"?"Gekopieerd":"Copié"); }catch(e){ toast("—"); } });
+  var cp=el("button","btn ghost sm",({nl:"Kopiëren",ar:"\u0646\u0633\u062e"}[L]||"Copier")); cp.style.marginTop="10px";
+  cp.addEventListener("click",async function(){ try{ await navigator.clipboard.writeText(box.textContent); toast({nl:"Gekopieerd",ar:"\u062a\u0645 \u0627\u0644\u0646\u0633\u062e"}[L]||"Copié"); }catch(e){ toast("—"); } });
   c.appendChild(cp); side.appendChild(c);
   var pb=el("button","btn ghost",t.trPdf); pb.style.cssText="margin-top:12px;width:100%";
   pb.addEventListener("click",function(){
