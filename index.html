@@ -680,6 +680,9 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
   /* 3. vinkje van een net afgeronde stap */
   .nwvoortgang .punt.klaar.net i{animation:tickpop .35s cubic-bezier(.34,1.56,.64,1) both}
   @keyframes tickpop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  /* 4. Pop: indrukken = 0,96, loslaten = terugveren met een klein beetje overshoot */
+  .btn, .held-knop, .tabs button.tab-plus svg{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+  .btn:active:not(:disabled), .held-knop:active, .tabs button.tab-plus:active svg{transform:scale(.96);transition-duration:.08s}
 }
 /* Controlekaart na de scan */
 #vNew.ctl-aan #nwDocWrap, #vNew.ctl-aan #nwLicWrap{display:none!important}

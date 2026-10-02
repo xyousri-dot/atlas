@@ -87,3 +87,27 @@ for (const taal of TALEN) test(`3. Checklist tick (${taal}): stap klaar = groen 
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+for (const taal of TALEN) test(`4. Pop (${taal}): hoofdknop wordt kleiner bij indrukken en veert terug`, async () => {
+  const { page, fouten } = await B.open({ taal, beweging: true, traag: 0.2 });
+  /* de knop mag hier niets openen: we kijken alleen naar de beweging */
+  await page.evaluate(() => { $("newRental").click = function () {}; });
+  await wacht(2500);
+  const knop = await page.$("#heldNieuw"); const box = await knop.boundingBox();
+  const schaal = () => page.evaluate(() => { const m = getComputedStyle(document.getElementById("heldNieuw")).transform; return m === "none" ? 1 : Number(m.match(/matrix\(([^,]+)/)[1]); });
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down(); await wacht(700);
+  await page.screenshot({ path: `${MAP}4-pop-${taal}-begin.png`, clip: { x: 0, y: box.y - 40, width: 390, height: box.height + 80 } });
+  const ingedrukt = await schaal();
+  await page.mouse.up(); await wacht(350);
+  const tussen = await schaal();
+  await page.screenshot({ path: `${MAP}4-pop-${taal}-midden.png`, clip: { x: 0, y: box.y - 40, width: 390, height: box.height + 80 } });
+  await wacht(2000);
+  const los = await schaal();
+  await page.screenshot({ path: `${MAP}4-pop-${taal}-eind.png`, clip: { x: 0, y: box.y - 40, width: 390, height: box.height + 80 } });
+  assert.ok(Math.abs(ingedrukt - 0.96) < 0.005, "ingedrukt 0,96: " + ingedrukt);
+  assert.ok(tussen > 0.96, "veert terug: " + tussen);
+  assert.equal(los, 1, "eindigt op 1");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
