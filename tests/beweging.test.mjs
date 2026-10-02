@@ -44,3 +44,28 @@ test("Minder beweging aan: geen enkele animatie", async () => {
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+for (const taal of TALEN) test(`2. Count-up (${taal}): cijfers in de groene kop tellen op, alleen bij het openen`, async () => {
+  const { page, fouten } = await B.open({ taal, beweging: true });
+  const borg = () => page.evaluate(() => document.querySelectorAll(".held .strook b")[1].textContent.replace(/[⁦-⁩\s., ]/g, ""));
+  /* opnieuw openen: weg en terug naar Vandaag */
+  await page.evaluate(() => { view = "vFleet"; render(); view = "vDay"; render(); });
+  const t0 = Date.now();
+  await page.screenshot({ path: `${MAP}2-countup-${taal}-begin.png` });
+  const begin = await borg();
+  await wacht(Math.max(0, 260 - (Date.now() - t0)));
+  const midden = await borg();
+  await page.screenshot({ path: `${MAP}2-countup-${taal}-midden.png` });
+  await wacht(900);
+  const eind = await borg();
+  await page.screenshot({ path: `${MAP}2-countup-${taal}-eind.png` });
+  const getal = x => Number(x.replace(/DH/, ""));
+  assert.ok(getal(begin) < 6000, "begint laag: " + begin);
+  assert.ok(getal(midden) > getal(begin) && getal(midden) < 6000, "loopt op: " + midden);
+  assert.equal(getal(eind), 6000, "eindigt op de waarde");
+  /* verversen op hetzelfde scherm: meteen de juiste waarde */
+  await page.evaluate(() => render());
+  assert.equal(getal(await borg()), 6000);
+  assert.deepEqual(fouten, []);
+  await page.close();
+});

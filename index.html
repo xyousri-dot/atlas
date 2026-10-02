@@ -3370,9 +3370,14 @@ function dagStrook(nu,aantal){
   var binnen=cashMoves(nu).filter(function(m){ return m.dir==="in"; }).reduce(function(a,m){ return a+m.amount; },0);
   var borg=heldList().reduce(function(a,r){ return a+paidCaution(r); },0);
   var vrij=CARS.filter(function(c){ return vrijeAuto(c,nu,plus(nu,1)); }).length;
-  [[dh(binnen),t.strBinnen,"vCash"],[dh(borg),t.strBorg,"vLed"],[ltr(vrij+"/"+CARS.length),t.strVrij,"vFleet"]].forEach(function(x){
+  /* bij het openen van Vandaag tellen de cijfers op (beweging 2); bij een
+     verversing op hetzelfde scherm staan ze meteen goed */
+  var openen = GETOOND!=="vDay";
+  [[binnen,dh,t.strBinnen,"vCash"],[borg,dh,t.strBorg,"vLed"],[vrij,function(n){ return ltr(n+"/"+CARS.length); },t.strVrij,"vFleet"]].forEach(function(y){
+    var x=[null,y[2],y[3]];
     var b=el("button"); b.type="button";
-    b.appendChild(el("b",null,x[0])); b.appendChild(el("span",null,x[1]));
+    var getal=el("b"); if(openen) telOp(getal,y[0],y[1]); else getal.textContent=y[1](y[0]);
+    b.appendChild(getal); b.appendChild(el("span",null,x[1]));
     b.addEventListener("click",function(){ view=x[2]; render(); });
     w.appendChild(b);
   });
@@ -7675,6 +7680,17 @@ delClient=async function(){
    "minder beweging" heeft aangezet, krijgt niets. Bewegingen spelen alleen bij
    het openen van een scherm, niet bij elke kleine verversing. */
 function beweegt(){ try{ return !window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } }
+/* 2. Count-up: een getal telt in 0,8 s op naar zijn waarde (power3.out) */
+function telOp(node,doel,fmt){
+  if(!beweegt() || !doel){ node.textContent=fmt(doel); return; }
+  var t0=performance.now(), duur=800;
+  node.textContent=fmt(0);
+  (function stap(nu){
+    var p=Math.min(1,(nu-t0)/duur), e=1-Math.pow(1-p,3);
+    node.textContent=fmt(p<1?Math.round(doel*e):doel);
+    if(p<1) requestAnimationFrame(stap);
+  })(t0);
+}
 /* 1. Rise: kaarten en tegels komen kort na elkaar binnen */
 function laatOpkomen(houder){
   if(!houder || !beweegt()) return;
