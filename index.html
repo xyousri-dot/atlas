@@ -670,6 +670,11 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .schud{animation:schud .35s}
 @keyframes schud{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){ .schud{animation:none} }
+/* ===== Beweging (alleen als het toestel beweging toelaat) ===== */
+@media (prefers-reduced-motion:no-preference){
+  .rise{animation:rise .35s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--rise-delay,0s)}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+}
 /* Controlekaart na de scan */
 #vNew.ctl-aan #nwDocWrap, #vNew.ctl-aan #nwLicWrap{display:none!important}
 #vNew.ctl-aan #nwNewWrap > .f:first-child{display:none}
@@ -7663,6 +7668,30 @@ delClient=async function(){
   await delClientBasis();
   var o=document.querySelector(".toast"); if(o) o.remove();
   herstelBalk(t.deleted,snap);
+};
+/* ============ BEWEGING ============
+   Rustig en zakelijk, zoals een bankapp: korte bewegingen (max 0,4 s, behalve
+   het optellen van de cijfers), easing power3.out. Wie in zijn telefoon
+   "minder beweging" heeft aangezet, krijgt niets. Bewegingen spelen alleen bij
+   het openen van een scherm, niet bij elke kleine verversing. */
+function beweegt(){ try{ return !window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } }
+/* 1. Rise: kaarten en tegels komen kort na elkaar binnen */
+function laatOpkomen(houder){
+  if(!houder || !beweegt()) return;
+  var items=houder.querySelectorAll(".held,.kaartje,.tegel,.job,.lrow,.vstap:not([hidden]),.card,.vrijlijst,.onderaan,.controle:not([hidden])");
+  var n=0;
+  Array.prototype.forEach.call(items,function(x){
+    if(!x.offsetParent) return;
+    x.style.setProperty("--rise-delay",(Math.min(n++,6)*0.05)+"s");
+    x.classList.remove("rise"); void x.offsetWidth; x.classList.add("rise");
+    x.addEventListener("animationend",function weg(e){ if(e.animationName==="rise"){ x.classList.remove("rise"); x.removeEventListener("animationend",weg); } });
+  });
+}
+var showBasis=show;
+show=function(v){
+  var nieuw = v!==GETOOND;
+  showBasis(v);
+  if(nieuw) laatOpkomen($(v));
 };
 /* ============ BORG OP MAAT ============
    De borg van de auto, de korting voor een vaste klant, en een lagere of hogere

@@ -67,9 +67,13 @@ export async function stop() {
 }
 
 /* Opent de app in een telefoonvenster. Geeft pagina + lijst met JS-fouten. */
-export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390, hoog = 844 } = {}) {
+/* beweging: standaard uit (prefers-reduced-motion), zodat de gewone tests niet
+   halverwege een animatie meten. De bewegingstests zetten hem aan. */
+export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390, hoog = 844, beweging = false, traag = 1 } = {}) {
   const page = await browser.newPage();
   await page.setViewport({ width: breed, height: hoog, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: beweging ? "no-preference" : "reduce" }]);
+  if (traag !== 1) { const cdp = await page.createCDPSession(); await cdp.send("Animation.enable"); await cdp.send("Animation.setPlaybackRate", { playbackRate: traag }); }
   const fouten = [];
   page.on("pageerror", e => fouten.push(String(e.message || e)));
   page.on("console", m => { if (m.type() === "error" && !/fonts\.g|cdnjs|Failed to load resource/.test(m.text())) fouten.push(m.text()); });
