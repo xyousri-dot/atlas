@@ -157,3 +157,22 @@ Tests: 25/25 groen (nieuw: vanzelf door na een zekere scan, blijft staan bij twi
 - **Hetzelfde voor auto's, klanten, kosten en betalingen.** Belangrijk: een auto of klant werd tot nu toe **meteen en zonder vraag** verwijderd (een tik op de rode knop en weg). Nu eerst een vraag, daarna Annuler.
 
 Tests: 28/28 groen.
+
+---
+
+## Ronde 7 — controle na de scan
+
+Jouw punt: na het scannen komt niet alle informatie, de scanner leest soms verkeerd, en je kunt het nergens aanpassen of controleren.
+
+Oorzaak: de scanner las wél documentnummer, geboortedatum, geldigheid, nationaliteit, adres en rijbewijs, maar dat ging **onzichtbaar** het contract in; op het scherm stonden alleen naam en telefoon.
+
+Nu, na elke scan, in stap 1 een **controlekaart**:
+- alle 9 gelezen velden **zichtbaar en aanpasbaar**, met de **foto's** erbij (tik = groot, om te vergelijken);
+- per veld een **controle**: ✓ klopt · ! nakijken (niet gelezen, vreemd formaat, of de scanner twijfelde) · ✕ fout (document of rijbewijs **verlopen**, klant **jonger dan 18**);
+- bovenaan de samenvatting ("✓ 8 corrects · 1 problème");
+- bij een fout vraagt "Suivant" eerst of je toch door wilt;
+- wat je verbetert, gaat het contract en de klantfiche in (getest).
+
+De app gaat na een scan niet meer vanzelf door: eerst kijk jij. De scannercode zelf is niet veranderd (vingerafdruk + 147 gevallen groen); de kaart leest en verbetert alleen zijn uitkomst.
+
+Tests: 28/28 groen. **Niet getest met echte kaarten en de camera**: dat kan alleen jij, met de slimme scan aan.

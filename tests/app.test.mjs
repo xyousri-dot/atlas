@@ -278,19 +278,45 @@ test("Vandaag: één knop per kaart; tik op de kaart = contract", async () => {
   await page.close();
 });
 
-test("Contract: na een zekere scan vanzelf naar stap 2; bij twijfel blijft stap 1", async () => {
+test("Na de scan: controlekaart met alle velden, fouten zichtbaar, aanpassingen gaan het contract in", async () => {
   const { page, fouten } = await B.open({ taal: "fr" });
-  const wacht = (ms) => new Promise(r => setTimeout(r, ms));
-  await page.click("#heldNieuw"); await wacht(300);
-  /* zoals de scanner het achterlaat na een geslaagde lezing */
-  await page.evaluate(() => { $("nwName").value = "BADAOUI ADNANE"; SNELKLANT = { name: "BADAOUI ADNANE", docNumber: "GI4599" }; markKlantKlaar(); });
-  await wacht(1300);
-  assert.equal(await page.evaluate(() => NWSTAP), 2, "zekere scan → stap 2");
-  /* opnieuw, maar nu vraagt de scan het nummer na te typen */
-  await page.evaluate(() => { view = "vDay"; render(); }); await page.click("#heldNieuw"); await wacht(300);
-  await page.evaluate(() => { $("nwName").value = "X Y"; SNELKLANT = { name: "X Y" }; $("nwDocWrap").hidden = false; markKlantKlaar(); });
-  await wacht(1300);
-  assert.equal(await page.evaluate(() => NWSTAP), 1, "twijfel → blijft staan");
+  const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
+  await page.evaluate(() => { pdfFromSheet = async () => {}; });
+  await page.click("#heldNieuw"); await wacht();
+  /* zoals de scanner het achterlaat; rijbewijs verlopen */
+  await page.evaluate(() => {
+    $("nwName").value = "BADAOUI ADNANE";
+    SNELKLANT = { name: "BADAOUI ADNANE", tel: "", docType: "cin", docNumber: "GI4599", birth: "2000-07-01", docExpiry: "2030-08-10",
+      nationality: "MAR", address: "HAY EL KHEIR RUE 12 KENITRA", licenceNumber: "07/182101", licenceIssue: "2019-03-15", licenceExpiry: plus(today(), -2),
+      scans: { cin: { data: "data:image/gif;base64,R0lGODlhAQABAAAAACw=" } } };
+    markKlantKlaar();
+  });
+  await wacht(1200);
+  const st = await page.evaluate(() => ({ zichtbaar: !$("nwControle").hidden, rijen: [...document.querySelectorAll("#nwControle .ctl-rij")].map(r => [r.querySelector("input").dataset.veld, r.dataset.s]), stap: NWSTAP, fotos: document.querySelectorAll("#nwControle .ctl-fotos img").length }));
+  assert.ok(st.zichtbaar, "controlekaart zichtbaar");
+  assert.equal(st.stap, 1, "niet vanzelf door: eerst nakijken");
+  assert.equal(st.rijen.length, 9);
+  assert.equal(st.fotos, 1, "foto erbij");
+  const s = Object.fromEntries(st.rijen);
+  assert.equal(s.docNumber, "ok"); assert.equal(s.birth, "ok"); assert.equal(s.licenceExpiry, "bad", "verlopen rijbewijs = fout");
+  await B.foto(page, "fr-controle-na-scan");
+  /* met een fout: Suivant vraagt eerst */
+  await page.click("#bGo"); await wacht();
+  assert.ok(await page.$(".ask"), "bij een fout eerst een vraag");
+  await page.evaluate(() => document.querySelector(".ask .btn.ghost").click()); await wacht();
+  /* verbeteren in de kaart */
+  const zet = (veld, v) => page.evaluate((veld, v) => { const i = document.querySelector(`#nwControle input[data-veld="${veld}"]`); i.value = v; i.dispatchEvent(new Event("input")); }, veld, v);
+  await zet("docNumber", "gi4598");
+  await zet("licenceExpiry", "2031-01-01");
+  assert.equal(await page.evaluate(() => document.querySelector('#nwControle input[data-veld="licenceExpiry"]').closest(".ctl-rij").dataset.s), "ok");
+  await page.click("#bGo"); await wacht();
+  assert.equal(await page.evaluate(() => NWSTAP), 2, "geen fout meer → door");
+  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
+  await page.click("#bGo"); await wacht(900);
+  const k = await page.evaluate(() => CLIENTS.find(c => c.name === "BADAOUI ADNANE" && c.docNumber === "GI4598"));
+  assert.ok(k, "aangepast nummer staat in de klantfiche");
+  assert.equal(k.licenceExpiry, "2031-01-01");
+  assert.equal(k.address, "HAY EL KHEIR RUE 12 KENITRA");
   assert.deepEqual(fouten, []);
   await page.close();
 });

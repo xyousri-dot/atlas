@@ -670,6 +670,26 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .schud{animation:schud .35s}
 @keyframes schud{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){ .schud{animation:none} }
+/* Controlekaart na de scan */
+#vNew.ctl-aan #nwDocWrap, #vNew.ctl-aan #nwLicWrap{display:none!important}
+#vNew.ctl-aan #nwNewWrap > .f:first-child{display:none}
+.controle{margin-top:14px;background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:16px}
+.ctl-kop{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 12px;margin-bottom:12px}
+.ctl-kop b{font-size:17px;font-family:"Bricolage Grotesque",Figtree,sans-serif}
+html[lang="ar"] .ctl-kop b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
+.ctl-som{font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px}
+.ctl-som.ok{background:var(--brand-soft);color:var(--brand)} .ctl-som.warn{background:var(--gold-soft);color:var(--gold)} .ctl-som.bad{background:var(--warn-soft);color:var(--warn)}
+.ctl-fotos{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.ctl-fotos button{flex:none;border:0;padding:0;background:none;cursor:zoom-in}
+.ctl-fotos img{height:74px;border-radius:10px;display:block;box-shadow:var(--sh)}
+.ctl-rij{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.ctl-lab{font-size:13px;font-weight:700;color:var(--ink2)}
+.ctl-st{grid-row:1/3;grid-column:2;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:15px}
+.ctl-st.ok{background:var(--brand-soft);color:var(--brand)} .ctl-st.warn{background:var(--gold-soft);color:var(--gold)} .ctl-st.bad{background:var(--warn-soft);color:var(--warn)} .ctl-st.leeg{background:var(--line);color:var(--ink3)}
+.ctl-rij input{grid-column:1;min-height:44px;font-size:16px;font-weight:600}
+.ctl-rij[data-s="warn"] input{border-color:var(--gold)} .ctl-rij[data-s="bad"] input{border-color:var(--warn)}
+.ctl-why{grid-column:1/3;font-size:12.5px;font-weight:700;color:var(--gold)}
+.ctl-rij[data-s="bad"] .ctl-why{color:var(--warn)} .ctl-why:empty{display:none}
 /* Balk "Verwijderd · Annuleren" */
 .herstel span{white-space:nowrap}
 .herstel{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(122px + env(safe-area-inset-bottom,0px));z-index:75;display:flex;align-items:center;gap:16px;background:var(--ink);color:#fff;padding:10px 10px 10px 18px;border-radius:16px;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);font-weight:600;max-width:calc(100% - 32px);animation:herstelIn .2s ease-out}
@@ -2540,6 +2560,20 @@ zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" pa
                        ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
 zetTekst("stGrpAg",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
 zetTekst("tabNieuw",{ nl:"Contract", fr:"Contrat", ar:"عقد" });
+zetTekst("ctlH",{ nl:"Gelezen van de kaart — kijk het na", fr:"Lu sur la carte — vérifiez", ar:"ما قُرئ من البطاقة — تحقق منه" });
+zetTekst("ctlSom",{ nl:function(o,w,f){ return "✓ "+o+" in orde"+(w?" · "+w+" nakijken":"")+(f?" · "+f+" fout":""); },
+                    fr:function(o,w,f){ return "✓ "+o+" correct"+(o>1?"s":"")+(w?" · "+w+" à vérifier":"")+(f?" · "+f+" problème"+(f>1?"s":""):""); },
+                    ar:function(o,w,f){ return "✓ "+o+" سليم"+(w?" · "+w+" للتحقق":"")+(f?" · "+f+" خطأ":""); } });
+zetTekst("ctlVeld",{ nl:{ name:"Naam", docNumber:"nummer", birth:"Geboren op", docExpiry:"Geldig tot", nationality:"Nationaliteit", address:"Adres", licenceNumber:"Rijbewijs nr.", licenceIssue:"Rijbewijs afgegeven", licenceExpiry:"Rijbewijs geldig tot" },
+                     fr:{ name:"Nom", docNumber:"numéro", birth:"Né(e) le", docExpiry:"Valable jusqu’au", nationality:"Nationalité", address:"Adresse", licenceNumber:"Permis n°", licenceIssue:"Permis délivré le", licenceExpiry:"Permis valable jusqu’au" },
+                     ar:{ name:"الاسم", docNumber:"الرقم", birth:"تاريخ الازدياد", docExpiry:"صالحة إلى", nationality:"الجنسية", address:"العنوان", licenceNumber:"رقم الرخصة", licenceIssue:"تاريخ تسليم الرخصة", licenceExpiry:"الرخصة صالحة إلى" } });
+zetTekst("ctlOntbreekt",{ nl:"niet gelezen", fr:"non lu", ar:"لم يُقرأ" });
+zetTekst("ctlNakijken",{ nl:"kijk na", fr:"à vérifier", ar:"تحقق" });
+zetTekst("ctlFormaat",{ nl:"vreemd formaat — kijk na", fr:"format inhabituel — vérifiez", ar:"صيغة غير معتادة — تحقق" });
+zetTekst("ctlTwijfel",{ nl:"scanner twijfelde — vergelijk met de kaart", fr:"lecture incertaine — comparez avec la carte", ar:"قراءة غير مؤكدة — قارن مع البطاقة" });
+zetTekst("ctlJong",{ nl:"jonger dan 18", fr:"moins de 18 ans", ar:"أقل من 18 سنة" });
+zetTekst("ctlVerlopen",{ nl:"verlopen", fr:"expiré", ar:"منتهي الصلاحية" });
+zetTekst("ctlDoorgaan",{ nl:"Er staat een fout op de kaart (verlopen document of jonger dan 18). Toch verder?", fr:"Il y a un problème (document expiré ou moins de 18 ans). Continuer quand même ?", ar:"هناك مشكلة (وثيقة منتهية أو أقل من 18 سنة). المتابعة رغم ذلك؟" });
 zetTekst("delContract",{ nl:"Dit contract verwijderen", fr:"Supprimer ce contrat", ar:"حذف هذا العقد" });
 zetTekst("delVraag",{ nl:function(n,c){ return "Contract van "+n+" ("+c+") verwijderen? Betalingen, borg en boetes ervan verdwijnen en de auto staat weer vrij. Je kunt het daarna nog 10 seconden terugzetten."; },
                       fr:function(n,c){ return "Supprimer le contrat de "+n+" ("+c+") ? Ses paiements, sa caution et ses amendes disparaissent et la voiture redevient libre. Vous pourrez annuler pendant 10 secondes."; },
@@ -7452,6 +7486,10 @@ function huurVolgende(){
     var n=$("nwName"); n.focus(); n.classList.remove("schud"); void n.offsetWidth; n.classList.add("schud");
     toast(t.nwNaamEerst); return;
   }
+  if(NWSTAP===1 && ctlFouten()){
+    ask(t.ctlDoorgaan,t.fVolgende).then(function(ja){ if(ja) huurNaarStap(2); });
+    return;
+  }
   huurNaarStap(NWSTAP+1);
 }
 var openNewBasis=openNew;
@@ -7469,6 +7507,7 @@ openNew=function(presetClient,edit){
     }
   }
   NWSTAP = editRental ? 0 : 1;
+  tekenControle();
   toonHuurStap();
 };
 var zetHuurKnopBasis=zetHuurKnop;
@@ -7479,16 +7518,82 @@ zetHuurKnop=function(){
   else b.disabled=!$("nwClash").hidden;
   k.className="btn ghost"; k.textContent = NWSTAP>1 ? t.fVorige : t.cancel;
 };
-/* Kaart gescand en alles zeker gelezen: vanzelf door naar de auto. Zo wordt een
-   contract: + → foto → auto → contract. Vraagt de scan om iets na te typen
-   (nummer niet zeker), dan blijven we staan zodat dat vak gezien wordt. */
+/* ============ CONTROLE NA DE SCAN ============
+   De scanner leest veel meer dan naam en telefoon: documentnummer, geboortedatum,
+   geldigheid, nationaliteit, adres en het rijbewijs. Dat ging onzichtbaar het
+   contract in. Nu staat het na elke scan op één kaart, met de foto's erbij, en
+   elk veld is aan te passen. Per veld een controle: ✓ klopt, ⚠ nakijken (ontbreekt,
+   vreemd formaat, of de scanner twijfelde), ✕ fout (verlopen, jonger dan 18).
+   De scanner zelf verandert niet: dit leest en verbetert alleen zijn uitkomst. */
+var CTLVELDEN=[["name","text"],["docNumber","text"],["birth","date"],["docExpiry","date"],["nationality","text"],["address","text"],["licenceNumber","text"],["licenceIssue","date"],["licenceExpiry","date"]];
+function ctlWaarde(k){ return k==="name" ? $("nwName").value.trim() : String((SNELKLANT&&SNELKLANT[k])||""); }
+function ctlOordeel(k,v){
+  var t=T(), nu=today(), ok={ s:"ok", why:"" };
+  function w(why){ return { s:"warn", why:why }; } function f(why){ return { s:"bad", why:why }; }
+  if(!v) return (k==="nationality"||k==="licenceIssue"||k==="address") ? { s:"leeg", why:t.ctlOntbreekt } : w(t.ctlOntbreekt);
+  if(k==="name") return (/^[A-Za-zÀ-ɏ' -]{3,}$/.test(v) && v.indexOf(" ")>0) ? ok : w(t.ctlNakijken);
+  if(k==="docNumber"){
+    var pas=(SNELKLANT&&SNELKLANT.docType)==="passport";
+    if(!(pas ? /^[A-Z0-9]{6,9}$/.test(v) : CINNR.test(v))) return w(t.ctlFormaat);
+    if($("nwDocWrap") && !$("nwDocWrap").hidden) return w(t.ctlTwijfel);
+    return ok;
+  }
+  if(k==="birth"){ var jaar=dayDiff(v,nu)/365.25; if(jaar<18) return f(t.ctlJong); if(jaar>100) return w(t.ctlNakijken); return ok; }
+  if(k==="docExpiry"||k==="licenceExpiry") return v<nu ? f(t.ctlVerlopen) : ok;
+  if(k==="licenceIssue") return v>nu ? w(t.ctlNakijken) : ok;
+  if(k==="licenceNumber"){
+    if(!/^[0-9]{1,3}\/[0-9]{5,8}$/.test(v) && v.replace(/[^A-Z0-9]/gi,"").length<5) return w(t.ctlFormaat);
+    if($("nwLicWrap") && !$("nwLicWrap").hidden) return w(t.ctlTwijfel);
+    return ok;
+  }
+  return ok;
+}
+function ctlZet(k,v){
+  if(!SNELKLANT) return;
+  if(k==="name"){ $("nwName").value=v; markKlantKlaarBasis(); }
+  SNELKLANT[k]=v;
+  /* de scanner vroeg soms om het nummer na te typen: dat vak volgt mee */
+  if(k==="docNumber" && $("nwDocWrap") && !$("nwDocWrap").hidden) $("nwDocNo").value=v;
+  if(k==="licenceNumber" && $("nwLicWrap") && !$("nwLicWrap").hidden) $("nwLicNo").value=v;
+}
+function ctlFouten(){ return SNELKLANT ? CTLVELDEN.filter(function(x){ return ctlOordeel(x[0],ctlWaarde(x[0])).s==="bad"; }).length : 0; }
+function tekenControle(){
+  var t=T(), stat=$("nwScanStat"); if(!stat) return;
+  var box=$("nwControle");
+  if(!box){ box=el("div","controle"); box.id="nwControle"; stat.parentNode.insertBefore(box,stat.nextSibling); }
+  var aan=!!SNELKLANT && $("nwClient").value==="new" && view==="vNew";
+  box.hidden=!aan; $("vNew").classList.toggle("ctl-aan",aan);
+  if(!aan){ box.innerHTML=""; return; }
+  box.innerHTML="";
+  var kop=el("div","ctl-kop"); kop.appendChild(el("b",null,t.ctlH)); var som=el("span","ctl-som"); kop.appendChild(som); box.appendChild(kop);
+  /* de foto's: om naast de kaart te leggen */
+  var scans=SNELKLANT.scans||{}, fotos=el("div","ctl-fotos");
+  Object.keys(scans).forEach(function(n){ var src=srcOf(scans[n]); if(!src) return;
+    var b=el("button"); b.type="button"; b.title=t.thumbBig; var im=el("img"); im.src=src; im.alt=""; b.appendChild(im);
+    b.addEventListener("click",function(){ grootBekijken(src); }); fotos.appendChild(b); });
+  if(fotos.children.length) box.appendChild(fotos);
+  function telOp(){
+    var n={ ok:0, warn:0, bad:0 };
+    CTLVELDEN.forEach(function(x){ var o=ctlOordeel(x[0],ctlWaarde(x[0])); if(n[o.s]!=null) n[o.s]++; });
+    som.textContent=t.ctlSom(n.ok,n.warn,n.bad);
+    som.className="ctl-som "+(n.bad?"bad":n.warn?"warn":"ok");
+  }
+  CTLVELDEN.forEach(function(x){
+    var k=x[0], rij=el("label","ctl-rij"), lab=el("span","ctl-lab",t.ctlVeld[k]);
+    if(k==="docNumber"){ lab.textContent=((SNELKLANT.docType==="passport")?t.optPass:"CIN")+" · "+t.ctlVeld[k]; }
+    var inp=document.createElement("input"); inp.type=x[1]; inp.value=ctlWaarde(k); inp.dataset.veld=k; inp.autocomplete="off";
+    if(k==="docNumber"||k==="licenceNumber") inp.style.textTransform="uppercase";
+    var st=el("span","ctl-st");
+    function oordeel(){ var o=ctlOordeel(k,inp.value.trim()); st.className="ctl-st "+o.s; st.textContent=o.s==="ok"?"✓":(o.s==="bad"?"✕":(o.s==="warn"?"!":"–")); st.title=o.why; rij.dataset.s=o.s; why.textContent=o.s==="ok"?"":o.why; }
+    var why=el("span","ctl-why");
+    inp.addEventListener("input",function(){ var v=inp.value; if(k==="docNumber"||k==="licenceNumber") v=v.toUpperCase().trim(); ctlZet(k,v); oordeel(); telOp(); });
+    rij.appendChild(lab); rij.appendChild(st); rij.appendChild(inp); rij.appendChild(why);
+    box.appendChild(rij); oordeel();
+  });
+  telOp();
+}
 var markKlantKlaarBasis=markKlantKlaar;
-markKlantKlaar=function(){
-  markKlantKlaarBasis();
-  if(view!=="vNew" || NWSTAP!==1 || !SNELKLANT || $("nwName").value.trim().length<2) return;
-  if(($("nwDocWrap") && !$("nwDocWrap").hidden) || ($("nwLicWrap") && !$("nwLicWrap").hidden)) return;
-  setTimeout(function(){ if(view==="vNew" && NWSTAP===1) huurNaarStap(2); },900);
-};
+markKlantKlaar=function(){ markKlantKlaarBasis(); tekenControle(); };
 /* Auto gekozen in stap 2: meteen door naar de dagen. */
 $("nwCarTegels").addEventListener("click",function(e){
   var tg=e.target.closest(".tegel");
