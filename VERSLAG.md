@@ -176,3 +176,23 @@ Nu, na elke scan, in stap 1 een **controlekaart**:
 De app gaat na een scan niet meer vanzelf door: eerst kijk jij. De scannercode zelf is niet veranderd (vingerafdruk + 147 gevallen groen); de kaart leest en verbetert alleen zijn uitkomst.
 
 Tests: 28/28 groen. **Niet getest met echte kaarten en de camera**: dat kan alleen jij, met de slimme scan aan.
+
+---
+
+## Ronde 8 — beweging (7 bewegingen, alleen CSS + een paar regels JS)
+
+Easing power3.out `cubic-bezier(.22,1,.36,1)`, elke animatie ≤ 0,4 s (alleen het optellen 0,8 s, zoals gevraagd). Bij "minder beweging" op het toestel: niets (getest).
+
+| # | Beweging | Waar | Bewijs (begin · midden · eind) |
+|---|---|---|---|
+| 1 | Rise: fade + 20px omhoog, stagger 0,05 s | kaarten/tegels bij het openen van een scherm | `tests/schermen/beweging/1-rise-blad.png` |
+| 2 | Count-up 0 → waarde in 0,8 s | drie cijfers in de groene kop, alleen bij openen | `2-countup-blad.png` |
+| 3 | Checklist tick met pop | voortgangsbalk nieuw contract, alleen vooruit | `3-tick-blad.png` |
+| 4 | Pop: 0,96 → 1 met kleine overshoot | +, witte knop, groene hoofdknoppen | `4-pop-blad.png` (gemeten: 0,96 → 1) |
+| 5 | Slide-in 24px (terug van links; Arabisch omgekeerd) | elk nieuw scherm + elke stap van contract en vertrek/terugkomst | `5-slide-blad.png` |
+| 6 | Bar fill | het stuk van de balk dat groen wordt | `6-vul-blad.png` |
+| 7 | Blur-in, vinkje als laatste | "Contrat prêt" | `7-blur-blad.png` |
+
+Geen teksten, kleuren of indeling veranderd; scanner, contract, opslag en de 78 schermelementen onveranderd (vingerafdruktests groen). Bewegingen spelen alleen bij openen/vooruitgaan, niet bij elke verversing.
+
+Tests: **50/50 groen** (22 bewegingstests in FR, AR en NL op 390×844, telkens zonder consolefouten). De gewone tests draaien met "minder beweging", zodat ze niet halverwege een animatie meten. Eén keer brak Chrome halverwege af ("Target closed"); de testbestanden draaien daarom nu na elkaar (± 3,5 min). Daarna twee rondes op rij groen.
