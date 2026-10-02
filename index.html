@@ -680,6 +680,11 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
   /* 3. vinkje van een net afgeronde stap */
   .nwvoortgang .punt.klaar.net i{animation:tickpop .35s cubic-bezier(.34,1.56,.64,1) both}
   @keyframes tickpop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  /* 5. Slide-in */
+  .slide-vooruit{--van:24px;animation:slideIn .35s cubic-bezier(.22,1,.36,1) both}
+  .slide-terug{--van:-24px;animation:slideIn .35s cubic-bezier(.22,1,.36,1) both}
+  [dir="rtl"] .slide-vooruit{--van:-24px} [dir="rtl"] .slide-terug{--van:24px}
+  @keyframes slideIn{from{opacity:.4;transform:translateX(var(--van))}to{opacity:1;transform:none}}
   /* 4. Pop: indrukken = 0,96, loslaten = terugveren met een klein beetje overshoot */
   .btn, .held-knop, .tabs button.tab-plus svg{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
   .btn:active:not(:disabled), .held-knop:active, .tabs button.tab-plus:active svg{transform:scale(.96);transition-duration:.08s}
@@ -7492,6 +7497,7 @@ function toonHuurStap(){
       d.appendChild(el("i",null,i+1<NWSTAP?"\u2713":String(i+1))); d.appendChild(el("span",null,x)); v.appendChild(d);
     });
     $("nwH").textContent=namen[NWSTAP-1];
+    if(VORIGESTAP && VORIGESTAP!==NWSTAP) schuif(secties[NWSTAP-1],NWSTAP>VORIGESTAP);
   }
   VORIGESTAP=NWSTAP;
   zetHuurKnop();
@@ -7703,6 +7709,15 @@ function telOp(node,doel,fmt){
     if(p<1) requestAnimationFrame(stap);
   })(t0);
 }
+/* vertrek en terugkomst stap voor stap: de nieuwe stap schuift ook */
+var VORIGEFSTAP=-1, VORIGFORM="";
+var toonStapBasis=toonStap;
+toonStap=function(){
+  var dit=(rental?rental.id:"")+"|"+mode;
+  var was = dit===VORIGFORM ? VORIGEFSTAP : -1; VORIGEFSTAP=FSTAP; VORIGFORM=dit;
+  toonStapBasis();
+  if(was>=0 && was!==FSTAP){ var k=formKaarten()[FSTAP]||$("side"); schuif(k,FSTAP>was); }
+};
 /* 1. Rise: kaarten en tegels komen kort na elkaar binnen */
 function laatOpkomen(houder){
   if(!houder || !beweegt()) return;
@@ -7715,11 +7730,20 @@ function laatOpkomen(houder){
     x.addEventListener("animationend",function weg(e){ if(e.animationName==="rise"){ x.classList.remove("rise"); x.removeEventListener("animationend",weg); } });
   });
 }
+/* 5. Slide-in: nieuw scherm van rechts, terug van links (Arabisch: andersom via CSS) */
+function schuif(node,vooruit){
+  if(!node || !beweegt()) return;
+  node.classList.remove("slide-vooruit","slide-terug"); void node.offsetWidth;
+  node.classList.add(vooruit?"slide-vooruit":"slide-terug");
+  node.addEventListener("animationend",function weg(e){ if(e.animationName==="slideIn"){ node.classList.remove("slide-vooruit","slide-terug"); node.removeEventListener("animationend",weg); } });
+}
 var showBasis=show;
 show=function(v){
-  var nieuw = v!==GETOOND;
+  var nieuw = v!==GETOOND, eerste = !GETOOND, terug = VIA_POP;
   showBasis(v);
-  if(nieuw) laatOpkomen($(v));
+  if(!nieuw) return;
+  if(!eerste && v!=="vDone") schuif($(v),!terug);
+  laatOpkomen($(v));
 };
 /* ============ BORG OP MAAT ============
    De borg van de auto, de korting voor een vaste klant, en een lagere of hogere

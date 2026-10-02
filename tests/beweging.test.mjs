@@ -111,3 +111,29 @@ for (const taal of TALEN) test(`4. Pop (${taal}): hoofdknop wordt kleiner bij in
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+const verschuiving = (page, sel) => page.evaluate(sel => { const m = new DOMMatrix(getComputedStyle(document.querySelector(sel)).transform); return m.m41; }, sel);
+for (const taal of TALEN) test(`5. Slide-in (${taal}): nieuw scherm van ${taal === "ar" ? "links" : "rechts"}, terug van de andere kant; ook per stap`, async () => {
+  const { page, fouten } = await B.open({ taal, beweging: true, traag: 0.2 });
+  await wacht(2500);
+  const teken = taal === "ar" ? -1 : 1;
+  await page.evaluate(() => { view = "vFleet"; render(); });
+  await wacht(40);
+  const vooruit = await verschuiving(page, "#vFleet");
+  await page.screenshot({ path: `${MAP}5-slide-${taal}-begin.png` });
+  await wacht(500); await page.screenshot({ path: `${MAP}5-slide-${taal}-midden.png` });
+  await wacht(1800); await page.screenshot({ path: `${MAP}5-slide-${taal}-eind.png` });
+  assert.ok(vooruit * teken > 5, "vooruit komt van " + (teken > 0 ? "rechts" : "links") + ": " + vooruit);
+  assert.equal(await verschuiving(page, "#vFleet"), 0, "eindigt op zijn plek");
+  await page.goBack(); await wacht(40);
+  const terug = await verschuiving(page, "#vDay");
+  assert.ok(terug * teken < -5, "terug komt van de andere kant: " + terug);
+  await wacht(2200);
+  /* stap voor stap in een nieuw contract */
+  await page.click("#heldNieuw"); await wacht(2400);
+  await page.type("#nwName", "TEST"); await page.click("#bGo"); await wacht(40);
+  const stap = await page.evaluate(() => document.querySelectorAll("#vNew section.vstap")[1].getAnimations().map(a => a.animationName));
+  assert.deepEqual(stap, ["slideIn"], "stap 2 schuift binnen");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
