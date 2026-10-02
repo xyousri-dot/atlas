@@ -134,3 +134,16 @@ Jouw punt: "er is niks veranderd qua werkwijze". Klopt. Nu wel:
 Scanner, opslag en contract: ongewijzigd (vingerafdruk en 147 gevallen groen). Wijzigen en verlengen van een bestaande verhuur blijven op één scherm.
 
 Tests: 24/24 groen, met de volledige route in drie stappen, de terugknop per stap en "geen bezette auto vooraf gekozen". Schermafdrukken: `tests/schermen/fr-r4-*.png` en `ar-r4-*.png`.
+
+---
+
+## Ronde 5 — alle schermen in dezelfde stijl, ook op de laptop
+
+Let op: je schermafdrukken van 2 oktober kwamen van de **live site (v131)**. Daar is niets veranderd; de herbouw staat alleen in `herbouw` (lokaal: http://127.0.0.1:8136).
+
+- **Groot scherm:** de app staat nu in één kolom in het midden (zoals WhatsApp Web), met het menu en de knoppen erbij. Niet meer over de volle breedte uitgerekt.
+- **Auto meegeven / Auto terug:** dezelfde stappenbalk als het nieuwe contract, grote titel per stap, rustige kaarten, grote bevestigknop.
+- **Jouw idee "contract in 2 tikken plus een foto":** na een geslaagde scan gaat de app vanzelf door naar de auto. Een contract is nu: **+ → foto → auto → Établir le contrat**. Vraagt de scan om een nummer na te typen, dan blijft hij staan, zodat je dat vak ziet.
+- **Contrat prêt:** groen vinkje als succesmoment.
+
+Tests: 25/25 groen (nieuw: vanzelf door na een zekere scan, blijft staan bij twijfel). Scanner, opslag en contract ongewijzigd.

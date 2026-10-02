@@ -670,6 +670,34 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .schud{animation:schud .35s}
 @keyframes schud{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){ .schud{animation:none} }
+/* ===== Groot scherm: één rustige kolom in het midden (zoals WhatsApp Web) ===== */
+@media (min-width:760px){
+  .bar-in, .prog, .wrap, .dock-in{max-width:680px}
+  .wrap .two{display:flex!important;flex-direction:column;gap:14px}
+  #vDone #rSide, #vCar #cwSide{order:-1}
+  .tabs{left:50%!important;right:auto!important;width:680px;transform:translateX(-50%);border-radius:22px 22px 0 0}
+  .dock{background:transparent;border-top:0;backdrop-filter:none}
+  .dock-in{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:22px;padding:10px 12px;box-shadow:var(--sh)}
+}
+/* Klaar-scherm: een groen vinkje als moment van succes, zoals een betaalapp. */
+#vDone .title h1::before{content:"\2713";display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--brand);color:#fff;font-size:22px;font-weight:800;margin-inline-end:12px;vertical-align:-6px;box-shadow:0 8px 18px -8px rgba(10,85,64,.7)}
+/* ===== Auto meegeven / terugnemen: zelfde stijl als het nieuwe contract ===== */
+.prog-row b{font-size:13px;color:var(--ink3);font-weight:700}
+.prog .track{display:none}
+.prog-stappen{gap:6px;overflow:visible}
+.prog-stappen button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:none!important;border:0!important;padding:0;color:var(--ink3)!important;font-size:12px;font-weight:700;white-space:normal;line-height:1.25;text-align:start}
+.prog-stappen button::before{content:"";align-self:stretch;height:5px;border-radius:99px;background:var(--line2)}
+.prog-stappen button.af::before, .prog-stappen button.nu::before{background:var(--brand)}
+.prog-stappen button.nu{color:var(--brand)!important}
+.prog-stappen button em{display:none}
+#vForm .title h1{font-size:30px}
+#vForm .title p{font-size:14.5px}
+#vForm .card{border-radius:22px}
+#vForm .chead .step{display:none}
+#vForm .chead h2{font-size:21px}
+#vForm .canvasbox{border-radius:18px}
+#vForm .confirm{min-height:56px;border-radius:16px;font-size:16px;border-style:solid}
+#vForm .confirm.done{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
 /* ===== Rust (ronde 3): zoals Square en Airbnb =====
    Geen uitlegzinnen onder de titels, geen kleine lettertjes onderaan, kopjes in
    gewone zinnen in plaats van HOOFDLETTERS. Het klantscherm (scanner) blijft zoals
@@ -7412,6 +7440,7 @@ function huurVolgende(){
 }
 var openNewBasis=openNew;
 openNew=function(presetClient,edit){
+  NWSTAP=0;   /* eerst uit: anders telt een oude scan als een nieuwe */
   openNewBasis(presetClient,edit);
   if(view!=="vNew") return;
   /* Nooit een auto voorstellen die nog bij een klant staat (ook niet als hij te
@@ -7433,6 +7462,16 @@ zetHuurKnop=function(){
   if(NWSTAP<3){ b.textContent=t.fVolgende; b.disabled=false; }
   else b.disabled=!$("nwClash").hidden;
   k.className="btn ghost"; k.textContent = NWSTAP>1 ? t.fVorige : t.cancel;
+};
+/* Kaart gescand en alles zeker gelezen: vanzelf door naar de auto. Zo wordt een
+   contract: + → foto → auto → contract. Vraagt de scan om iets na te typen
+   (nummer niet zeker), dan blijven we staan zodat dat vak gezien wordt. */
+var markKlantKlaarBasis=markKlantKlaar;
+markKlantKlaar=function(){
+  markKlantKlaarBasis();
+  if(view!=="vNew" || NWSTAP!==1 || !SNELKLANT || $("nwName").value.trim().length<2) return;
+  if(($("nwDocWrap") && !$("nwDocWrap").hidden) || ($("nwLicWrap") && !$("nwLicWrap").hidden)) return;
+  setTimeout(function(){ if(view==="vNew" && NWSTAP===1) huurNaarStap(2); },900);
 };
 /* Auto gekozen in stap 2: meteen door naar de dagen. */
 $("nwCarTegels").addEventListener("click",function(e){

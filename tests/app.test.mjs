@@ -277,3 +277,20 @@ test("Vandaag: één knop per kaart; tik op de kaart = contract", async () => {
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+test("Contract: na een zekere scan vanzelf naar stap 2; bij twijfel blijft stap 1", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const wacht = (ms) => new Promise(r => setTimeout(r, ms));
+  await page.click("#heldNieuw"); await wacht(300);
+  /* zoals de scanner het achterlaat na een geslaagde lezing */
+  await page.evaluate(() => { $("nwName").value = "BADAOUI ADNANE"; SNELKLANT = { name: "BADAOUI ADNANE", docNumber: "GI4599" }; markKlantKlaar(); });
+  await wacht(1300);
+  assert.equal(await page.evaluate(() => NWSTAP), 2, "zekere scan → stap 2");
+  /* opnieuw, maar nu vraagt de scan het nummer na te typen */
+  await page.evaluate(() => { view = "vDay"; render(); }); await page.click("#heldNieuw"); await wacht(300);
+  await page.evaluate(() => { $("nwName").value = "X Y"; SNELKLANT = { name: "X Y" }; $("nwDocWrap").hidden = false; markKlantKlaar(); });
+  await wacht(1300);
+  assert.equal(await page.evaluate(() => NWSTAP), 1, "twijfel → blijft staan");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
