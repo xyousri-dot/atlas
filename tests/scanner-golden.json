@@ -1,0 +1,2253 @@
+{
+ "referentie": "05f63af",
+ "gemaakt": "2026-10-02T02:35:32.964Z",
+ "delen": [
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "DB,ASSETS,DL,SAMPLE,CANSCAN,LOCAL",
+   "hash": "de24dab9f55bdf74"
+  },
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "LKEY2",
+   "hash": "c0bbc32c66bea4e9"
+  },
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "local",
+   "hash": "b7b10a0d7449ab31"
+  },
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "saveLocal",
+   "hash": "98867215ea2ac2a2"
+  },
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "clone",
+   "hash": "2e42ec5e54618c15"
+  },
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "LASTERR",
+   "hash": "133cdede8c8de960"
+  },
+  {
+   "blok": "opslag (bestaande gegevens)",
+   "naam": "dbErr",
+   "hash": "985812b1fb98c444"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "SBKEY,SBSKEY,SBQKEY",
+   "hash": "64b08a1839abfe0f"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "SB,SBSES,SBQ,SBBEZIG,SBSTAT,SBFOUT",
+   "hash": "e7b81d162be8394d"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "TryStatement",
+   "hash": "d92428ff4f536ee6"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "SBSTANDAARD",
+   "hash": "953383ac929e3606"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "ExpressionStatement",
+   "hash": "b423de8d611ceae6"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "TryStatement",
+   "hash": "3805607c99727a44"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "TryStatement",
+   "hash": "e2f5407b2a18b027"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbBewaar",
+   "hash": "dbebccfc453cfb95"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbBewaarSes",
+   "hash": "f26e91abf5d05502"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbBewaarRij",
+   "hash": "b3abd3184ba147e1"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbBasis",
+   "hash": "a3745da46f1c044a"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbIngesteld",
+   "hash": "5e62c3542d022bcf"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbKlaar",
+   "hash": "e05b58ddf2a14325"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "SBMAPPEN",
+   "hash": "6be5ec706524049a"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbInMap",
+   "hash": "bcd9230a6e1c0540"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbRoep",
+   "hash": "c4c7d4a20adb1a34"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbVernieuw",
+   "hash": "da201485ccc9a8c6"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbAanmelden",
+   "hash": "1ef0f1758d60ea40"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbAfmelden",
+   "hash": "901ae707506ccdde"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbNieuwAccount",
+   "hash": "1f02e74973d12857"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbTest",
+   "hash": "252c626295cca191"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbUitleg",
+   "hash": "a0202f7028eaf9a7"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbZet",
+   "hash": "e29135fecf4cfa89"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbWis",
+   "hash": "0bfcea3bf46e4260"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbWerk",
+   "hash": "198570f89e505aa2"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbHaal",
+   "hash": "98a246d4c3991ce9"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbRond",
+   "hash": "27e572d9724a9942"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbSamenvoegen",
+   "hash": "f37f7b9232850bea"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "naarAanmelden",
+   "hash": "9142ac69a73dd251"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "naAanmelden",
+   "hash": "f1314a860a6d084d"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "sbVerf",
+   "hash": "a66996b10e44a875"
+  },
+  {
+   "blok": "cloudopslag (Supabase, bestaande gegevens)",
+   "naam": "S",
+   "hash": "1476c861a1812452"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "IDVELDEN",
+   "hash": "e1bee409d3ff62ca"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "LICVELDEN",
+   "hash": "3b74eea85410f2e9"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "wisAutoVelden",
+   "hash": "8c5d71d847f29736"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "zetVast",
+   "hash": "7db81318833071f8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "isVast",
+   "hash": "e2cf5276322048eb"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "leesVelden",
+   "hash": "5d8fb3cba66693e8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "merkAuto",
+   "hash": "aafa41c39abf80cb"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "vergeetAuto",
+   "hash": "8f3b91295b49db0e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "AUTOLUISTERT",
+   "hash": "5ee09a0924c20554"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "luisterAuto",
+   "hash": "d54b4e75061886a7"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "openClient",
+   "hash": "a858a3be43055e7c"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "grootBekijken",
+   "hash": "95e90435ed9bcace"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "paintScans",
+   "hash": "379795f14d0a4f20"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "40ddfa020661e66d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "saveClient",
+   "hash": "bc0b26acd4b13b38"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "delClient",
+   "hash": "46f87d2803bee387"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzCheck",
+   "hash": "ed4f36d58e64c5d3"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzOk",
+   "hash": "6ba89f7906749424"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzSane",
+   "hash": "415ba1664ad17c7d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzDate",
+   "hash": "4c347ee920ee9d39"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzName",
+   "hash": "4bdaa03a0b172e04"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "nameTrust",
+   "hash": "ac11edb513109831"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "licRegel",
+   "hash": "4f01182293634cf2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "parseMRZ",
+   "hash": "350ccdfe177a87e8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "docMask",
+   "hash": "f8938319639e8337"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "otsuTussen",
+   "hash": "125f290a070f5072"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kaartVlekken",
+   "hash": "4f714fbed17761aa"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kaartKandidaten",
+   "hash": "cf581865e6800f2e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "vindKaart",
+   "hash": "b95c87d73c60ab1b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "snijUit",
+   "hash": "edb597e095cbd394"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "vindStrook",
+   "hash": "08347795b95fd484"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "vindHoeken",
+   "hash": "721dce36bf1df2ed"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "homografie",
+   "hash": "8cf19ee8c0b24c5f"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "vlakTrekken",
+   "hash": "9ee617e59084aa23"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "paperRect",
+   "hash": "3db2ea1d6ddd8a45"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzCanvas",
+   "hash": "a1fab30befa627cc"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ocrNative",
+   "hash": "29a2a56f5f146d81"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "MRZSET",
+   "hash": "f94cd7dd5b30274f"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "GLYPHS,GW,GH",
+   "hash": "8e10da6acbdc9087"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "shapeOf",
+   "hash": "f80bf0834a645efe"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "pakBits",
+   "hash": "acb9940254f4b138"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "telBits",
+   "hash": "b0f913e82a99ee07"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ECHT_GLYPHS",
+   "hash": "dac14334567b74ec"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "echteGlyphs",
+   "hash": "da766fa86b3b3b09"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "GLYPHS_FONT,GLYPHS_ECHT",
+   "hash": "6de113cbfe4227ee"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "buildGlyphSet",
+   "hash": "152d297881967240"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "buildGlyphs",
+   "hash": "471ffce222ce9ee2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "matchGlyph",
+   "hash": "efaab87996e17a98"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "TWEELING",
+   "hash": "ab9f60ecdc5291de"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "glyphScore",
+   "hash": "79380b8ab14030b8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "echtScore",
+   "hash": "68f247cd02e471bc"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "deskewAngle",
+   "hash": "55dd656cb49cb888"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "findLines",
+   "hash": "8be6749e7dc4d0bf"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "readLine",
+   "hash": "4399088e092b6d1d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "docNumVariants",
+   "hash": "104c573230312162"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "bestDocNum",
+   "hash": "92ba740c6005f1d9"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "TODIGIT",
+   "hash": "db3370ca16c0ba45"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "TOALPHA",
+   "hash": "92377010ecaf4d0e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "PAT",
+   "hash": "a9ed0bde7d6b1f5b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "applyPattern",
+   "hash": "1bdfb79d9a656796"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "MRZSWAP",
+   "hash": "e862e36d3598e28e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "zet",
+   "hash": "a32067eaddc2879c"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "NRONZEKER",
+   "hash": "ed5e99f20ed13fd3"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "repairLines",
+   "hash": "9c32de0ce9383d2b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "DIGCAND",
+   "hash": "321ab934c3464d30"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "alleenCijfers",
+   "hash": "5d931990126f71ba"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ALTCAND",
+   "hash": "9cb9eed7e635d734"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "fixField",
+   "hash": "5161fac9edd7cfd9"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "fixFieldOne",
+   "hash": "cb9da80153f83e0d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "fixWithChecks",
+   "hash": "06a300e6475e27f7"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzFromCanvas",
+   "hash": "424e9fd18b26d1c6"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "rotatedSource",
+   "hash": "e2325fcab99dc1b9"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "bandRect",
+   "hash": "2bdc1d8197446461"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "tick",
+   "hash": "12d22b5f258f9c63"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ademHaler",
+   "hash": "db2548a51dc81d80"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "naamConsensus",
+   "hash": "4fd6dbb920613d00"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "lijstConsensus",
+   "hash": "a77b991879309439"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "keurAlt",
+   "hash": "0e13c453724dafb1"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "marokNaam",
+   "hash": "ca4dc6f03d41e70b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "keurNaam",
+   "hash": "e39012b030fbfe42"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "naamConsensusStreng",
+   "hash": "6bd84412a9875f04"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "naamGeloofwaardig",
+   "hash": "8ed5bfa571131cf8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "turnImage",
+   "hash": "3ca5ca971fd7a2bc"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "besteDraai",
+   "hash": "ccd1259d57caae9e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "readMRZ",
+   "hash": "573d81a659e4579d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "SANSSET",
+   "hash": "fea71db7e13caeb3"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "SANS",
+   "hash": "7c2effb7d19c5c7e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "buildSansSet",
+   "hash": "af0c09ec396dc8d1"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "SSW,SSH",
+   "hash": "20fd9605eab40540"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "shapeSans",
+   "hash": "c9931414d0d0e7b4"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "sansTemplates",
+   "hash": "c281411aa68a7ee7"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "CIJFERSET",
+   "hash": "a2f6148ec97f3d9d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "matchSans",
+   "hash": "36544ba11fb64d11"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "snijTekens",
+   "hash": "d4a05feb51cec4ac"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "leesGedrukteRegel",
+   "hash": "8caad2ffabb46ae1"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "findTextLines",
+   "hash": "5a5443a4b9721ab6"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kaartRegels",
+   "hash": "74c1c9d5ecb5a91f"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "regelsUitBeeld",
+   "hash": "4efb6dbdd1899f22"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "NAARCIJFER",
+   "hash": "2d16de2c48ed0b82"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "cijferig",
+   "hash": "f5a43dda2ac1ac14"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "datumsUit",
+   "hash": "19354d69aa29bb89"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "nummerInRegel",
+   "hash": "64c9a70b108754fc"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "licNummerUit",
+   "hash": "8e198d1b65108373"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "rijbewijsUitRegels",
+   "hash": "b17ed6052ddec48a"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "KAARTVERH",
+   "hash": "1152a3fa6e951942"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kaartVlak",
+   "hash": "e32bba46e45224e6"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kaartBand",
+   "hash": "4cf75fbe5d42dab9"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kleinerBeeld",
+   "hash": "1e4c07f5a193c08b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "licStroken",
+   "hash": "aaddd86399d363be"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "zonderBanen",
+   "hash": "e73899c0b74fa3df"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "licRegelUitBeeld",
+   "hash": "538584c78638bde4"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "rijbewijsUitBeeld",
+   "hash": "413d82d0b56b9d28"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "LANDEN",
+   "hash": "501ba5f1d1b6efc2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "echtLand",
+   "hash": "62c59ff86d63a81e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "CINNR",
+   "hash": "b13c85e5a5bb28b2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "usableDocNo",
+   "hash": "6646c37790deba74"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "fillFromMRZ",
+   "hash": "438f7280bb774257"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "showDiag",
+   "hash": "e1dba6f6df677607"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ANKER",
+   "hash": "aec9caa8dafea0fe"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "naamUitStrook",
+   "hash": "f613fd01f2225277"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "adresUitBand",
+   "hash": "c268053b719601d0"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "adresBandUitAnker",
+   "hash": "5f044914306e8905"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "adresBand",
+   "hash": "28fddcd9ccd7dfc4"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "leesTekst",
+   "hash": "6f542352a104ff35"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "toonLicLees",
+   "hash": "5e5c89bb3f6c5376"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "toonAdresBand",
+   "hash": "5996be5af35c84d2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "showDocRaw",
+   "hash": "6d8d77e0f96c4d86"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "showNameRaw",
+   "hash": "bfb945cf40a02737"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "markCheck",
+   "hash": "6845a4b84653a13a"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "paintMrzHelp",
+   "hash": "a4ae2f8098c85aa2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "c0ae746fca1f1595"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "b8ac7622e0d784b1"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "2f52830c2b5e3909"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "DOCPROMPT",
+   "hash": "dca2ffc1162dbe0b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "renameScan",
+   "hash": "729e6255c8dc6f86"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "CROPIMG,CROPKEY,cropSel",
+   "hash": "749431a889b23f11"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "tekenKader",
+   "hash": "f7b9947112ed3cab"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "showCrop",
+   "hash": "3661741a3992ef4c"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "4aeeb377a280e22b"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "14aee8aa458d043c"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "pickedDoc",
+   "hash": "303126677af8f4a7"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "setPick",
+   "hash": "c2456b1669b15d1d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "paintPickHelp",
+   "hash": "f39afbf55f9fe9f5"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "6da68ed12f5106c3"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "applyDoc",
+   "hash": "9b599676a8489db8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ZIJDE",
+   "hash": "b3593c4a180c7309"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "VELDVAN",
+   "hash": "14c7f6cdf25ea6ed"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "verwerkKeuze",
+   "hash": "b1c729df97f8d881"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "luisterVeld",
+   "hash": "8aecc253e7f3b9d2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kiesBestanden",
+   "hash": "b9baed97fb17d108"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "18f0c618d924a059"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "sleepVak",
+   "hash": "6963729329c63c87"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "b676e8ea0f7d3c6d"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "c6d0b88aeef39d76"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "a8ee31b3eb920242"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "3e77f02b4088d7a5"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "387cdc1daa1f1612"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "9c1e806b793f0081"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "CAM",
+   "hash": "05bf10221a9b00b2"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "cameraScan",
+   "hash": "30c045aecfc2baa6"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "c18a6c9a9609c699"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "6a41eb5b96067609"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ExpressionStatement",
+   "hash": "8e38b12eabaf7fde"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "CROPSRC",
+   "hash": "be8c665246391c88"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "scanDoc",
+   "hash": "b502c348e4a0844e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "blobImg",
+   "hash": "787328692a10016a"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "pauze",
+   "hash": "0c620f67375a043e"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "licLezen",
+   "hash": "ef80fa6c783f1f83"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzRegelsUit",
+   "hash": "66b12b10f73ab5c8"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "plakMRZ",
+   "hash": "61d6a0ac90263380"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "plakRegels",
+   "hash": "ffa500aa073270e4"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "adresUitPlak",
+   "hash": "c10a391c8b074f5a"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "plakVerwerken",
+   "hash": "2fb61739acdd5449"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "verwerkTekst",
+   "hash": "b6c304c869d458c4"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ocrSleutel",
+   "hash": "3dca04321e7166a6"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "kaartVoorOcr",
+   "hash": "dbf78d68ad373242"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "contrastGrijs",
+   "hash": "02520289bc038729"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "bruikbaarder",
+   "hash": "f0b520d736b0efe7"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "tesseractTekst",
+   "hash": "075e7dcc6140ed39"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "ocrSpaceTekst",
+   "hash": "347a9a76e18e3eba"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "externLezen",
+   "hash": "498179b96a579c96"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "voorkantUitRegels",
+   "hash": "ee4805f2d24ef9df"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "soortUitRegels",
+   "hash": "16d762ab20b53abc"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "lijktAchterkant",
+   "hash": "c6797b942df5e11f"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "toonLicUit",
+   "hash": "086581c371a35581"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "voorkantLezen",
+   "hash": "d0d312a10607c986"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "mrzFallback",
+   "hash": "a56f23ebccc1576a"
+  },
+  {
+   "blok": "scanner: velden, MRZ, beeld, lezers, camera, rijbewijs",
+   "naam": "storeScan",
+   "hash": "6cce9ec8290b22f2"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "SNELKLANT,SNELFORM,SNELBEZIG,VOORMRZ",
+   "hash": "2ab16472130fa1ab"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "laadBeeld",
+   "hash": "ef220251f6792620"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "snelTekst",
+   "hash": "ae37c007810d5512"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "soortVanFoto",
+   "hash": "e09b51edbd6cfa05"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "RIJBEWIJSWOORD,RIJBEWIJSACHTER",
+   "hash": "5935767be5cd8b49"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "snelVertrek",
+   "hash": "822fcf8967e8d74e"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "snelTerug",
+   "hash": "348f2258a408ca6b"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "klantUitFormulier",
+   "hash": "b8e94dadc184cb24"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "snelReset",
+   "hash": "cf00496ffd575517"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "terugNaarHuur",
+   "hash": "ed440bdab5a04f31"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "zetHuurKnop",
+   "hash": "fed9d5f8cf8e0fc0"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "AIPAD,AIFOUT",
+   "hash": "3eebd7f21239bd3c"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "fotoVoorAI",
+   "hash": "1b790da2846b10f4"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "aiLees",
+   "hash": "1a0581a92279955b"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "mrzOpLengte",
+   "hash": "81193e67783a3dab"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "aiMrz",
+   "hash": "6f7d911b592be0d2"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "aiDatum",
+   "hash": "8cfe1529b4c77908"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "aiSchoon",
+   "hash": "fd1bfa7bcaacdafc"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "aiVul",
+   "hash": "ff56e3fbe5ca6583"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "snelScan",
+   "hash": "2eeec086538b4f26"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "a924c3303eaf9ab0"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "b5e1b896f5b42a04"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "118d6d1dd98e3fd9"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "d4f70fe17c4edbcf"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "37e1d9ae806cbb2c"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "5fbcee3092992f83"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "a2a074f124748bae"
+  },
+  {
+   "blok": "scanner: snel contract en slimme scan (Supabase-functie)",
+   "naam": "ExpressionStatement",
+   "hash": "1ce15f5ecb764cc3"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "loadScript",
+   "hash": "1e4ad486ef25a321"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "LIBS",
+   "hash": "4ad047ce79a2c2e5"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "LIBTRIED",
+   "hash": "d485c75ae13e5f2c"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "needLib",
+   "hash": "e3ab689427f15886"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "isPdf",
+   "hash": "9aec22bc15ab70d2"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "pdfPages",
+   "hash": "50557b37d0b84036"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "OCRW,OCRBEZIG,OCRFOUT",
+   "hash": "dd03d1968ff947e3"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "ocrWorker",
+   "hash": "d287d161c083bc61"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "ocrLees",
+   "hash": "ad4a0eff968c193a"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "ADRESSTERK",
+   "hash": "55e5eef8d1b347b5"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "ADRESWOORD",
+   "hash": "771975764e367831"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "adresAchtig",
+   "hash": "abbb7ef2b6acdcc1"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "adresUitRegels",
+   "hash": "ea02f07a6a493507"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "adresUitRegelsRuw",
+   "hash": "cec1d702f61aa30e"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "ADRESLIJST",
+   "hash": "09f774a3f8c19a28"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "afstand1",
+   "hash": "9ce95e05961d49c4"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "adresOpschonen",
+   "hash": "cd7ab42972ad60f3"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "adresUitTekst",
+   "hash": "1fc906b9999404b8"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "rijbewijsUitTekst",
+   "hash": "43d1181e9be5f79f"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "readBarcodes",
+   "hash": "b5cf9361706171ba"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "uitBarcode",
+   "hash": "464e0268e53807b1"
+  },
+  {
+   "blok": "scanner: bibliotheken, OCR, adres, barcode",
+   "naam": "readQR",
+   "hash": "c049c7459b4b6a73"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "nomPrenom",
+   "hash": "5586511768f4680c"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "uurVan",
+   "hash": "7bf1fc19b153fcf1"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "geldigNu",
+   "hash": "97af3dffa717d364"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "dNum",
+   "hash": "605fe4ba4da02787"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "cRij",
+   "hash": "b7faad87540cbf87"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "cRijH",
+   "hash": "3fe9b204dd6f94b4"
+  },
+  {
+   "blok": "contract in KENI-CAR-vorm",
+   "naam": "makeContract",
+   "hash": "2a4c92ac034e9343"
+  },
+  {
+   "blok": "los",
+   "naam": "recheckScan",
+   "hash": "49ff84df680805f0"
+  },
+  {
+   "blok": "los",
+   "naam": "kaartVoorOcr",
+   "hash": "dbf78d68ad373242"
+  }
+ ],
+ "ids": [
+  "addrShot",
+  "bBack",
+  "bGo",
+  "camIdBtn",
+  "camLicBtn",
+  "cropCv",
+  "cropGo",
+  "cropP",
+  "cropSel",
+  "cropWrap",
+  "cvAddr",
+  "cvBirth",
+  "cvDocExp",
+  "cvDocNo",
+  "cvDocType",
+  "cvFlag",
+  "cvH",
+  "cvHist",
+  "cvLic",
+  "cvLicExp",
+  "cvLicIssue",
+  "cvName",
+  "cvNat",
+  "cvNote",
+  "cvTel",
+  "diagWrap",
+  "docPick",
+  "docRaw",
+  "dock",
+  "licRead",
+  "licUit",
+  "mrzDemoL",
+  "mrzH",
+  "mrzMsg",
+  "mrzP",
+  "mrzText",
+  "mrzToggle",
+  "mrzWrap",
+  "nameRaw",
+  "note",
+  "nwCar",
+  "nwCaution",
+  "nwClient",
+  "nwDocNo",
+  "nwDocNoL",
+  "nwDocWrap",
+  "nwFrom",
+  "nwLicNo",
+  "nwLicNoL",
+  "nwLicWrap",
+  "nwName",
+  "nwScanAI",
+  "nwScanKaart",
+  "nwScanLic",
+  "nwScanStat",
+  "nwTel",
+  "nwTo",
+  "nwTotal",
+  "plakGo",
+  "plakMsg",
+  "plakText",
+  "prog",
+  "rSide",
+  "scanBtn",
+  "scanDocs",
+  "scanLicBtn",
+  "scanLicDocs",
+  "scanP",
+  "scanVoorBtn",
+  "scanbox",
+  "snelCam",
+  "snelKies",
+  "snelLic",
+  "stCloudCard",
+  "stCloudMail",
+  "stOcrKey",
+  "stOcrS",
+  "tabs"
+ ],
+ "gevallen": [
+  {
+   "fn": "mrzCheck",
+   "args": "[\"AB1234567\"]",
+   "uitkomst": "1"
+  },
+  {
+   "fn": "mrzCheck",
+   "args": "[\"000701\"]",
+   "uitkomst": "0"
+  },
+  {
+   "fn": "mrzCheck",
+   "args": "[\"abc\"]",
+   "uitkomst": "-1"
+  },
+  {
+   "fn": "mrzCheck",
+   "args": "[\"<<<<\"]",
+   "uitkomst": "0"
+  },
+  {
+   "fn": "mrzOk",
+   "args": "[\"AB1234567\",\"1\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "mrzOk",
+   "args": "[\"AB1234567\",\"<\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "mrzOk",
+   "args": "[\"<<<<\",\"<\",true]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "mrzOk",
+   "args": "[\"123\",\"X\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "mrzDate",
+   "args": "[\"000701\",false]",
+   "uitkomst": "\"2000-07-01\""
+  },
+  {
+   "fn": "mrzDate",
+   "args": "[\"300810\",true]",
+   "uitkomst": "\"2030-08-10\""
+  },
+  {
+   "fn": "mrzDate",
+   "args": "[\"991301\",false]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "mrzDate",
+   "args": "[\"12345\",false]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "mrzDate",
+   "args": "[\"850229\",false]",
+   "uitkomst": "\"1985-02-29\""
+  },
+  {
+   "fn": "mrzName",
+   "args": "[\"BADAOUI<<ADNANE<<<<<<<<\"]",
+   "uitkomst": "\"BADAOUI ADNANE\""
+  },
+  {
+   "fn": "mrzName",
+   "args": "[\"EL<AMRANI<<SANAE<FATIMA\"]",
+   "uitkomst": "\"EL AMRANI SANAE FATIMA\""
+  },
+  {
+   "fn": "mrzName",
+   "args": "[\"\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "nameTrust",
+   "args": "[\"BADAOUI<<ADNANE<<<<<<\",\"BADAOUI ADNANE\"]",
+   "uitkomst": "\"BADAOUI ADNANE\""
+  },
+  {
+   "fn": "nameTrust",
+   "args": "[\"BADA0UI<<ADNANE<<<\",\"BADA0UI ADNANE\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "nameTrust",
+   "args": "[\"BADAOUIKADNANE\",\"BADAOUIKADNANE\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "licRegel",
+   "args": "[\"D1AMA07<182101150319BADAOUI<A3\"]",
+   "uitkomst": "{\"kind\":\"licence\",\"docNumber\":\"07/182101\",\"issue\":\"2019-03-15\",\"licLine\":true,\"nationality\":\"MAR\",\"fullName\":\"BADAOUI A\",\"nameRaw\":\"BADAOUI<A\",\"docRaw\":\"D1AMA07<182101150319BADAOUI<A3\"}"
+  },
+  {
+   "fn": "licRegel",
+   "args": "[\"D1AMA07<182101150319BADAOUI<A0\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "licRegel",
+   "args": "[\"D1AMA07<182101150399BADAOUI<A9\"]",
+   "uitkomst": "{\"kind\":\"licence\",\"docNumber\":\"07/182101\",\"issue\":\"1999-03-15\",\"licLine\":true,\"nationality\":\"MAR\",\"fullName\":\"BADAOUI A\",\"nameRaw\":\"BADAOUI<A\",\"docRaw\":\"D1AMA07<182101150399BADAOUI<A9\"}"
+  },
+  {
+   "fn": "licRegel",
+   "args": "[\"D1AFR07<182101150319BADAOUI<A5\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\\nRX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]",
+   "uitkomst": "{\"kind\":\"passport\",\"docNumber\":\"RX1234567\",\"nationality\":\"MAR\",\"birthDate\":\"1985-12-24\",\"expiry\":\"2031-01-05\",\"sex\":\"F\",\"fullName\":\"EL AMRANI SANAE\",\"nameRaw\":\"EL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"docRaw\":\"RX12345676\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"I<FRAMARTIN<<PAUL<<<<<<<<<<<<<<<<<<<\\nX4RTBPFW46FRA7803129M2901019<<<<<<<6\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"X4RTBPFW4\",\"nationality\":\"FRA\",\"birthDate\":\"1978-03-12\",\"expiry\":\"2029-01-01\",\"sex\":\"M\",\"fullName\":\"MARTIN PAUL\",\"nameRaw\":\"MARTIN<<PAUL<<<<<<<<<<<<<<<<<<<\",\"docRaw\":\"X4RTBPFW46\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"D1AMA07<182101150319BADAOUI<A3\"]",
+   "uitkomst": "{\"kind\":\"licence\",\"docNumber\":\"07/182101\",\"issue\":\"2019-03-15\",\"licLine\":true,\"nationality\":\"MAR\",\"fullName\":\"BADAOUI A\",\"nameRaw\":\"BADAOUI<A\",\"docRaw\":\"D1AMA07<182101150319BADAOUI<A3\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"idmarab12345671gi4599<<<<<<<<<\\n0007010m3008100mar<<<<<<<<<<<5\\nbadaoui<<adnane<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n  0007010M3008100MAR<<<<<<<<<<<5\\n  BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"ruis\\nIDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\\nnog ruis\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB82345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n0097010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n3001019M3008100MAR<<<<<<<<<<<3\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"1930-01-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100XYZ<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nB4DAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"\",\"nameRaw\":\"B4DAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671GI4599<<<YYVY<<\\n0007010M3008100MAR<<<<<<<<<<<0\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<YYVY<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMARAB12345671BK123456<<<<<<<\\n0007010F3008100MAR<<<<<<<<<<<2\\nEL<IDRISSI<<KHADIJA<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"BK123456\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"F\",\"fullName\":\"EL IDRISSI KHADIJA\",\"nameRaw\":\"EL<IDRISSI<<KHADIJA<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671BK123456<<<<<<<\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"P<NLDDE<VRIES<<SARAH<<<<<<<<<<<<<<<<<<<<<<<<\\nRX12345676NLD8512246F3101056<<<<<<<<<<<<<<<0\"]",
+   "uitkomst": "{\"kind\":\"passport\",\"docNumber\":\"RX1234567\",\"nationality\":\"NLD\",\"birthDate\":\"1985-12-24\",\"expiry\":\"2031-01-05\",\"sex\":\"F\",\"fullName\":\"DE VRIES SARAH\",\"nameRaw\":\"DE<VRIES<<SARAH<<<<<<<<<<<<<<<<<<<<<<<<\",\"docRaw\":\"RX12345676\"}"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\\nRX123X5676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\\nRX12345676MAR8512246F5512315<<<<<<<<<<<<<<<2\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\\nL898902C36UTO7408122F1204159ZE184226B<<<<<10\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[null]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "parseMRZ",
+   "args": "[\"IDMAR\\nNIETS\\nHIER\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "mrzSane",
+   "args": "[{\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"docNumber\":\"AB12345\",\"nationality\":\"MAR\",\"docRaw\":\"<<<<<<<<\",\"fullName\":\"X Y Z\"}]",
+   "uitkomst": "{\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"docNumber\":\"AB12345\",\"nationality\":\"MAR\",\"docRaw\":\"<<<<<<<<\",\"fullName\":\"X Y Z\"}"
+  },
+  {
+   "fn": "mrzSane",
+   "args": "[{\"birthDate\":\"1900-01-01\",\"expiry\":\"2030-08-10\",\"docNumber\":\"AB12345\",\"nationality\":\"MAR\"}]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "echtLand",
+   "args": "[\"MAR\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "echtLand",
+   "args": "[\"nld\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "echtLand",
+   "args": "[\"XYZ\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "echtLand",
+   "args": "[\"\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "usableDocNo",
+   "args": "[\"id\",\"AB1234567\",\"GI4599\",\"id\"]",
+   "uitkomst": "\"AB1234567\""
+  },
+  {
+   "fn": "usableDocNo",
+   "args": "[\"passport\",\"RX1234567\",\"\",\"passport\"]",
+   "uitkomst": "\"RX1234567\""
+  },
+  {
+   "fn": "usableDocNo",
+   "args": "[\"id\",\"\",\"\",\"\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "usableDocNo",
+   "args": "[\"licence\",\"07/182101\",\"\",\"licence\"]",
+   "uitkomst": "\"07/182101\""
+  },
+  {
+   "fn": "cijferig",
+   "args": "[\"GI45O9\"]",
+   "uitkomst": "\"614509\""
+  },
+  {
+   "fn": "cijferig",
+   "args": "[\"BOIS\"]",
+   "uitkomst": "\"8015\""
+  },
+  {
+   "fn": "datumsUit",
+   "args": "[\"Né le 01.07.2000 valable 10/08/2030 et 2019-03-15\"]",
+   "uitkomst": "[{\"iso\":\"2000-07-01\",\"jaar\":2000},{\"iso\":\"2030-08-10\",\"jaar\":2030}]"
+  },
+  {
+   "fn": "datumsUit",
+   "args": "[\"geen datum\"]",
+   "uitkomst": "[]"
+  },
+  {
+   "fn": "datumsUit",
+   "args": "[\"31.02.2020 01-13-2020\"]",
+   "uitkomst": "[{\"iso\":\"2020-02-31\",\"jaar\":2020}]"
+  },
+  {
+   "fn": "nummerInRegel",
+   "args": "[\"5. 07/182101\",\"5. 07/182101\"]",
+   "uitkomst": "\"07/182101\""
+  },
+  {
+   "fn": "nummerInRegel",
+   "args": "[\"N 07 182101\",\"N 07 182101\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "licNummerUit",
+   "args": "[[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"PERMIS DE CONDUIRE\",\"score\":0.95},{\"tekst\":\"1. BADAOUI\",\"score\":0.95},{\"tekst\":\"2. ADNANE\",\"score\":0.95},{\"tekst\":\"3. 01.07.2000 KENITRA\",\"score\":0.95},{\"tekst\":\"4A. 15.03.2019\",\"score\":0.95},{\"tekst\":\"4B. 15.03.2029\",\"score\":0.95},{\"tekst\":\"5. 07/182101\",\"score\":0.95},{\"tekst\":\"9. B\",\"score\":0.95}]]",
+   "uitkomst": "{\"nummer\":\"07/182101\",\"hard\":false}"
+  },
+  {
+   "fn": "licNummerUit",
+   "args": "[[{\"tekst\":\"NIETS\",\"score\":0.95},{\"tekst\":\"HIER\",\"score\":0.95}]]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "rijbewijsUitRegels",
+   "args": "[[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"PERMIS DE CONDUIRE\",\"score\":0.95},{\"tekst\":\"1. BADAOUI\",\"score\":0.95},{\"tekst\":\"2. ADNANE\",\"score\":0.95},{\"tekst\":\"3. 01.07.2000 KENITRA\",\"score\":0.95},{\"tekst\":\"4A. 15.03.2019\",\"score\":0.95},{\"tekst\":\"4B. 15.03.2029\",\"score\":0.95},{\"tekst\":\"5. 07/182101\",\"score\":0.95},{\"tekst\":\"9. B\",\"score\":0.95}]]",
+   "uitkomst": "{\"regels\":[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"PERMIS DE CONDUIRE\",\"score\":0.95},{\"tekst\":\"1. BADAOUI\",\"score\":0.95},{\"tekst\":\"2. ADNANE\",\"score\":0.95},{\"tekst\":\"3. 01.07.2000 KENITRA\",\"score\":0.95},{\"tekst\":\"4A. 15.03.2019\",\"score\":0.95},{\"tekst\":\"4B. 15.03.2029\",\"score\":0.95},{\"tekst\":\"5. 07/182101\",\"score\":0.95},{\"tekst\":\"9. B\",\"score\":0.95}],\"tekst\":\"ROYAUME DU MAROC\\nPERMIS DE CONDUIRE\\n1. BADAOUI\\n2. ADNANE\\n3. 01.07.2000 KENITRA\\n4A. 15.03.2019\\n4B. 15.03.2029\\n5. 07/182101\\n9. B\",\"number\":\"07/182101\",\"numberHard\":false,\"expiry\":\"2029-03-15\",\"birth\":\"2000-07-01\",\"namen\":[\"BADAOUI\",\"ADNANE\"]}"
+  },
+  {
+   "fn": "rijbewijsUitRegels",
+   "args": "[[{\"tekst\":\"B 15.03.2019 15.03.2029\",\"score\":0.95},{\"tekst\":\"A1\",\"score\":0.95},{\"tekst\":\"D1AMA07<182101150319BADAOUI<A3\",\"score\":0.95}]]",
+   "uitkomst": "{\"regels\":[{\"tekst\":\"B 15.03.2019 15.03.2029\",\"score\":0.95},{\"tekst\":\"A1\",\"score\":0.95},{\"tekst\":\"D1AMA07<182101150319BADAOUI<A3\",\"score\":0.95}],\"tekst\":\"B 15.03.2019 15.03.2029\\nA1\\nD1AMA07<182101150319BADAOUI<A3\",\"expiry\":\"2029-03-15\"}"
+  },
+  {
+   "fn": "rijbewijsUitRegels",
+   "args": "[[]]",
+   "uitkomst": "{\"regels\":[],\"tekst\":\"\"}"
+  },
+  {
+   "fn": "voorkantUitRegels",
+   "args": "[[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"CARTE NATIONALE D'IDENTITE\",\"score\":0.95},{\"tekst\":\"BADAOUI\",\"score\":0.95},{\"tekst\":\"ADNANE\",\"score\":0.95},{\"tekst\":\"NÉ LE 01.07.2000\",\"score\":0.95},{\"tekst\":\"À KENITRA\",\"score\":0.95},{\"tekst\":\"VALABLE JUSQU'AU 10.08.2030\",\"score\":0.95},{\"tekst\":\"GI4599\",\"score\":0.95}]]",
+   "uitkomst": "{\"birth\":\"2000-07-01\",\"name\":\"ADNANE BADAOUI\",\"expiry\":\"2030-08-10\",\"number\":\"GI4599\"}"
+  },
+  {
+   "fn": "voorkantUitRegels",
+   "args": "[[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"PERMIS DE CONDUIRE\",\"score\":0.95},{\"tekst\":\"1. BADAOUI\",\"score\":0.95},{\"tekst\":\"2. ADNANE\",\"score\":0.95},{\"tekst\":\"3. 01.07.2000 KENITRA\",\"score\":0.95},{\"tekst\":\"4A. 15.03.2019\",\"score\":0.95},{\"tekst\":\"4B. 15.03.2029\",\"score\":0.95},{\"tekst\":\"5. 07/182101\",\"score\":0.95},{\"tekst\":\"9. B\",\"score\":0.95}]]",
+   "uitkomst": "{}"
+  },
+  {
+   "fn": "voorkantUitRegels",
+   "args": "[[]]",
+   "uitkomst": "{}"
+  },
+  {
+   "fn": "soortUitRegels",
+   "args": "[[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"CARTE NATIONALE D'IDENTITE\",\"score\":0.95},{\"tekst\":\"BADAOUI\",\"score\":0.95},{\"tekst\":\"ADNANE\",\"score\":0.95},{\"tekst\":\"NÉ LE 01.07.2000\",\"score\":0.95},{\"tekst\":\"À KENITRA\",\"score\":0.95},{\"tekst\":\"VALABLE JUSQU'AU 10.08.2030\",\"score\":0.95},{\"tekst\":\"GI4599\",\"score\":0.95}]]",
+   "uitkomst": "\"id\""
+  },
+  {
+   "fn": "soortUitRegels",
+   "args": "[[{\"tekst\":\"FILS DE MOHAMED\",\"score\":0.95},{\"tekst\":\"ET DE FATIMA\",\"score\":0.95},{\"tekst\":\"ADRESSE HAY EL KHEIR RUE 12 N 45 KENITRA\",\"score\":0.95},{\"tekst\":\"N° ETAT CIVIL 123/2000\",\"score\":0.95},{\"tekst\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"score\":0.95},{\"tekst\":\"0007010M3008100MAR<<<<<<<<<<<5\",\"score\":0.95},{\"tekst\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"score\":0.95}]]",
+   "uitkomst": "\"id\""
+  },
+  {
+   "fn": "soortUitRegels",
+   "args": "[[{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"PERMIS DE CONDUIRE\",\"score\":0.95},{\"tekst\":\"1. BADAOUI\",\"score\":0.95},{\"tekst\":\"2. ADNANE\",\"score\":0.95},{\"tekst\":\"3. 01.07.2000 KENITRA\",\"score\":0.95},{\"tekst\":\"4A. 15.03.2019\",\"score\":0.95},{\"tekst\":\"4B. 15.03.2029\",\"score\":0.95},{\"tekst\":\"5. 07/182101\",\"score\":0.95},{\"tekst\":\"9. B\",\"score\":0.95}]]",
+   "uitkomst": "\"licence\""
+  },
+  {
+   "fn": "soortUitRegels",
+   "args": "[[{\"tekst\":\"B 15.03.2019 15.03.2029\",\"score\":0.95},{\"tekst\":\"A1\",\"score\":0.95},{\"tekst\":\"D1AMA07<182101150319BADAOUI<A3\",\"score\":0.95}]]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "soortUitRegels",
+   "args": "[[{\"tekst\":\"PASSEPORT\",\"score\":0.95},{\"tekst\":\"ROYAUME DU MAROC\",\"score\":0.95},{\"tekst\":\"EL AMRANI\",\"score\":0.95},{\"tekst\":\"SANAE\",\"score\":0.95},{\"tekst\":\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"score\":0.95},{\"tekst\":\"RX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\",\"score\":0.95}]]",
+   "uitkomst": "\"id\""
+  },
+  {
+   "fn": "soortUitRegels",
+   "args": "[[{\"tekst\":\"BON DE COMMANDE\",\"score\":0.95}]]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "mrzRegelsUit",
+   "args": "[\"Fils de MOHAMED\\net de FATIMA\\nAdresse HAY EL KHEIR RUE 12 N 45 KENITRA\\nN° etat civil 123/2000\\nIDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "[\"IDMARAB12345671GI4599<<<<<<<<<\",\"0007010M3008100MAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]"
+  },
+  {
+   "fn": "mrzRegelsUit",
+   "args": "[\"PASSEPORT\\nROYAUME DU MAROC\\nEL AMRANI\\nSANAE\\nP<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\\nRX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]",
+   "uitkomst": "[\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"RX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]"
+  },
+  {
+   "fn": "mrzRegelsUit",
+   "args": "[\"geen strook\"]",
+   "uitkomst": "[]"
+  },
+  {
+   "fn": "plakMRZ",
+   "args": "[\"Fils de MOHAMED\\net de FATIMA\\nAdresse HAY EL KHEIR RUE 12 N 45 KENITRA\\nN° etat civil 123/2000\\nIDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "plakMRZ",
+   "args": "[\"PASSEPORT\\nROYAUME DU MAROC\\nEL AMRANI\\nSANAE\\nP<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\\nRX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]",
+   "uitkomst": "{\"kind\":\"passport\",\"docNumber\":\"RX1234567\",\"nationality\":\"MAR\",\"birthDate\":\"1985-12-24\",\"expiry\":\"2031-01-05\",\"sex\":\"F\",\"fullName\":\"EL AMRANI SANAE\",\"nameRaw\":\"EL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"docRaw\":\"RX12345676\"}"
+  },
+  {
+   "fn": "plakMRZ",
+   "args": "[\"B 15.03.2019 15.03.2029\\nA1\\nD1AMA07<182101150319BADAOUI<A3\"]",
+   "uitkomst": "{\"kind\":\"licence\",\"docNumber\":\"07/182101\",\"issue\":\"2019-03-15\",\"licLine\":true,\"nationality\":\"MAR\",\"fullName\":\"BADAOUI A\",\"nameRaw\":\"BADAOUI<A\",\"docRaw\":\"D1AMA07<182101150319BADAOUI<A3\"}"
+  },
+  {
+   "fn": "plakMRZ",
+   "args": "[\"onzin\"]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "plakRegels",
+   "args": "[\"Fils de MOHAMED\\net de FATIMA\\nAdresse HAY EL KHEIR RUE 12 N 45 KENITRA\\nN° etat civil 123/2000\\nIDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "[{\"tekst\":\"FILS DE MOHAMED\",\"score\":0.95},{\"tekst\":\"ET DE FATIMA\",\"score\":0.95},{\"tekst\":\"ADRESSE HAY EL KHEIR RUE 12 N 45 KENITRA\",\"score\":0.95},{\"tekst\":\"N° ETAT CIVIL 123/2000\",\"score\":0.95},{\"tekst\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"score\":0.95},{\"tekst\":\"0007010M3008100MAR<<<<<<<<<<<5\",\"score\":0.95},{\"tekst\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"score\":0.95}]"
+  },
+  {
+   "fn": "adresUitPlak",
+   "args": "[[{\"tekst\":\"FILS DE MOHAMED\",\"score\":0.95},{\"tekst\":\"ET DE FATIMA\",\"score\":0.95},{\"tekst\":\"ADRESSE HAY EL KHEIR RUE 12 N 45 KENITRA\",\"score\":0.95},{\"tekst\":\"N° ETAT CIVIL 123/2000\",\"score\":0.95},{\"tekst\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"score\":0.95},{\"tekst\":\"0007010M3008100MAR<<<<<<<<<<<5\",\"score\":0.95},{\"tekst\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"score\":0.95}]]",
+   "uitkomst": "\"HAY EL KHEIR RUE 12 N 45 KENITRA\""
+  },
+  {
+   "fn": "adresUitPlak",
+   "args": "[[{\"tekst\":\"NIETS\",\"score\":0.95}]]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "adresAchtig",
+   "args": "[\"Adresse HAY EL KHEIR RUE 12 N 45 KENITRA\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "adresAchtig",
+   "args": "[\"ADRESSE: 23 RUE IBN SINA APPT 4 RABAT\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "adresAchtig",
+   "args": "[\"العنوان Adresse LOT AL WAHDA NR 7 SALE\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "adresAchtig",
+   "args": "[\"Adrese HAY SALAM BLOC C N 12 CASABLANCA\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "adresAchtig",
+   "args": "[\"\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "adresAchtig",
+   "args": "[\"1234567890\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "adresOpschonen",
+   "args": "[\"Adresse HAY EL KHEIR RUE 12 N 45 KENITRA\"]",
+   "uitkomst": "\"HAY EL KHEIR RUE 12 N 45 KENITRA\""
+  },
+  {
+   "fn": "adresOpschonen",
+   "args": "[\"ADRESSE: 23 RUE IBN SINA APPT 4 RABAT\"]",
+   "uitkomst": "\"RUE IBN SINA APPT 4 RABAT\""
+  },
+  {
+   "fn": "adresOpschonen",
+   "args": "[\"العنوان Adresse LOT AL WAHDA NR 7 SALE\"]",
+   "uitkomst": "\"LOT AL WAHDA NR 7 SALE\""
+  },
+  {
+   "fn": "adresOpschonen",
+   "args": "[\"Adrese HAY SALAM BLOC C N 12 CASABLANCA\"]",
+   "uitkomst": "\"HAY SALAM BLOC C N 12 CASABLANCA\""
+  },
+  {
+   "fn": "adresOpschonen",
+   "args": "[\"\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "adresOpschonen",
+   "args": "[\"1234567890\"]",
+   "uitkomst": "\"1234567890\""
+  },
+  {
+   "fn": "adresUitTekst",
+   "args": "[\"Adresse HAY EL KHEIR RUE 12 N 45 KENITRA\"]",
+   "uitkomst": "\"HAY EL KHEIR RUE 12 N 45 KENITRA\""
+  },
+  {
+   "fn": "adresUitTekst",
+   "args": "[\"ADRESSE: 23 RUE IBN SINA APPT 4 RABAT\"]",
+   "uitkomst": "\"RUE IBN SINA APPT 4 RABAT\""
+  },
+  {
+   "fn": "adresUitTekst",
+   "args": "[\"العنوان Adresse LOT AL WAHDA NR 7 SALE\"]",
+   "uitkomst": "\"LOT AL WAHDA NR 7 SALE\""
+  },
+  {
+   "fn": "adresUitTekst",
+   "args": "[\"Adrese HAY SALAM BLOC C N 12 CASABLANCA\"]",
+   "uitkomst": "\"HAY SALAM BLOC C N 12 CASABLANCA\""
+  },
+  {
+   "fn": "adresUitTekst",
+   "args": "[\"\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "adresUitTekst",
+   "args": "[\"1234567890\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "adresUitRegels",
+   "args": "[[{\"tekst\":\"FILS DE MOHAMED\",\"score\":0.95},{\"tekst\":\"ET DE FATIMA\",\"score\":0.95},{\"tekst\":\"ADRESSE HAY EL KHEIR RUE 12 N 45 KENITRA\",\"score\":0.95},{\"tekst\":\"N° ETAT CIVIL 123/2000\",\"score\":0.95},{\"tekst\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"score\":0.95},{\"tekst\":\"0007010M3008100MAR<<<<<<<<<<<5\",\"score\":0.95},{\"tekst\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"score\":0.95}]]",
+   "uitkomst": "\"HAY EL KHEIR RUE 12 N 45 KENITRA\""
+  },
+  {
+   "fn": "adresUitRegels",
+   "args": "[[{\"tekst\":\"FILS DE MOHAMED\",\"score\":0.4},{\"tekst\":\"ET DE FATIMA\",\"score\":0.4},{\"tekst\":\"ADRESSE HAY EL KHEIR RUE 12 N 45 KENITRA\",\"score\":0.4},{\"tekst\":\"N° ETAT CIVIL 123/2000\",\"score\":0.4},{\"tekst\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"score\":0.4},{\"tekst\":\"0007010M3008100MAR<<<<<<<<<<<5\",\"score\":0.4},{\"tekst\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"score\":0.4}]]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "adresUitRegelsRuw",
+   "args": "[[{\"tekst\":\"FILS DE MOHAMED\",\"score\":0.95},{\"tekst\":\"ET DE FATIMA\",\"score\":0.95},{\"tekst\":\"ADRESSE HAY EL KHEIR RUE 12 N 45 KENITRA\",\"score\":0.95},{\"tekst\":\"N° ETAT CIVIL 123/2000\",\"score\":0.95},{\"tekst\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"score\":0.95},{\"tekst\":\"0007010M3008100MAR<<<<<<<<<<<5\",\"score\":0.95},{\"tekst\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"score\":0.95}]]",
+   "uitkomst": "\"HAY EL KHEIR RUE 12 N 45 KENITRA\""
+  },
+  {
+   "fn": "afstand1",
+   "args": "[\"ADRESSE\",\"ADRESE\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "afstand1",
+   "args": "[\"KENITRA\",\"KENITRA\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "afstand1",
+   "args": "[\"A\",\"XYZ\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "rijbewijsUitTekst",
+   "args": "[\"ROYAUME DU MAROC\\nPERMIS DE CONDUIRE\\n1. BADAOUI\\n2. ADNANE\\n3. 01.07.2000 KENITRA\\n4a. 15.03.2019\\n4b. 15.03.2029\\n5. 07/182101\\n9. B\"]",
+   "uitkomst": "{\"number\":\"07/182101\",\"expiry\":\"2029-03-15\"}"
+  },
+  {
+   "fn": "rijbewijsUitTekst",
+   "args": "[\"B 15.03.2019 15.03.2029\\nA1\\nD1AMA07<182101150319BADAOUI<A3\"]",
+   "uitkomst": "{\"expiry\":\"2029-03-15\"}"
+  },
+  {
+   "fn": "rijbewijsUitTekst",
+   "args": "[\"ROYAUME DU MAROC\\nCARTE NATIONALE D'IDENTITE\\nBADAOUI\\nADNANE\\nNé le 01.07.2000\\nà KENITRA\\nValable jusqu'au 10.08.2030\\nGI4599\"]",
+   "uitkomst": "{\"expiry\":\"2030-08-10\"}"
+  },
+  {
+   "fn": "rijbewijsUitTekst",
+   "args": "[\"\"]",
+   "uitkomst": "{}"
+  },
+  {
+   "fn": "uitBarcode",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]",
+   "uitkomst": "{\"raw\":\"IDMARAB12345671GI4599<<<<<<<<<\\n0007010M3008100MAR<<<<<<<<<<<5\\nBADAOUI<<ADNANE<<<<<<<<<<<<<<<\"}"
+  },
+  {
+   "fn": "uitBarcode",
+   "args": "[\"https://example.com\"]",
+   "uitkomst": "{\"raw\":\"https://example.com\"}"
+  },
+  {
+   "fn": "uitBarcode",
+   "args": "[\"\"]",
+   "uitkomst": "{\"raw\":\"\"}"
+  },
+  {
+   "fn": "mrzOpLengte",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<\",30]",
+   "uitkomst": "\"IDMARAB12345671GI4599<<<<<<<<<\""
+  },
+  {
+   "fn": "mrzOpLengte",
+   "args": "[\"IDMARAB12345671GI4599<<<<<<<<<<<\",30]",
+   "uitkomst": "\"IDMARAB12345671GI4599<<<<<<<<<\""
+  },
+  {
+   "fn": "mrzOpLengte",
+   "args": "[\"ABC\",30]",
+   "uitkomst": "\"ABC<<<<<<<<<<<<<<<<<<<<<<<<<<<\""
+  },
+  {
+   "fn": "aiMrz",
+   "args": "[[\"IDMARAB12345671GI4599<<<<<<<<<\",\"0007010M3008100MAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "aiMrz",
+   "args": "[[\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"RX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]]",
+   "uitkomst": "{\"kind\":\"passport\",\"docNumber\":\"RX1234567\",\"nationality\":\"MAR\",\"birthDate\":\"1985-12-24\",\"expiry\":\"2031-01-05\",\"sex\":\"F\",\"fullName\":\"EL AMRANI SANAE\",\"nameRaw\":\"EL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"docRaw\":\"RX12345676\"}"
+  },
+  {
+   "fn": "aiMrz",
+   "args": "[[\"IDMARAB12345671GI4599<<<<<<<<\",\"0007010M3008100MAR<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<\"]]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "aiMrz",
+   "args": "[[\"IDMAR\",\"X\",\"Y\"]]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "aiDatum",
+   "args": "[\"2030-08-10\"]",
+   "uitkomst": "\"2030-08-10\""
+  },
+  {
+   "fn": "aiDatum",
+   "args": "[\"10/08/2030\"]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "aiDatum",
+   "args": "[null]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "aiSchoon",
+   "args": "[\"  badaoui   adnane \"]",
+   "uitkomst": "\"BADAOUI ADNANE\""
+  },
+  {
+   "fn": "aiSchoon",
+   "args": "[null]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "docNumVariants",
+   "args": "[\"AB1234567\"]",
+   "uitkomst": "[\"AB1234567\"]"
+  },
+  {
+   "fn": "docNumVariants",
+   "args": "[\"OB12S4567\"]",
+   "uitkomst": "[\"OB12S4567\",\"OB1254567\"]"
+  },
+  {
+   "fn": "bestDocNum",
+   "args": "[\"AB1234567\",\"1\"]",
+   "uitkomst": "\"AB1234567\""
+  },
+  {
+   "fn": "bestDocNum",
+   "args": "[\"AB12345G7\",\"1\"]",
+   "uitkomst": "\"AB12345G7\""
+  },
+  {
+   "fn": "repairLines",
+   "args": "[[\"IDMARAB12345671GI4599<<<<<<<<<\",\"0007010M3008100MAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]]",
+   "uitkomst": "null"
+  },
+  {
+   "fn": "repairLines",
+   "args": "[[\"IDMARAB12345671GI4599<<<<<<<<<\",\"OOO7O1OM3OO81OOMAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]]",
+   "uitkomst": "[\"IDMARAB12345671GI4599<<<<<<<<<\",\"0007010M3008100MAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]"
+  },
+  {
+   "fn": "fixWithChecks",
+   "args": "[[\"IDMARAB12345671GI4599<<<<<<<<<\",\"0007010M3008100MAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\"}"
+  },
+  {
+   "fn": "fixWithChecks",
+   "args": "[[\"IDMARAB12345671GI4599<<<<<<<<<\",\"OOO7O1OM3OO81OOMAR<<<<<<<<<<<5\",\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\"]]",
+   "uitkomst": "{\"kind\":\"id\",\"docNumber\":\"AB1234567\",\"nationality\":\"MAR\",\"altNumber\":\"GI4599\",\"birthDate\":\"2000-07-01\",\"expiry\":\"2030-08-10\",\"sex\":\"M\",\"fullName\":\"BADAOUI ADNANE\",\"nameRaw\":\"BADAOUI<<ADNANE<<<<<<<<<<<<<<<\",\"docRaw\":\"IDMARAB12345671GI4599<<<<<<<<<\",\"docShaky\":false}"
+  },
+  {
+   "fn": "fixWithChecks",
+   "args": "[[\"P<MAREL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"RX12345676MAR8512246F3101056<<<<<<<<<<<<<<<0\"]]",
+   "uitkomst": "{\"kind\":\"passport\",\"docNumber\":\"RX1234567\",\"nationality\":\"MAR\",\"birthDate\":\"1985-12-24\",\"expiry\":\"2031-01-05\",\"sex\":\"F\",\"fullName\":\"EL AMRANI SANAE\",\"nameRaw\":\"EL<AMRANI<<SANAE<<<<<<<<<<<<<<<<<<<<<<<\",\"docRaw\":\"RX12345676\"}"
+  },
+  {
+   "fn": "naamConsensus",
+   "args": "[[\"BADAOUI ADNANE\",\"BADAOUI ADNANE\",\"BADA0UI ADNANE\"]]",
+   "uitkomst": "\"BADAOUI ADNANE\""
+  },
+  {
+   "fn": "naamConsensus",
+   "args": "[[]]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "lijstConsensus",
+   "args": "[[\"A\",\"A\",\"B\"],2]",
+   "uitkomst": "\"A\""
+  },
+  {
+   "fn": "lijstConsensus",
+   "args": "[[\"A\",\"B\",\"C\"],2]",
+   "uitkomst": "\"\""
+  },
+  {
+   "fn": "naamConsensusStreng",
+   "args": "[[\"BADAOUI ADNANE\",\"BADAOUI ADNANE\",\"BADAOUI ADNANE\"],2,0.6]",
+   "uitkomst": "\"BADAOUI ADNANE\""
+  },
+  {
+   "fn": "naamGeloofwaardig",
+   "args": "[\"BADAOUI ADNANE\"]",
+   "uitkomst": "true"
+  },
+  {
+   "fn": "naamGeloofwaardig",
+   "args": "[\"XQZ\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "naamGeloofwaardig",
+   "args": "[\"\"]",
+   "uitkomst": "false"
+  },
+  {
+   "fn": "marokNaam",
+   "args": "[\"ELOVARRAT\",null]",
+   "uitkomst": "\"ELOVARRAT\""
+  },
+  {
+   "fn": "marokNaam",
+   "args": "[\"BADAOUI ADNANE\",null]",
+   "uitkomst": "\"BADAOUI ADNANE\""
+  }
+ ]
+}
