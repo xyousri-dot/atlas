@@ -137,3 +137,29 @@ for (const taal of TALEN) test(`5. Slide-in (${taal}): nieuw scherm van ${taal =
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+const vullingen = page => page.evaluate(() => document.getAnimations().filter(a => a.animationName === "vul" && a.playState !== "finished").length);
+for (const taal of TALEN) test(`6. Bar fill (${taal}): het stuk dat groen wordt vult zich, bij contract en bij vertrek`, async () => {
+  const { page, fouten } = await B.open({ taal, beweging: true, traag: 0.2 });
+  await wacht(2500);
+  /* nieuw contract: stap 1 → 2 */
+  await page.click("#heldNieuw"); await wacht(2400);
+  await page.type("#nwName", "TEST"); await page.click("#bGo"); await wacht(30);
+  assert.equal(await vullingen(page), 1, "contract: één stuk vult zich");
+  await page.screenshot({ path: `${MAP}6-vul-${taal}-begin.png`, clip: { x: 0, y: 0, width: 390, height: 180 } });
+  await wacht(700); await page.screenshot({ path: `${MAP}6-vul-${taal}-midden.png`, clip: { x: 0, y: 0, width: 390, height: 180 } });
+  await wacht(1800); await page.screenshot({ path: `${MAP}6-vul-${taal}-eind.png`, clip: { x: 0, y: 0, width: 390, height: 180 } });
+  assert.equal(await vullingen(page), 0, "klaar");
+  /* vertrek: stap 1 bevestigen en verder */
+  await page.evaluate(() => openForm(RENTALS.find(r => r.code === "AT-10002"), "depart")); await wacht(2500);
+  assert.equal(await vullingen(page), 0, "openen vult niets");
+  await page.evaluate(() => document.querySelectorAll("#vForm .confirm")[0].click()); await wacht(100);
+  await page.click("#bGo"); await wacht(30);
+  assert.ok(await vullingen(page) >= 1, "vertrek: volgend stuk vult zich");
+  await wacht(2500);
+  /* gewoon verversen (bv. km typen) vult niets opnieuw */
+  await page.evaluate(() => refresh()); await wacht(30);
+  assert.equal(await vullingen(page), 0, "verversen vult niets opnieuw");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
