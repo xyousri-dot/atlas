@@ -132,3 +132,37 @@ for (const taal of ["fr", "ar"]) test(`Boete (${taal}): zoeken → verklaring (F
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+test("Betalen zonder terminal: RIB instellen → betaalverzoek via WhatsApp", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const open = () => page.evaluate(() => receipt(RENTALS.find(r => r.code === "AT-10003"), "depart"));
+  await open();
+  assert.ok(await page.$("#bzNaarInst"), "zonder RIB: knop naar Instellingen");
+  /* RIB invullen in Instellingen en opslaan met de knop onderaan */
+  await page.evaluate(() => { AG.extraVeld = "blijft"; view = "vSet"; render(); });
+  await page.type("#stRib", "230 780 1234567890123456 78");
+  await page.type("#stBank", "CIH");
+  await page.click("#bGo");
+  await page.waitForFunction(() => AG.rib === "230 780 1234567890123456 78");
+  assert.equal(await page.evaluate(() => AG.extraVeld), "blijft", "opslaan gooit geen velden weg");
+  await B.foto(page, "fr-instellingen-rib");
+  await open();
+  const v = await page.evaluate(() => ({ tekst: document.getElementById("bzTekst")?.textContent, wa: document.getElementById("bzWa")?.href }));
+  for (const w of ["AT-10003", "230 780 1234567890123456 78", "CIH", "Atlas Kenitra", "6 250 DH"])
+    assert.ok(v.tekst.includes(w), "bericht mist: " + w + " in " + v.tekst);
+  assert.ok(v.wa.startsWith("https://wa.me/212600000001?text="));
+  /* Ook direct onder "Le client a-t-il payé ?", zonder submenu */
+  const kort = await page.evaluate(() => document.getElementById("bzWaKort")?.href);
+  assert.equal(kort, v.wa);
+  await page.evaluate(() => document.getElementById("bzWaKort").scrollIntoView({ block: "center" }));
+  await B.foto(page, "fr-betaalverzoek");
+  /* Na het verzoek boekt "Location reçue" als overschrijving */
+  await page.evaluate(() => { const a = document.getElementById("bzWaKort"); a.removeAttribute("href"); a.click(); });
+  await page.waitForFunction(() => RENTALS.find(r => r.code === "AT-10003").betaalVerzoek);
+  await open();
+  await page.evaluate(() => [...document.querySelectorAll(".betaald button")].find(b => /Location re/.test(b.textContent)).click());
+  await page.waitForFunction(() => RENTALS.find(r => r.code === "AT-10003").payments.length === 2);
+  assert.equal(await page.evaluate(() => RENTALS.find(r => r.code === "AT-10003").payments[1].method), "transfer");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});

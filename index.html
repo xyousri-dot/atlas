@@ -1082,6 +1082,12 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
           <div class="f"><label class="lbl" for="stWindow" id="stWindowL"></label><input type="number" id="stWindow" inputmode="numeric"></div>
         </div>
         <div class="f"><label class="lbl" for="stFranchise" id="stFranchiseL"></label><input type="number" id="stFranchise" inputmode="numeric" placeholder="10000"></div>
+        <!-- Betalen zonder terminal: de klant schrijft over naar dit RIB. -->
+        <div class="grid2">
+          <div class="f"><label class="lbl" for="stRib" id="stRibL"></label><input type="text" id="stRib" inputmode="numeric" autocomplete="off" placeholder="000 000 0000000000000000 00"></div>
+          <div class="f"><label class="lbl" for="stBank" id="stBankL"></label><input type="text" id="stBank" autocomplete="off" placeholder="CIH, Attijariwafa, BMCE…"></div>
+        </div>
+        <p class="fine" id="stRibP" style="margin:-4px 0 0"></p>
         <div class="f"><label class="lbl" id="stOptL"></label>
           <button type="button" class="confirm" id="stPromise" style="margin-top:0;text-align:left"></button>
           <button type="button" class="confirm" id="stLoyal" style="text-align:left"></button>
@@ -2387,6 +2393,19 @@ zetTekst("bvVerstuurd",{ nl:"Verstuurd ✓", fr:"Envoyée ✓", ar:"تم الإ�
 zetTekst("bvOpnieuw",{ nl:"Verklaring", fr:"Déclaration", ar:"التصريح" });
 zetTekst("bvLijst",{ nl:"Boetes bij deze verhuur", fr:"Amendes sur cette location", ar:"مخالفات هذا الكراء" });
 zetTekst("bvKlaar",{ nl:function(d){ return "verstuurd op "+d; }, fr:function(d){ return "envoyée le "+d; }, ar:function(d){ return "أرسل يوم "+d; } });
+zetTekst("stRibL",{ nl:"RIB voor overschrijvingen", fr:"RIB pour les virements", ar:"رقم الحساب البنكي (RIB) للتحويلات" });
+zetTekst("stBankL",{ nl:"Bank", fr:"Banque", ar:"البنك" });
+zetTekst("stRibP",{ nl:"Klanten betalen dan met hun bankapp, zonder terminal. Atlas zet het RIB in het betaalverzoek.", fr:"Vos clients paient alors avec leur application bancaire, sans terminal. Atlas met ce RIB dans la demande de paiement.", ar:"يؤدي زبناؤك عبر تطبيق البنك، بدون جهاز أداء. أطلس يضع هذا الرقم في طلب الأداء." });
+zetTekst("bzH",{ nl:"Betalen zonder terminal", fr:"Paiement sans terminal", ar:"الأداء بدون جهاز" });
+zetTekst("bzGeenRib",{ nl:"Zet eerst het RIB van je zaak in Instellingen. Dan stuur je de klant het bedrag en je RIB via WhatsApp, en betaalt hij met zijn bankapp.", fr:"Indiquez d’abord le RIB de l’agence dans Réglages. Vous enverrez ensuite au client le montant et votre RIB sur WhatsApp ; il paie avec son application bancaire.", ar:"أدخل أولا رقم الحساب البنكي (RIB) للوكالة في الإعدادات. بعد ذلك ترسل للزبون المبلغ ورقم الحساب عبر واتساب، ويؤدي بتطبيق البنك." });
+zetTekst("bzNaarInst",{ nl:"RIB invullen", fr:"Saisir le RIB", ar:"إدخال RIB" });
+zetTekst("bzWa",{ nl:"Betaalverzoek via WhatsApp", fr:"Demande de paiement sur WhatsApp", ar:"طلب الأداء عبر واتساب" });
+zetTekst("bzKopie",{ nl:"Tekst kopiëren", fr:"Copier le texte", ar:"نسخ النص" });
+zetTekst("bzGekopieerd",{ nl:"Gekopieerd", fr:"Copié", ar:"تم النسخ" });
+/* Het bericht gaat naar de klant: Frans, of Arabisch als de app in het Arabisch staat. */
+function bzFr(r,c,ag,b){ return "Bonjour "+r.clientName+", montant à régler pour votre location "+r.code+" ("+c.model+") : "+b+".\nVirement sur le RIB "+ag.rib+(ag.bank?" ("+ag.bank+")":"")+", au nom de "+ag.name+".\nRéférence : "+r.code+". Merci d’envoyer la capture du virement ici."; }
+zetTekst("bzMsg",{ nl:bzFr, fr:bzFr,
+  ar:function(r,c,ag,b){ return "مرحبا "+r.clientName+"، المبلغ المطلوب لكرائك "+r.code+" ("+c.model+"): "+b+".\nالتحويل إلى رقم الحساب "+ag.rib+(ag.bank?" ("+ag.bank+")":"")+" باسم "+ag.name+".\nالمرجع: "+r.code+". المرجو إرسال صورة التحويل هنا."; } });
 var LKEY="atlas-lang";
 var L=(function(){ try{ var x=localStorage.getItem(LKEY); return x==="nl"||x==="ar"?x:"fr"; }catch(e){ return "fr"; } })();
 function T(){ return TXT[L]; }
@@ -7881,6 +7900,8 @@ function fillSettings(){
   $("stOcrS").textContent = ocrSleutel() ? t.stOcrAan : t.stOcrUit;
   var t=T();
   $("stName").value=AG.name||""; $("stCity").value=AG.city||""; $("stInit").value=AG.init||"A"; $("stCaution").value=AG.caution||3000; $("stWindow").value=AG.window||30; $("stFranchise").value=AG.franchise||"";
+  $("stRibL").textContent=t.stRibL; $("stBankL").textContent=t.stBankL; $("stRibP").textContent=t.stRibP;
+  $("stRib").value=AG.rib||""; $("stBank").value=AG.bank||"";
   paintToggles();
   $("bBack").hidden=true; $("bGo").textContent=t.stSave; $("bGo").disabled=false; $("note").textContent=""; $("dock").hidden=false;
 }
@@ -7892,7 +7913,9 @@ function paintToggles(){
 $("stPromise").addEventListener("click",function(){ AG.promise=!(AG.promise!==false); paintToggles(); });
 $("stLoyal").addEventListener("click",function(){ AG.loyal=!(AG.loyal!==false); paintToggles(); });
 async function saveSettings(){
-  AG={ name:$("stName").value.trim()||"Atlas", city:$("stCity").value.trim(), init:($("stInit").value.trim()||"A").slice(0,2), caution:Number($("stCaution").value)||3000, window:Number($("stWindow").value)||30, franchise:Number($("stFranchise").value)||0, promise:AG.promise!==false, loyal:AG.loyal!==false };
+  /* Bestaande velden die hier niet op het scherm staan, blijven bewaard. */
+  AG=Object.assign({},AG,{ name:$("stName").value.trim()||"Atlas", city:$("stCity").value.trim(), init:($("stInit").value.trim()||"A").slice(0,2), caution:Number($("stCaution").value)||3000, window:Number($("stWindow").value)||30, franchise:Number($("stFranchise").value)||0, promise:AG.promise!==false, loyal:AG.loyal!==false,
+    rib:$("stRib").value.replace(/[^0-9 ]/g,"").replace(/\s+/g," ").trim(), bank:$("stBank").value.trim() });
   await S.set("settings/agency",AG); paintBrand(); toast(T().saved);
 }
 
@@ -8121,7 +8144,7 @@ function betaaldBlok(r){
     b.appendChild(el("span",null,label[0])); b.appendChild(el("b",null,label[1]));
     b.addEventListener("click",async function(){
       b.disabled=true;
-      var list=pays(r).slice(); list.push({ id:uid(), amount:bedrag, kind:soort, method:"cash", date:today(), note:"" });
+      var list=pays(r).slice(); list.push({ id:uid(), amount:bedrag, kind:soort, method:r.betaalVerzoek?"transfer":"cash", date:today(), note:"" });
       await S.set("rentals/"+r.id,stripId(Object.assign({},r,{payments:list}))); await reload();
       var vers=RENTALS.filter(function(z){ return z.id===r.id; })[0]||r;
       toast(t.saved); receipt(vers, vers.retour?"retour":"depart");
@@ -8130,6 +8153,8 @@ function betaaldBlok(r){
   }
   if(huur>0) knop("rent",huur,t.kkHuur(dh(huur)));
   if(borg>0) knop("caution",borg,t.kkBorg(dh(borg)));
+  /* Geen contant geld bij de hand? Betaalverzoek meteen hier, niet in een submenu. */
+  if(AG.rib && r.clientTel) box.appendChild(betaalVerzoek(r,true));
   return box;
 }
 function receipt(r,kind){
@@ -9078,7 +9103,46 @@ function payPanel(r){
     toast(t.saved); receipt(fresh, fresh.retour?"retour":"depart");
   });
   box.appendChild(go);
+  box.appendChild(betaalVerzoek(r));
   return box;
+}
+/* ============ BETALEN ZONDER TERMINAL ============
+   Geen kaartterminal nodig: de klant krijgt op WhatsApp het bedrag, het RIB van
+   de zaak en de referentie, en betaalt met zijn bankapp. Komt het geld binnen,
+   dan noteer je het hierboven als "Overschrijving". */
+function teBetalen(r){ return Math.max(0,dueRent(r))+Math.max(0,dueCaution(r)); }
+function betaalVerzoek(r,kort){
+  var t=T(), w=el("div"); w.style.cssText=kort?"margin-top:4px":"margin-top:14px;border-top:1px solid var(--line);padding-top:12px";
+  var bedrag=teBetalen(r);
+  if(bedrag<=0) return w;
+  if(!kort) w.appendChild(Object.assign(el("p","lbl"),{textContent:t.bzH,style:"margin:0 0 6px"}));
+  if(!AG.rib){
+    w.appendChild(Object.assign(el("p","fine"),{textContent:t.bzGeenRib,style:"margin:0 0 8px"}));
+    var ns=el("button","btn ghost sm",t.bzNaarInst); ns.type="button"; ns.id="bzNaarInst";
+    ns.addEventListener("click",function(){ view="vSet"; render(); setTimeout(function(){ var x=$("stRib"); if(x){ x.scrollIntoView({block:"center"}); x.focus(); } },100); });
+    w.appendChild(ns); return w;
+  }
+  var tekst=t.bzMsg(r, car(r.vehicleId), AG, dh(bedrag).replace(/[\u2066-\u2069]/g,""));
+  if(!kort) w.appendChild(Object.assign(el("div","copybox",tekst),{id:"bzTekst"}));
+  var rij=el("div"); rij.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px";
+  if(r.clientTel){
+    var wa=el("a",kort?"btn ghost":"btn sm",(kort?"\u21aa ":"")+t.bzWa); wa.id=kort?"bzWaKort":"bzWa"; wa.target="_blank"; wa.rel="noopener";
+    wa.style.textDecoration="none";
+    if(kort) wa.style.cssText="width:100%;justify-content:center;text-decoration:none";
+    wa.href="https://wa.me/"+r.clientTel.replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(tekst);
+    /* Onthouden dat er om een overschrijving gevraagd is: de knop "ontvangen"
+       boekt het dan als overschrijving, niet als contant geld in de la. */
+    wa.addEventListener("click",function(){
+      if(r.betaalVerzoek) return;
+      S.set("rentals/"+r.id,stripId(Object.assign({},r,{ betaalVerzoek:today() }))).then(reload).catch(dbErr);
+    });
+    rij.appendChild(wa);
+    if(kort){ w.appendChild(rij); return w; }
+  }
+  var cp=el("button","btn ghost sm",t.bzKopie); cp.type="button";
+  cp.addEventListener("click",async function(){ try{ await navigator.clipboard.writeText(tekst); toast(t.bzGekopieerd); }catch(e){ toast("\u2014"); } });
+  rij.appendChild(cp); w.appendChild(rij);
+  return w;
 }
 
 /* ============ BORGEN ============ */
