@@ -614,6 +614,62 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .job .winst{font-size:13.5px;font-weight:700;margin-top:4px}
 .job .winst.plus{color:var(--brand)}
 .job .winst.min{color:var(--warn)}
+/* ===== Nieuw uiterlijk (ronde 4) =====
+   Groene kop met de cijfers van vandaag (zoals een bankapp), een grote + in het
+   midden van het menu (zoals Square), grote kaarten en tegels, en een nieuw
+   contract in drie duidelijke stappen. */
+:root{ --rc:20px; --rs:14px; --sh:0 1px 2px rgba(21,26,22,.04), 0 10px 28px -14px rgba(21,26,22,.22); }
+#vDay > .title{display:none}
+.held{background:linear-gradient(160deg,#0E7553 0%,#0A5540 70%,#08432F 100%);color:#fff;border-radius:24px;padding:20px 18px 16px;margin:6px 0 4px;box-shadow:0 18px 40px -22px rgba(8,67,47,.75);position:relative;overflow:hidden}
+.held::after{content:"";position:absolute;inset-inline-end:-60px;top:-70px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07)}
+.held-dag{margin:0;font-size:14px;font-weight:600;opacity:.8}
+.held-dag::first-letter{text-transform:uppercase}
+.held-titel{margin:4px 0 16px;font-size:27px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.held-knop{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:58px;border:none;border-radius:16px;background:#fff;color:#0A5540;font:inherit;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px -8px rgba(0,0,0,.4)}
+.held-knop::before{content:"+";font-size:26px;font-weight:600;line-height:1}
+.held .strook{margin:14px 0 0;gap:0;background:rgba(255,255,255,.1);border-radius:16px;position:relative;z-index:1}
+.held .strook button{background:none;box-shadow:none;color:#fff;border-radius:0;padding:12px 10px}
+.held .strook button + button{border-inline-start:1px solid rgba(255,255,255,.16)}
+.held .strook span{color:rgba(255,255,255,.75)}
+/* Menu: grote + in het midden */
+.tabs button[data-v="vClients"]{display:none!important}
+.tabs{align-items:flex-end}
+.tabs button[data-v="vDay"]{order:1} .tabs button[data-v="vPlan"]{order:2} .tabs button.tab-plus{order:3} .tabs button[data-v="vFleet"]{order:4} .tabs button[data-v="meer"]{order:5}
+.tabs button.tab-plus{color:var(--brand)!important}
+.tabs button.tab-plus svg{width:30px;height:30px;padding:13px;box-sizing:content-box;border-radius:50%;background:var(--brand);color:#fff;stroke:#fff;stroke-width:2.6;margin-top:-26px;box-shadow:0 10px 22px -8px rgba(10,85,64,.7);border:4px solid var(--bg)}
+/* Kaarten op Vandaag */
+.kaartje{border:none;border-radius:20px;box-shadow:var(--sh);padding:16px 16px 14px}
+.kaartje.laat{box-shadow:inset 5px 0 0 var(--warn),var(--sh)}
+.kaartje .auto{font-size:18px}
+.kaartje .wanneer{font-size:12.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:var(--line);color:var(--ink2)}
+.kaartje .wanneer.vandaag{background:var(--gold-soft);color:var(--gold)}
+.kaartje .wanneer.laat{background:var(--warn-soft);color:var(--warn)}
+.kaartje .knoppen .btn{min-height:52px;border-radius:14px;font-size:16.5px}
+/* Nieuw contract in drie stappen */
+.nwvoortgang{display:flex;gap:6px;margin:-6px 0 18px}
+.nwvoortgang .punt{flex:1;display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700;color:var(--ink3)}
+.nwvoortgang .punt::before{content:"";height:5px;border-radius:99px;background:var(--line2)}
+.nwvoortgang .punt.klaar::before, .nwvoortgang .punt.nu::before{background:var(--brand)}
+.nwvoortgang .punt.nu{color:var(--brand)}
+.nwvoortgang i{display:none}
+#vNew.nwwizard .vstap-k{display:none}
+#vNew.nwwizard .vstap{border:none;background:none;box-shadow:none;overflow:visible}
+#vNew.nwwizard .vstap-in{padding:0}
+#vNew.nwwizard .title h1{font-size:32px}
+#vNew.nwwizard #nwScanKaart{min-height:120px;font-size:20px;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+#vNew.nwwizard #nwScanKaart::before{content:"";width:42px;height:30px;border:3px solid currentColor;border-radius:7px;opacity:.9}
+#vNew.nwwizard .tegels{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#vNew.nwwizard .tegel{min-height:104px;padding:16px;border-radius:18px;border:2px solid transparent;box-shadow:var(--sh);display:flex;flex-direction:column;justify-content:space-between}
+#vNew.nwwizard .tegel b{font-size:18px}
+#vNew.nwwizard .tegel span{font-size:13.5px}
+#vNew.nwwizard .tegel[aria-pressed="true"]{border-color:var(--brand)}
+#vNew.nwwizard .dagknop{min-height:64px;font-size:18px;border-radius:16px}
+#vNew.nwwizard .prijsregel{padding:18px;border-radius:18px;font-size:17px}
+#vNew.nwwizard .prijsregel b{font-size:28px}
+#vNew.nwwizard input[type="text"], #vNew.nwwizard input[type="tel"]{min-height:54px;font-size:17px}
+.schud{animation:schud .35s}
+@keyframes schud{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){ .schud{animation:none} }
 /* ===== Rust (ronde 3): zoals Square en Airbnb =====
    Geen uitlegzinnen onder de titels, geen kleine lettertjes onderaan, kopjes in
    gewone zinnen in plaats van HOOFDLETTERS. Het klantscherm (scanner) blijft zoals
@@ -665,6 +721,7 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
     <button data-v="vCash" aria-current="false"></button>
     <button data-v="vSet" aria-current="false"></button>
     <button data-v="meer" class="tab-meer" aria-expanded="false"></button>
+    <button data-v="nieuw" class="tab-plus"></button>
   </div>
   <div class="prog" id="prog" hidden>
     <div class="prog-row"><b id="progTxt"></b><span id="progWho"></span></div>
@@ -831,6 +888,8 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 
   <div id="vNew" hidden>
     <div class="title"><div><h1 id="nwH"></h1><p id="nwP"></p></div></div>
+    <!-- Nieuw contract in drie schermen: wie, welke auto, hoe lang. -->
+    <div class="nwvoortgang" id="nwVoortgang" hidden></div>
     <div class="two">
       <div>
         <section class="vstap">
@@ -2446,6 +2505,11 @@ zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" pa
                        fr:function(n,d){ return n+(n>1?" documents à renouveler":" document à renouveler")+" — le premier le "+d; },
                        ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
 zetTekst("stGrpAg",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
+zetTekst("tabNieuw",{ nl:"Contract", fr:"Contrat", ar:"عقد" });
+zetTekst("heldTaken",{ nl:function(n){ return n ? n+" te doen vandaag" : "Niets te doen vandaag"; },
+                       fr:function(n){ return n ? n+" \u00e0 faire aujourd\u2019hui" : "Rien \u00e0 faire aujourd\u2019hui"; },
+                       ar:function(n){ return n ? n+" مهام اليوم" : "لا شيء اليوم"; } });
+zetTekst("nwNaamEerst",{ nl:"Scan de kaart of typ de naam van de klant.", fr:"Scannez la carte ou tapez le nom du client.", ar:"امسح البطاقة أو اكتب اسم الزبون." });
 zetTekst("stGrpLoc",{ nl:"Verhuur", fr:"Location", ar:"الكراء" });
 zetTekst("stRibL",{ nl:"RIB voor overschrijvingen", fr:"RIB pour les virements", ar:"رقم الحساب البنكي (RIB) للتحويلات" });
 zetTekst("stBankL",{ nl:"Bank", fr:"Banque", ar:"البنك" });
@@ -2960,7 +3024,7 @@ window.addEventListener("popstate",function(e){
   VIA_POP=true;
   try{
     view=doel;
-    if(doel==="vNew") show("vNew");
+    if(doel==="vNew"){ show("vNew"); if(NWSTAP){ NWSTAP=(e.state && e.state.stap)||1; toonHuurStap(); } }
     else if(bonR) receipt(bonR,LAATSTEBON.mode);
     else if(kaartR) openCard(kaartR);
     else render();
@@ -2996,6 +3060,7 @@ var TABICOON={
   vClients:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
   vFleet:'<svg viewBox="0 0 24 24"><path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="15" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="19.5" r="1.5"/><circle cx="16.5" cy="19.5" r="1.5"/></svg>',
   vTrust:'<svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
+  nieuw:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   meer:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
   vLed:'<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M7 15h3"/></svg>',
   vCash:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -3004,13 +3069,13 @@ var TABICOON={
 function tekenTabs(){
   var t=T();
   Array.prototype.forEach.call($("tabs").children,function(b,i){
-    var v=b.dataset.v, label = v==="meer" ? t.tabMeer : t.tabs[i];
+    var v=b.dataset.v, label = v==="meer" ? t.tabMeer : v==="nieuw" ? t.tabNieuw : t.tabs[i];
     b.innerHTML=(TABICOON[v]||"")+"<span>"+esc(label)+"</span>";
   });
 }
 function openMeer(){
   var t=T(), w=el("div","meerblad"), b=el("div","in"); b.appendChild(el("div","greep"));
-  [["vLed",t.tabs[4]],["vCash",t.tabs[5]],["vSet",t.tabs[6]]].forEach(function(x){
+  [["vClients",t.tabs[2]],["vLed",t.tabs[4]],["vCash",t.tabs[5]],["vSet",t.tabs[6]]].forEach(function(x){
     var k=el("button","rij"); k.type="button"; k.innerHTML=TABICOON[x[0]]+"<span>"+esc(x[1])+"</span>";
     k.addEventListener("click",function(){ w.remove(); stashDraft(); rental=null; draft=null; view=x[0]; render(); });
     b.appendChild(k);
@@ -3032,6 +3097,8 @@ $("tabs").addEventListener("click",function(e){
   var b=e.target.closest("button"); if(!b) return;
   /* "Meer" toont de tabbladen die een gewone verhuurder zelden nodig heeft. */
   if(b.dataset.v==="meer"){ openMeer(); return; }
+  /* De grote + in het midden: van elk scherm met één tik een nieuw contract. */
+  if(b.dataset.v==="nieuw"){ $("newRental").click(); return; }
   stashDraft(); rental=null; draft=null; view=b.dataset.v; render(); });
 $("lnNL").addEventListener("click",function(){ setLang("nl"); });
 $("lnFR").addEventListener("click",function(){ setLang("fr"); });
@@ -3119,7 +3186,6 @@ function renderDay(){
     e.appendChild(b1); e.appendChild(b2); box.appendChild(e); return;
   }
   var nu=today();
-  box.appendChild(dagStrook(nu));
   /* Papieren van een auto verlopen (verzekering, keuring, vignet): dat moet hij
      zien voor hij die auto meegeeft. Verlopen = bovenaan in rood, één tik naar de
      auto. Binnenkort verlopen = één regel onderaan die openklapt. */
@@ -3172,6 +3238,7 @@ function renderDay(){
   var nuWeg=gepland.filter(function(r){ return r.from<=nu; }), laterWeg=gepland.filter(function(r){ return r.from>nu; });
   var boetes=openBoetes();
   var aantalNu=nuTerug.length+nuWeg.length+borg.length+boetes.length;
+  box.insertBefore(dagStrook(nu,aantalNu), box.firstChild);
   kop(t.hNu+(aantalNu?" ("+aantalNu+")":""));
   if(!aantalNu) box.appendChild(el("p","leegtje",t.geenNu));
   nuTerug.forEach(terugKaart);
@@ -3209,8 +3276,14 @@ function voetregel(tekst,fn){
    Drie cijfers waar een eigenaar elke ochtend naar kijkt: wat er vandaag
    binnenkwam, hoeveel borg hij in handen heeft, en hoeveel auto's er vrij staan.
    Elk cijfer is een tik naar het scherm erachter. */
-function dagStrook(nu){
-  var t=T(), w=el("div","strook");
+function dagStrook(nu,aantal){
+  var t=T(), held=el("div","held");
+  held.appendChild(el("p","held-dag",new Date().toLocaleDateString(t.loc,{weekday:"long",day:"numeric",month:"long"}).replace(/[\u200e\u200f\u061c]/g,"")));
+  held.appendChild(el("h2","held-titel",t.heldTaken(aantal||0)));
+  var nk=el("button","held-knop",t.newRental); nk.type="button"; nk.id="heldNieuw";
+  nk.addEventListener("click",function(){ $("newRental").click(); });
+  held.appendChild(nk);
+  var w=el("div","strook"); held.appendChild(w);
   var binnen=cashMoves(nu).filter(function(m){ return m.dir==="in"; }).reduce(function(a,m){ return a+m.amount; },0);
   var borg=heldList().reduce(function(a,r){ return a+paidCaution(r); },0);
   var vrij=CARS.filter(function(c){ return vrijeAuto(c,nu,plus(nu,1)); }).length;
@@ -3220,7 +3293,7 @@ function dagStrook(nu){
     b.addEventListener("click",function(){ view=x[2]; render(); });
     w.appendChild(b);
   });
-  return w;
+  return held;
 }
 /* Rij + de handelingen die op deze stap logisch zijn. Verlengen en betalen
    staan er meteen bij, niet verstopt in een formulier. */
@@ -7297,6 +7370,76 @@ function tekenPrijsRegel(){
   tekenBorgKnoppen();
   try{ zetHuurKnop(); }catch(e){}
 }
+/* ============ NIEUW CONTRAT IN DRIE SCHERMEN ============
+   Eén ding per scherm: 1. wie huurt (kaart scannen of naam), 2. welke auto
+   (één tik op een tegel gaat meteen door), 3. hoe lang en de prijs. Elke stap
+   krijgt een plek in de geschiedenis: terug (knop of telefoon) = vorige stap.
+   Wijzigen en verlengen blijven op één scherm (NWSTAP 0). De velden en de
+   scanner zijn dezelfde als voorheen; alleen wat zichtbaar is, verandert. */
+var NWSTAP=0;
+function klantIngevuld(){
+  var sel=$("nwClient");
+  return (sel && sel.value && sel.value!=="new") || $("nwName").value.trim().length>1 || !!SNELBEZIG;
+}
+function toonHuurStap(){
+  var t=T(), secties=document.querySelectorAll("#vNew section.vstap"), v=$("nwVoortgang");
+  $("vNew").classList.toggle("nwwizard",!!NWSTAP);
+  Array.prototype.forEach.call(secties,function(sec,i){ sec.hidden = !!NWSTAP && i!==NWSTAP-1; });
+  v.hidden=!NWSTAP; v.innerHTML="";
+  if(NWSTAP){
+    var namen=[t.nwS1,t.nwS2,t.nwS3];
+    namen.forEach(function(x,i){
+      var d=el("div","punt"+(i+1<NWSTAP?" klaar":(i+1===NWSTAP?" nu":"")));
+      d.appendChild(el("i",null,i+1<NWSTAP?"\u2713":String(i+1))); d.appendChild(el("span",null,x)); v.appendChild(d);
+    });
+    $("nwH").textContent=namen[NWSTAP-1];
+  }
+  zetHuurKnop();
+  window.scrollTo(0,0);
+}
+function huurNaarStap(n){
+  NWSTAP=n;
+  try{ STAPEL=STAPEL.slice(0,IDX+1); STAPEL.push("vNew"); IDX++; DIEPTE++; history.pushState({ v:"vNew", i:IDX, stap:n },""); }catch(e){}
+  toonHuurStap();
+}
+function huurVolgende(){
+  var t=T();
+  if(NWSTAP===1 && !klantIngevuld()){
+    var n=$("nwName"); n.focus(); n.classList.remove("schud"); void n.offsetWidth; n.classList.add("schud");
+    toast(t.nwNaamEerst); return;
+  }
+  huurNaarStap(NWSTAP+1);
+}
+var openNewBasis=openNew;
+openNew=function(presetClient,edit){
+  openNewBasis(presetClient,edit);
+  if(view!=="vNew") return;
+  /* Nooit een auto voorstellen die nog bij een klant staat (ook niet als hij te
+     laat is): kies dan de eerste die echt vrij is. */
+  if(!editRental){
+    var sel=$("nwCar"), f=$("nwFrom").value, tt=$("nwTo").value;
+    if(!vrijeAuto(car(sel.value),f,tt)){
+      var vrij=CARS.filter(function(c){ return vrijeAuto(c,f,tt); })[0];
+      if(vrij){ sel.value=vrij.id; recalc(); tekenAutoTegels(); }
+    }
+  }
+  NWSTAP = editRental ? 0 : 1;
+  toonHuurStap();
+};
+var zetHuurKnopBasis=zetHuurKnop;
+zetHuurKnop=function(){
+  zetHuurKnopBasis();
+  var t=T(), b=$("bGo"), k=$("bBack"); if(!b || view!=="vNew" || !NWSTAP) return;
+  if(NWSTAP<3){ b.textContent=t.fVolgende; b.disabled=false; }
+  else b.disabled=!$("nwClash").hidden;
+  k.className="btn ghost"; k.textContent = NWSTAP>1 ? t.fVorige : t.cancel;
+};
+/* Auto gekozen in stap 2: meteen door naar de dagen. */
+$("nwCarTegels").addEventListener("click",function(e){
+  var tg=e.target.closest(".tegel");
+  if(!tg || tg.disabled || NWSTAP!==2) return;
+  setTimeout(function(){ if(NWSTAP===2 && $("nwClash").hidden) huurNaarStap(3); },180);
+});
 /* ============ BORG OP MAAT ============
    De borg van de auto, de korting voor een vaste klant, en een lagere of hogere
    borg: één tik. Een onbekende klant met een dure auto vraagt iets anders dan een
@@ -9424,12 +9567,19 @@ $("newClient").addEventListener("click",function(){ openClient(null); });
 $("bBack").addEventListener("click",function(){
   if(view==="vCar"){ carEdit?delCar():eenTerug(); return; }
   if(view==="vClient"){ clientEdit?delClient():eenTerug(); return; }
-  if(view==="vNew"){ if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; NWOPEN=false; eenTerug(); return; }
+  if(view==="vNew"){
+    if(NWSTAP>1){ history.back(); return; }   /* vorige stap, net als de terugknop van de telefoon */
+    if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; NWOPEN=false; eenTerug(); return;
+  }
   if(view==="vForm" && FSTAP>0){ FSTAP--; toonStap(); return; }
   stashDraft(); rental=null; draft=null; eenTerug();
 });
 $("bGo").addEventListener("click",function(){
-  if(view==="vNew"){ saveRental(); return; }
+  if(view==="vNew"){
+    if(NWSTAP && NWSTAP<3){ huurVolgende(); return; }
+    if(NWSTAP===3 && !klantIngevuld()){ huurNaarStap(1); toast(T().nwNaamEerst); return; }
+    saveRental(); return;
+  }
   if(view==="vCar"){ saveCar(); return; }
   if(view==="vClient"){ saveClient(); return; }
   if(view==="vSet"){ saveSettings(); return; }

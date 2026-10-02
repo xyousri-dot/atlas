@@ -39,7 +39,7 @@ test("Arabisch: hele app van rechts naar links, menu in het Arabisch", async () 
     tabs: [...document.querySelectorAll("#tabs button")].filter(b => b.offsetParent && getComputedStyle(b).display !== "none").map(b => b.textContent),
     knop: document.querySelector("#dayBody .btn, #dayBody button")?.textContent }));
   assert.equal(st.dir, "rtl"); assert.equal(st.lang, "ar");
-  assert.deepEqual(st.tabs, ["اليوم", "التخطيط", "الزبناء", "السيارات", "المزيد"]);
+  assert.deepEqual([...st.tabs].sort(), ["اليوم", "التخطيط", "عقد", "السيارات", "المزيد"].sort());
   for (const [v, naam] of [["vFleet", "ar-autos"], ["vLed", "ar-borgen"], ["vCash", "ar-kas"], ["vSet", "ar-instellingen"], ["vPlan", "ar-planning"]]) {
     await page.evaluate(v => { view = v; render(); }, v);
     await B.foto(page, naam);
@@ -212,7 +212,7 @@ for (const taal of ["fr", "ar"]) test(`Vandaag (${taal}): ochtendstrook, werk ee
       voet: [...document.querySelectorAll(".onderaan .voetregel")].map(v => v.textContent),
       lijstVerborgen: document.querySelector(".onderaan .alerts")?.hidden };
   });
-  assert.equal(st.eerste, "strook");
+  assert.equal(st.eerste, "held", "groene kop bovenaan");
   assert.equal(st.strook[1].replace(/[.\s]/g, ""), "6000DH", "borg in handen");
   assert.equal(st.strook[2], "2/4", "auto's vrij");
   const libres = await page.evaluate(() => [...document.querySelectorAll(".vrijlijst button")].map(b => b.textContent));
@@ -235,11 +235,24 @@ test("Terug: contract maken → Photos et dommages → terug = Contrat prêt →
   const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
   const v = () => page.evaluate(() => view);
   await page.evaluate(() => { pdfFromSheet = async () => {}; });
-  await page.click("#newRental"); await wacht();
+  await page.click("#heldNieuw"); await wacht();
   await page.evaluate(() => { const i = document.getElementById("snelCam"); if (i) i.value = ""; });
   assert.equal(await v(), "vNew");
+  /* stap 1: zonder naam mag je niet verder */
+  await page.click("#bGo"); await wacht();
+  assert.equal(await page.evaluate(() => NWSTAP), 1, "zonder naam blijft stap 1");
   await page.type("#nwName", "KLANT TEST");
-  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click());
+  await page.click("#bGo"); await wacht();
+  assert.equal(await page.evaluate(() => NWSTAP), 2);
+  const gekozen = await page.evaluate(() => document.querySelector("#nwCarTegels .tegel[aria-pressed=true]")?.textContent || "");
+  assert.ok(gekozen && !/occup/.test(gekozen) && !/Duster/.test(gekozen), "geen bezette auto vooraf gekozen: " + gekozen);
+  /* stap 2: tik op een auto → meteen stap 3 */
+  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
+  assert.equal(await page.evaluate(() => NWSTAP), 3);
+  /* terug op de telefoon = vorige stap, niet het hele contract kwijt */
+  await page.goBack(); await wacht();
+  assert.deepEqual(await page.evaluate(() => [view, NWSTAP]), ["vNew", 2]);
+  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
   await page.click("#bGo"); await wacht(800);
   assert.equal(await v(), "vDone", "na Établir le contrat");
   await page.evaluate(() => [...document.querySelectorAll("#vDone button")].find(b => /Photos et dommages/.test(b.textContent)).click()); await wacht();

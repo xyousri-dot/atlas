@@ -114,3 +114,23 @@ Jouw punt: alle functies mogen blijven, maar het moet aanvoelen als de simpele a
 | Instellingen | één lange lijst velden | groepjes: Votre agence · Location · Paiement sans terminal · Options · Compte |
 
 Niets verwijderd, alleen anders geordend. Het klantscherm (scanner) en het contract zijn niet aangeraakt. Tests: 24/24 groen (nieuw: één knop per kaart, tik op de kaart opent het contract).
+
+---
+
+## Ronde 4 — nieuwe werkwijze en nieuw uiterlijk
+
+Jouw punt: "er is niks veranderd qua werkwijze". Klopt. Nu wel:
+
+**Werkwijze**
+- **Nieuw contract in 3 schermen**, één ding per scherm: *Qui loue* → *Quelle voiture* → *Combien de temps*, met een voortgangsbalk en "Suivant". Een tik op een auto gaat meteen door naar stap 3. Zonder naam of scan kom je niet verder dan stap 1. Terug (knop of telefoon) = vorige stap, niet het hele contract kwijt.
+- **Grote + midden in het menu**: van elk scherm met één tik een nieuw contract (zoals Square). "Clients" staat nu onder "Plus".
+- Een auto die nog bij een klant staat (ook te laat), wordt nooit vooraf gekozen.
+
+**Uiterlijk**
+- **Groene kop op Vandaag**: de datum, "4 à faire aujourd'hui", een witte knop "+ Nouveau contrat" en de drie cijfers.
+- Kaarten zonder rand met zachte schaduw; de status als gekleurd label (rood te laat, geel vandaag).
+- Grote tegels voor de auto's, grote dagknoppen, grote prijs.
+
+Scanner, opslag en contract: ongewijzigd (vingerafdruk en 147 gevallen groen). Wijzigen en verlengen van een bestaande verhuur blijven op één scherm.
+
+Tests: 24/24 groen, met de volledige route in drie stappen, de terugknop per stap en "geen bezette auto vooraf gekozen". Schermafdrukken: `tests/schermen/fr-r4-*.png` en `ar-r4-*.png`.
