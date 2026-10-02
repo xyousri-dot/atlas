@@ -163,3 +163,27 @@ for (const taal of TALEN) test(`6. Bar fill (${taal}): het stuk dat groen wordt 
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+for (const taal of TALEN) test(`7. Blur-in (${taal}): contract klaar komt van wazig naar scherp, vinkje als laatste`, async () => {
+  const { page, fouten } = await B.open({ taal, beweging: true, traag: 0.2 });
+  await page.evaluate(() => { pdfFromSheet = async () => {}; });
+  await wacht(2500);
+  await page.click("#heldNieuw"); await wacht(2400);
+  await page.type("#nwName", "KLANT TEST"); await page.click("#bGo"); await wacht(2400);
+  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(2600);
+  await page.click("#bGo"); await wacht(60);
+  assert.equal(await page.evaluate(() => view), "vDone");
+  const anim = await page.evaluate(() => document.getAnimations().filter(a => ["blurIn", "tickpop"].includes(a.animationName)).map(a => ({ n: a.animationName, delay: a.effect.getTiming().delay, pseudo: a.effect.pseudoElement || "" })));
+  const blur = anim.find(a => a.n === "blurIn"), vink = anim.find(a => a.n === "tickpop" && a.pseudo === "::before");
+  assert.ok(blur, "blur-in op het klaar-scherm");
+  assert.ok(vink && vink.delay >= 300, "vinkje start pas na de blur: " + JSON.stringify(vink));
+  const wazig = await page.evaluate(() => getComputedStyle(document.getElementById("vDone")).filter);
+  assert.match(wazig, /blur\((?!0px)/, "begint wazig: " + wazig);
+  await page.screenshot({ path: `${MAP}7-blur-${taal}-begin.png` });
+  await wacht(1500); await page.screenshot({ path: `${MAP}7-blur-${taal}-midden.png` });
+  await wacht(2400); await page.screenshot({ path: `${MAP}7-blur-${taal}-eind.png` });
+  assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById("vDone")).filter), "none", "eindigt scherp");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById("vDone")).opacity), "1");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});

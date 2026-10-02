@@ -680,6 +680,10 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
   /* 3. vinkje van een net afgeronde stap */
   .nwvoortgang .punt.klaar.net i{animation:tickpop .35s cubic-bezier(.34,1.56,.64,1) both}
   @keyframes tickpop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  /* 7. Blur-in van het klaar-scherm; het vinkje popt pas daarna */
+  #vDone.blur-in{animation:blurIn .4s cubic-bezier(.22,1,.36,1) both}
+  @keyframes blurIn{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:blur(0)}}
+  #vDone.blur-in .title h1::before{animation:tickpop .3s cubic-bezier(.34,1.56,.64,1) .32s both}
   /* 6. Bar fill */
   .nwvoortgang .punt.vult::before, .prog-stappen button.vult::before{background:linear-gradient(var(--brand),var(--brand)) no-repeat 0 0/0% 100%,var(--line2);animation:vul .4s cubic-bezier(.22,1,.36,1) forwards}
   [dir="rtl"] .nwvoortgang .punt.vult::before, [dir="rtl"] .prog-stappen button.vult::before{background-position:100% 0}
@@ -7758,9 +7762,16 @@ show=function(v){
   var nieuw = v!==GETOOND, eerste = !GETOOND, terug = VIA_POP;
   showBasis(v);
   if(!nieuw) return;
-  if(!eerste && v!=="vDone") schuif($(v),!terug);
+  /* 7. Blur-in: het klaar-scherm komt van wazig naar scherp, het vinkje als laatste */
+  if(v==="vDone"){ if(!terug && !eerste) blurIn($(v)); return; }
+  if(!eerste) schuif($(v),!terug);
   laatOpkomen($(v));
 };
+function blurIn(node){
+  if(!node || !beweegt()) return;
+  node.classList.remove("blur-in"); void node.offsetWidth; node.classList.add("blur-in");
+  node.addEventListener("animationend",function weg(e){ if(e.animationName==="tickpop"){ node.classList.remove("blur-in"); node.removeEventListener("animationend",weg); } });
+}
 /* ============ BORG OP MAAT ============
    De borg van de auto, de korting voor een vaste klant, en een lagere of hogere
    borg: één tik. Een onbekende klant met een dure auto vraagt iets anders dan een
