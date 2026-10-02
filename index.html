@@ -609,6 +609,10 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 [dir="rtl"] .shot.on .cp{text-align:right}
 [dir="rtl"] details.kort[open]>summary{padding-left:0;padding-right:2px}
 /* De planning is een kalender: die blijft van links naar rechts lopen. */
+/* Borg op maat: kop erboven, vier knoppen op één rij. */
+.borgen{flex-wrap:nowrap!important}
+.borgen .lbl{display:none}
+.borgen .dagknop{flex:1 1 0;min-width:0;padding-left:4px;padding-right:4px;font-size:14px;white-space:nowrap}
 [dir="rtl"] .planwrap, [dir="rtl"] .plan-nav{direction:ltr}
 /* Een Marokkaanse plaat leest altijd: nummer · letter · regio, van links naar rechts. */
 [dir="rtl"] .plate{direction:ltr}
@@ -857,6 +861,8 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
             <!-- Wat de klant betaalt, in één regel. Andere datums of een andere prijs
                  zitten onder het klapje: dat is de uitzondering, niet de regel. -->
             <div class="prijsregel" id="nwSom"></div>
+            <!-- Borg op maat: één tik, zonder het klapje open te doen. -->
+            <div class="dagen borgen" id="nwBorgen" style="margin-top:8px;align-items:center"></div>
             <div class="none" id="nwClash" hidden></div>
             <details class="kort" id="nwAnders"><summary id="nwAndersH"></summary>
               <div class="grid2" style="margin-top:10px">
@@ -2393,6 +2399,7 @@ zetTekst("bvVerstuurd",{ nl:"Verstuurd ✓", fr:"Envoyée ✓", ar:"تم الإ�
 zetTekst("bvOpnieuw",{ nl:"Verklaring", fr:"Déclaration", ar:"التصريح" });
 zetTekst("bvLijst",{ nl:"Boetes bij deze verhuur", fr:"Amendes sur cette location", ar:"مخالفات هذا الكراء" });
 zetTekst("bvKlaar",{ nl:function(d){ return "verstuurd op "+d; }, fr:function(d){ return "envoyée le "+d; }, ar:function(d){ return "أرسل يوم "+d; } });
+zetTekst("borgL",{ nl:"Borg", fr:"Caution", ar:"الضمانة" });
 zetTekst("stRibL",{ nl:"RIB voor overschrijvingen", fr:"RIB pour les virements", ar:"رقم الحساب البنكي (RIB) للتحويلات" });
 zetTekst("stBankL",{ nl:"Bank", fr:"Banque", ar:"البنك" });
 zetTekst("stRibP",{ nl:"Klanten betalen dan met hun bankapp, zonder terminal. Atlas zet het RIB in het betaalverzoek.", fr:"Vos clients paient alors avec leur application bancaire, sans terminal. Atlas met ce RIB dans la demande de paiement.", ar:"يؤدي زبناؤك عبر تطبيق البنك، بدون جهاز أداء. أطلس يضع هذا الرقم في طلب الأداء." });
@@ -7181,7 +7188,30 @@ function tekenPrijsRegel(){
   var c=car($("nwCar").value), from=$("nwFrom").value, to=$("nwTo").value;
   var d=(from&&to)?Math.max(1,dayDiff(from,to)):1;
   box.innerHTML=t.nwSomRegel(t.nwDag(d), dh(c.rate), dh(Number($("nwTotal").value)||0), dh(Number($("nwCaution").value)||0));
+  tekenBorgKnoppen();
   try{ zetHuurKnop(); }catch(e){}
+}
+/* ============ BORG OP MAAT ============
+   De borg van de auto, de korting voor een vaste klant, en een lagere of hogere
+   borg: één tik. Een onbekende klant met een dure auto vraagt iets anders dan een
+   vaste klant die altijd op tijd terugbracht. Andere bedragen: onder het klapje. */
+function rondBorg(x){ return Math.max(500,Math.round(x/500)*500); }
+function tekenBorgKnoppen(){
+  var t=T(), doos=$("nwBorgen"); if(!doos) return;
+  var c=car($("nwCar").value), base=Number(c.caution)||AG.caution||0, cl=client($("nwClient").value);
+  var sug=cl?loyalCaution(base,clientHistory(cl)):null, nu=Number($("nwCaution").value)||0;
+  doos.innerHTML="";
+  if(!base) return;
+  var kop=$("nwBorgenKop"); if(!kop){ kop=el("p","lbl"); kop.id="nwBorgenKop"; kop.style.cssText="margin:12px 2px 0"; doos.parentNode.insertBefore(kop,doos); }
+  kop.textContent=t.borgL+" (DH)";
+  var waarden=[rondBorg(base/2), sug, base, rondBorg(base*1.5)].filter(function(v,i,a){ return v && a.indexOf(v)===i; }).sort(function(a,b){ return a-b; });
+  waarden.forEach(function(v){
+    var b=el("button","dagknop",ltr(v.toLocaleString(T().loc))+(v===sug?" \u2605":""));
+    b.type="button"; b.setAttribute("aria-pressed", v===nu ? "true":"false");
+    if(v===sug) b.title=t.loyalSug(dh(sug),dh(base));
+    b.addEventListener("click",function(){ $("nwCaution").value=v; tekenPrijsRegel(); });
+    doos.appendChild(b);
+  });
 }
 ["nwTotal","nwCaution"].forEach(function(id){ $(id).addEventListener("input",tekenPrijsRegel); });
 ["nwCar","nwFrom","nwTo"].forEach(function(id){ $(id).addEventListener("change",recalc); });

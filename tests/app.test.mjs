@@ -166,3 +166,21 @@ test("Betalen zonder terminal: RIB instellen → betaalverzoek via WhatsApp", as
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+test("Borg op maat: één tik past de borg aan, vaste klant krijgt ★", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  await page.evaluate(() => { openNew(); const c = CARS.find(x => x.model === "Dacia Logan"); $("nwCar").value = c.id; $("nwCar").dispatchEvent(new Event("change")); tekenAutoTegels(); });
+  let knoppen = await page.evaluate(() => [...document.querySelectorAll("#nwBorgen button")].map(b => b.textContent.replace(/\s/g, " ")));
+  assert.deepEqual(knoppen.map(k => k.replace(/[\u2066-\u2069]/g, "")), ["1 500", "3 000", "4 500"]);
+  await page.evaluate(() => [...document.querySelectorAll("#nwBorgen button")][0].click());
+  assert.equal(await page.evaluate(() => $("nwCaution").value), "1500");
+  assert.match(await page.evaluate(() => $("nwSom").textContent), /Caution 1\s500 DH/);
+  /* vaste klant (2 eerdere verhuren op tijd, geen schade): korting met ster */
+  await page.evaluate(() => { const k = CLIENTS.find(x => x.name === "EL AMRANI SANAE"); $("nwClient").value = k.id; $("nwClient").dispatchEvent(new Event("change")); });
+  knoppen = await page.evaluate(() => [...document.querySelectorAll("#nwBorgen button")].map(b => b.textContent));
+  assert.ok(knoppen.some(k => k.includes("★")), "ster bij vaste klant: " + knoppen);
+  await page.evaluate(() => document.getElementById("nwBorgen").scrollIntoView({ block: "center" }));
+  await B.foto(page, "fr-borg-op-maat");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
