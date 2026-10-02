@@ -17,7 +17,8 @@ async function drieBeelden(page, naam, tijden) {
   const t0 = Date.now();
   for (const [deel, ms] of tijden) { const rest = ms - (Date.now() - t0); if (rest > 0) await wacht(rest); await page.screenshot({ path: `${MAP}${naam}-${deel}.png` }); }
 }
-const animaties = (page, sel) => page.evaluate(sel => [...document.querySelectorAll(sel)].flatMap(x => x.getAnimations().map(a => a.animationName)), sel);
+/* lopende (of nog wachtende) animaties; een afgelopen animatie telt niet meer mee */
+const animaties = (page, sel) => page.evaluate(sel => [...document.querySelectorAll(sel)].flatMap(x => x.getAnimations().filter(a => a.playState !== "finished").map(a => a.animationName)), sel);
 
 for (const taal of TALEN) test(`1. Rise (${taal}): kaarten komen kort na elkaar binnen en eindigen zichtbaar`, async () => {
   const { page, fouten } = await B.open({ taal, beweging: true, traag: 0.2 });
@@ -66,6 +67,23 @@ for (const taal of TALEN) test(`2. Count-up (${taal}): cijfers in de groene kop 
   /* verversen op hetzelfde scherm: meteen de juiste waarde */
   await page.evaluate(() => render());
   assert.equal(getal(await borg()), 6000);
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+for (const taal of TALEN) test(`3. Checklist tick (${taal}): stap klaar = groen vinkje met een pop, terug zonder pop`, async () => {
+  const { page, fouten } = await B.open({ taal, beweging: true, traag: 0.2 });
+  await page.click("#heldNieuw"); await wacht(300);
+  await page.type("#nwName", "SAMIRA EL FASSI");
+  await page.click("#bGo");
+  const namen = await animaties(page, ".nwvoortgang .punt.klaar i");
+  assert.deepEqual(namen, ["tickpop"], "pop op het vinkje van stap 1");
+  await drieBeelden(page, `3-tick-${taal}`, [["begin", 30], ["midden", 500], ["eind", 2000]]);
+  assert.equal((await animaties(page, ".nwvoortgang .punt.klaar i")).length, 0);
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector(".nwvoortgang .punt.klaar i")).opacity), "1");
+  /* terug naar stap 1 en weer vooruit... terug zelf geeft geen pop */
+  await page.goBack(); await wacht(200);
+  assert.equal((await animaties(page, ".nwvoortgang i")).length, 0, "terug: geen pop");
   assert.deepEqual(fouten, []);
   await page.close();
 });
