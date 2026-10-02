@@ -2882,6 +2882,7 @@ var TABOF={vDay:"vDay",vNew:"vDay",vForm:"vDay",vDone:"vDay",vCard:"vDay",vTrust
    Terug (knop in Atlas én de terugknop/veeg van de telefoon) gaat één scherm terug,
    niet helemaal naar het begin en niet de site uit. Elk nieuw scherm krijgt een plek
    in de geschiedenis van de browser. */
+var LAATSTEBON=null, LAATSTEKAART=null;
 var GETOOND="", VIA_POP=false, DIEPTE=1, NWOPEN=false, TERUGNA="", STAPEL=["vDay","vDay"], IDX=1, KLAARNAV=false, WAARSCHUWD=0;
 var ZELFSTANDIG=["vDay","vPlan","vClients","vLed","vCash","vFleet","vSet"];
 function show(v){
@@ -2922,12 +2923,23 @@ window.addEventListener("popstate",function(e){
   /* Dubbele plek (venster dat met een knop gesloten werd): meteen nog een stap terug. */
   if(doel===view && !KLAARNAV && e.state && e.state.i>1 && ZELFSTANDIG.indexOf(doel)>=0){ history.back(); return; }
   /* Schermen die alleen zin hebben midden in een handeling: dan naar Vandaag. */
-  var mag = ZELFSTANDIG.indexOf(doel)>=0 || (doel==="vNew" && NWOPEN);
+  /* Het bonscherm ("Contrat prêt") en de klantkaart horen bij één verhuur. Die
+     onthouden we, zodat terug vanuit bv. "Photos et dommages" weer op het
+     contract uitkomt en niet op Vandaag. */
+  var bonR = doel==="vDone" && LAATSTEBON ? RENTALS.filter(function(x){ return x.id===LAATSTEBON.id; })[0] : null;
+  var kaartR = doel==="vCard" && LAATSTEKAART ? RENTALS.filter(function(x){ return x.id===LAATSTEKAART; })[0] : null;
+  var mag = ZELFSTANDIG.indexOf(doel)>=0 || (doel==="vNew" && NWOPEN) || !!bonR || !!kaartR;
   if(!mag) doel="vDay";
   if(view==="vForm" && !KLAARNAV){ try{ stashDraft(); }catch(err){} rental=null; draft=null; }
   KLAARNAV=false;
   VIA_POP=true;
-  try{ view=doel; if(doel==="vNew") show("vNew"); else render(); } finally { VIA_POP=false; }
+  try{
+    view=doel;
+    if(doel==="vNew") show("vNew");
+    else if(bonR) receipt(bonR,LAATSTEBON.mode);
+    else if(kaartR) openCard(kaartR);
+    else render();
+  } finally { VIA_POP=false; }
 });
 /* Klaar met een handeling (opgeslagen, verwijderd, afgerond): terug naar het scherm
    waar je vandaan kwam, zónder de tussenschermen (formulier, bon) in de geschiedenis te
@@ -8263,6 +8275,7 @@ function betaaldBlok(r){
   return box;
 }
 function receipt(r,kind){
+  LAATSTEBON={ id:r.id, mode:kind };
   var t=T(), c=car(r.vehicleId), rec=r[kind]||null;
   rental=r;
   $("rTitle").textContent = (kind==="depart" && rec && rec.snel) ? t.rSnelKlaar : (kind==="depart"?t.rDepart:t.rRetour); $("rSub").innerHTML=esc(r.clientName)+" · "+esc(c.model)+" "+plateHTML(c);
@@ -8908,6 +8921,7 @@ function cardHTML(r){
   };
 }
 function openCard(r){
+  LAATSTEKAART=r.id;
   var t=T(), c=car(r.vehicleId), lim=r.limit||limitDate(r), h=cardHTML(r);
   $("kcH").textContent=t.kcH; $("kcP").textContent=t.kcP;
   $("kcMain").innerHTML=h.main;

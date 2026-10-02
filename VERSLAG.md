@@ -96,3 +96,5 @@ Je zei: "doe wat jij denkt dat beter is". Gekozen: optie 1, dus geen nieuwe func
 Niet aangeraakt: het klantscherm (daar zit de scanner) en het contract.
 
 Tests: 22/22 groen, exitcode 0 (nieuw: indeling van Vandaag in FR en AR, en de te late auto). De testopstart breekt nu af na 60 s per test, zodat een fout nooit meer blijft hangen.
+
+**Derde fout uit v135 (door jou gemeld):** contract maken → "Contrat prêt" → "Photos et dommages" → terug bracht je naar Vandaag in plaats van terug naar het contract. Dat gold voor de terugknop van de telefoon en voor de knop "Retour". Oorzaak: de terug-logica kende alleen een vaste lijst schermen, en "Contrat prêt" en de klantkaart stonden daar niet in. Nu onthoudt de app bij welk contract je was. Terug → "Contrat prêt", nog eens terug → Vandaag (niet het oude formulier). Getest met precies jouw route; ook nagespeeld op v135, waar de fout bestaat. Tests: 23/23 groen.

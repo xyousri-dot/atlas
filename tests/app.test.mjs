@@ -229,3 +229,28 @@ for (const taal of ["fr", "ar"]) test(`Vandaag (${taal}): ochtendstrook, werk ee
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+test("Terug: contract maken → Photos et dommages → terug = Contrat prêt → terug = Vandaag", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
+  const v = () => page.evaluate(() => view);
+  await page.evaluate(() => { pdfFromSheet = async () => {}; });
+  await page.click("#newRental"); await wacht();
+  await page.evaluate(() => { const i = document.getElementById("snelCam"); if (i) i.value = ""; });
+  assert.equal(await v(), "vNew");
+  await page.type("#nwName", "KLANT TEST");
+  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click());
+  await page.click("#bGo"); await wacht(800);
+  assert.equal(await v(), "vDone", "na Établir le contrat");
+  await page.evaluate(() => [...document.querySelectorAll("#vDone button")].find(b => /Photos et dommages/.test(b.textContent)).click()); await wacht();
+  assert.equal(await v(), "vForm");
+  await page.click("#bBack"); await wacht();
+  assert.equal(await v(), "vDone", "Retour in de app → terug naar Contrat prêt");
+  await page.evaluate(() => [...document.querySelectorAll("#vDone button")].find(b => /Photos et dommages/.test(b.textContent)).click()); await wacht();
+  await page.goBack(); await wacht();
+  assert.equal(await v(), "vDone", "terugknop telefoon → Contrat prêt");
+  await page.goBack(); await wacht();
+  assert.equal(await v(), "vDay", "nog eens terug → Vandaag, niet het oude formulier");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
