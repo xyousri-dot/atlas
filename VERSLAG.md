@@ -73,3 +73,26 @@ Schermafdrukken: `tests/schermen/` (o.a. `ar-vandaag.png`, `ar-nieuw.png`, `fr-b
 ## Wat ik zou doen voor omzet (eerlijk)
 
 Niets van dit werk wordt omzet zonder een gesprek. Kleinste volgende stap: deze week één verhuurder in Kenitra de app in het Arabisch laten zien, met de vraag uit je strategie: *"wat mist je huidige systeem waar je je écht aan ergert?"* Neem het lege kenteken (punt 1) eerst mee, anders laat je een fout zien.
+
+---
+
+## Ronde 2 — rustig en duidelijk (2 oktober, overdag)
+
+Je zei: "doe wat jij denkt dat beter is". Gekozen: optie 1, dus geen nieuwe functies, wel rust en duidelijkheid.
+
+| Wat | Was | Is nu |
+|---|---|---|
+| Vandaag, bovenaan | grote inlogbalk + 4 oranje regels over keuringen over 20 dagen | **3 cijfers**: ontvangen vandaag · borg in handen · auto's vrij (elk cijfer opent het scherm erachter) |
+| Vandaag, volgorde | het werk van vandaag pas halverwege | meteen onder "Nouveau contrat" |
+| Papieren die binnenkort verlopen | elk een eigen oranje regel bovenaan | één regel onderaan die openklapt. **Verlopen** papieren blijven rood bovenaan |
+| Inloggen | groot kader bovenaan | rustige regel onderaan |
+| Kas en borgen | rood bij 0 DH | alleen rood als er echt iets openstaat |
+| Autoscherm (telefoon) | resultaat pas na lang scrollen; tekst zei "à droite" | **resultaat bovenaan** |
+| Ondertitels | lang en uitleggerig | kort (kas, borgen, planning, auto), in FR, AR en NL |
+| Opslaanknop auto | afgekapt ("Enregistr…") | "Enregistrer" |
+
+**Tweede fout uit v135 gevonden en opgelost:** een auto die **te laat is en nog niet terug**, stond bij "Libres — touchez pour louer" en telde als vrij. Je kon hem dus opnieuw verhuren terwijl hij nog bij de klant stond. Nu telt hij als bezet tot en met morgen; een reservering vanaf overmorgen kan nog wel. Een auto die vandaag terug moet komen, blijft vrij zoals vroeger.
+
+Niet aangeraakt: het klantscherm (daar zit de scanner) en het contract.
+
+Tests: 22/22 groen, exitcode 0 (nieuw: indeling van Vandaag in FR en AR, en de te late auto). De testopstart breekt nu af na 60 s per test, zodat een fout nooit meer blijft hangen.

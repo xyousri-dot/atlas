@@ -380,6 +380,8 @@ img,canvas,video,svg,table{max-width:100%}
 /* Status van de kaartlezing op het huurscherm zelf. */
 /* Op de telefoon: de knoppen van de bon (contract, WhatsApp) boven de details. */
 @media(max-width:859px){ #vDone .two{display:flex;flex-direction:column} #vDone #rSide{order:-1;margin-bottom:14px} }
+/* Autoscherm op de telefoon: eerst wat de auto opbrengt, dan de formulieren. */
+@media(max-width:859px){ #vCar .two{display:flex;flex-direction:column} #vCar #cwSide{order:-1;margin-bottom:14px} }
 /* ---- compacte formulieren ---- */
 details.kort{margin-top:10px}
 details.kort>summary{cursor:pointer;list-style:none;font-size:14.5px;color:var(--ink2);padding:10px 12px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.035));min-height:44px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -612,6 +614,17 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .job .winst{font-size:13.5px;font-weight:700;margin-top:4px}
 .job .winst.plus{color:var(--brand)}
 .job .winst.min{color:var(--warn)}
+/* Ochtendstrook op Vandaag */
+.strook{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 4px}
+.strook button{background:var(--card);border:none;border-radius:var(--rs);box-shadow:var(--sh);padding:12px 12px 11px;text-align:start;font:inherit;color:inherit;cursor:pointer;min-width:0}
+.strook b{display:block;font-family:"Bricolage Grotesque",Figtree,sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
+.strook span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;line-height:1.25}
+/* Rustige regels onderaan Vandaag */
+.onderaan{margin-top:26px;border-top:1px solid var(--line)}
+.voetregel{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;background:none;border:none;border-bottom:1px solid var(--line);padding:14px 2px;font:inherit;font-size:14.5px;color:var(--ink2);text-align:start;cursor:pointer}
+.voetregel .chev{color:var(--ink3);font-size:18px}
+[dir="rtl"] .voetregel .chev{transform:scaleX(-1)}
 /* Borg op maat: kop erboven, vier knoppen op één rij. */
 .borgen{flex-wrap:nowrap!important}
 .borgen .lbl{display:none}
@@ -1287,7 +1300,7 @@ var TXT = {
   emptyRentH:"Niets openstaand", emptyRentP:"Maak een verhuur aan zodra een klant een auto meeneemt.",
   alInsurance:"Verzekering", alInspection:"Technische keuring", alVignette:"Vignette",
   alExpired:"verlopen op", alExpires:"verloopt op", alLate:function(n){ return n+" dag"+(n>1?"en":"")+" te laat"; },
-  plH:"Planning", plP:"Elke auto, elke dag. Tik op een balk om de verhuur te openen.",
+  plH:"Planning", plP:"Elke auto, dag per dag. Tik op een balk.",
   plFine:"Grijsgroen: gereserveerd. Groen: onderweg. Rood: had al terug moeten zijn.",
   clH:"Klanten", clP:"Wie er al eens gehuurd heeft, met documenten en geschiedenis.", clQ:"Zoek op naam, telefoon of documentnummer",
   clEmpty:"Nog geen klanten. De eerste komt vanzelf bij een verhuur, of scan hier een document.",
@@ -1368,7 +1381,7 @@ var TXT = {
   nwBlocked:"Deze klant staat op ‘niet meer verhuren’.", nwWarn:"Let op bij deze klant: ",
   nwFine:"De berekende prijs is een voorstel. Pas het bedrag gerust aan — wat je hier invult komt op het contract.",
   flH:"Auto\u2019s", flP:"Tik op een auto om hem aan te passen.", perDay:"per dag", result:"resultaat",
-  cwH:"Auto", cwP:"Gegevens, documenten, aankoop en kosten. Rechts zie je het resultaat.",
+  cwH:"Auto", cwP:"Wat hij opbrengt, zijn papieren en zijn kosten.",
   cwSecInfo:"Gegevens", cwSecDocs:"Documenten", cwSecBuy:"Aankoop en lening", cwSecExp:"Kosten",
   cwModelL:"Merk en model", cwPlateL:"Kenteken", cwKmL:"Kilometerstand", cwRateL:"Dagprijs (DH)", cwCautionL:"Standaardborg (DH)", cwFranchiseL:"Eigen risico / franchise (DH)", cwFuelL:"Brandstof", optDiesel:"Diesel", optEssence:"Benzine",
   cwInsL:"Verzekering tot", cwInspL:"Keuring tot", cwVigL:"Vignette tot",
@@ -1376,7 +1389,7 @@ var TXT = {
   exCatL:"Soort", exAmtL:"Bedrag (DH)", exDateL:"Datum", exNoteL:"Omschrijving", exAdd:"Kost toevoegen",
   exCats:{loan:"Leningtermijn",insurance:"Verzekering",vignette:"Vignette",inspection:"Keuring",maintenance:"Onderhoud",tires:"Banden",repair:"Herstelling",fine:"Boete",fuel:"Brandstof",wash:"Reiniging",other:"Overige"},
   exEmpty:"Nog geen kosten ingevoerd.",
-  cwSave:"Auto opslaan", cwDel:"Auto verwijderen",
+  cwSave:"Opslaan", cwDel:"Auto verwijderen",
   plMore:"Meer cijfers", plLess:"Minder cijfers",
   plH2:"Resultaat", plDue:"Nog te ontvangen", plRev:"Opbrengst (ontvangen)", plCost:"Kosten", plNet:"Resultaat", plDays:"Verhuurde dagen", plUtil:"Bezetting sinds aankoop",
   plBuy:"Aankoop", plLoanLeft:"Nog aan lening", plPayback:"Terugverdiend van aankoop", plNoData:"Vul aankoop en kosten in om het resultaat te zien.",
@@ -1493,7 +1506,7 @@ var TXT = {
   settleGap:function(a,b){ return "Afgesproken borg "+a+", werkelijk ontvangen "+b+". Je kan alleen teruggeven wat je ook echt kreeg. Klopt dit niet, noteer de borg dan eerst bij Betalingen."; },
   rReturned:"Teruggegeven aan klant", rWithheld:"Ingehouden (schade)", rWithholdNote:"Reden",
   qPartial:function(ret,held){ return "Afgerekend: <strong>"+ret+"</strong> teruggegeven, <strong>"+held+"</strong> ingehouden voor schade."; },
-  cashH:"Kas", cashP:"Wat er vandaag binnenkwam en buitenging. Hiermee klopt je kassa 's avonds.",
+  cashH:"Kas", cashP:"Wat er vandaag binnenkwam en buitenging.",
   cashNetL:"Netto vandaag", cashInL:"Binnen", cashOutL:"Borg terug", cashCashL:"Waarvan contant", cashCardL:"Waarvan kaart",
   cashEmpty:"Nog geen geldbeweging op deze dag.", cashOpenH:"Nog te ontvangen", cashNoOpen:"Alles is betaald.",
   cashFine:"Borg die je vasthoudt is geen omzet. Hij staat hier als binnen wanneer je hem ontvangt, en als buiten wanneer je hem teruggeeft. Wat je inhoudt voor schade gaat er dus nooit uit en blijft vanzelf in de kas.",
@@ -1504,7 +1517,7 @@ var TXT = {
   rNoDoc:"Deze verhuur is nog niet vertrokken. Je kan hier al een voorschot of de borg noteren.", rNoteMoney:"Betalingen van deze verhuur.",
   payKinds:{rent:"Huur",caution:"Borg",extra:"Extra",refund:"Borg terug",cancelback:"Terug na annulering"},
   payMethods:{cash:"Contant",card:"Kaart",transfer:"Overschrijving"},
-  ledH:"Borgen die je vasthoudt", ledP:"Geld dat nog van je klanten is. Dit is geen omzet, en het wordt ouder.",
+  ledH:"Borgen die je vasthoudt", ledP:"Geld van je klanten dat jij nog hebt. Geen omzet.",
   ledTotL:"Totaal in jouw bezit", ledNumL:"Contracten", ledLateL:"Nog af te rekenen (termijn voorbij)", ledOldL:"Langst vastgehouden", ledWithheldL:"Totaal ingehouden voor schade",
   days:"dagen", ledEmpty:"Je houdt op dit moment geen borg vast.",
   stWait:"boete in afwachting", stLate:"te laat", stToday:"vandaag terug", stOpen:"loopt",
@@ -1640,7 +1653,7 @@ var TXT = {
   emptyRentH:"Rien en cours", emptyRentP:"Créez une location dès qu'un client prend une voiture.",
   alInsurance:"Assurance", alInspection:"Visite technique", alVignette:"Vignette",
   alExpired:"expirée le", alExpires:"expire le", alLate:function(n){ return n+" jour"+(n>1?"s":"")+" de retard"; },
-  plH:"Planning", plP:"Chaque voiture, chaque jour. Touchez une barre pour ouvrir la location.",
+  plH:"Planning", plP:"Chaque voiture, jour par jour. Touchez une barre.",
   plFine:"Gris-vert : réservée. Vert : en cours. Rouge : aurait déjà dû revenir.",
   clH:"Clients", clP:"Ceux qui ont déjà loué, avec documents et historique.", clQ:"Nom, téléphone ou numéro de document",
   clEmpty:"Aucun client. Le premier arrive avec une location, ou scannez un document ici.",
@@ -1720,7 +1733,7 @@ var TXT = {
   nwBlocked:"Ce client est marqué « ne plus louer ».", nwWarn:"Attention avec ce client : ",
   nwFine:"Le prix calculé est une proposition. Modifiez-le librement — ce que vous mettez ici apparaît sur le contrat.",
   flH:"Voitures", flP:"Touchez une voiture pour la modifier.", perDay:"par jour", result:"résultat",
-  cwH:"Voiture", cwP:"Données, documents, achat et coûts. À droite, le résultat.",
+  cwH:"Voiture", cwP:"Ce qu'elle rapporte, ses papiers et ses coûts.",
   cwSecInfo:"Données", cwSecDocs:"Documents", cwSecBuy:"Achat et crédit", cwSecExp:"Coûts",
   cwModelL:"Marque et modèle", cwPlateL:"Immatriculation", cwKmL:"Kilométrage", cwRateL:"Prix par jour (DH)", cwCautionL:"Caution par défaut (DH)", cwFranchiseL:"La franchise (DH)", cwFuelL:"Carburant", optDiesel:"Gasoil", optEssence:"Sans plomb",
   cwInsL:"Assurance jusqu'au", cwInspL:"Visite technique jusqu'au", cwVigL:"Vignette jusqu'au",
@@ -1728,7 +1741,7 @@ var TXT = {
   exCatL:"Type", exAmtL:"Montant (DH)", exDateL:"Date", exNoteL:"Description", exAdd:"Ajouter le coût",
   exCats:{loan:"Traite de crédit",insurance:"Assurance",vignette:"Vignette",inspection:"Visite technique",maintenance:"Entretien",tires:"Pneus",repair:"Réparation",fine:"Amende",fuel:"Carburant",wash:"Lavage",other:"Autre"},
   exEmpty:"Aucun coût saisi.",
-  cwSave:"Enregistrer la voiture", cwDel:"Supprimer la voiture",
+  cwSave:"Enregistrer", cwDel:"Supprimer la voiture",
   plMore:"Plus de chiffres", plLess:"Moins de chiffres",
   plH2:"Résultat", plDue:"Reste à encaisser", plRev:"Revenus (encaissés)", plCost:"Coûts", plNet:"Résultat", plDays:"Jours loués", plUtil:"Taux d'occupation depuis l'achat",
   plBuy:"Achat", plLoanLeft:"Reste à payer", plPayback:"Achat remboursé à", plNoData:"Saisissez l'achat et les coûts pour voir le résultat.",
@@ -1845,7 +1858,7 @@ var TXT = {
   settleGap:function(a,b){ return "Caution convenue "+a+", réellement reçue "+b+". Vous ne pouvez rendre que ce que vous avez reçu. Si ce n'est pas correct, notez d'abord la caution dans Paiements."; },
   rReturned:"Rendu au client", rWithheld:"Retenu (dommages)", rWithholdNote:"Motif",
   qPartial:function(ret,held){ return "Réglé : <strong>"+ret+"</strong> rendu, <strong>"+held+"</strong> retenu pour dommages."; },
-  cashH:"Caisse", cashP:"Ce qui est entré et sorti aujourd'hui. De quoi faire coller la caisse le soir.",
+  cashH:"Caisse", cashP:"Ce qui est entré et sorti aujourd'hui.",
   cashNetL:"Net du jour", cashInL:"Entrées", cashOutL:"Cautions rendues", cashCashL:"Dont espèces", cashCardL:"Dont carte",
   cashEmpty:"Aucun mouvement ce jour.", cashOpenH:"Reste à encaisser", cashNoOpen:"Tout est payé.",
   cashFine:"Une caution détenue n'est pas du chiffre d'affaires. Elle entre quand vous la recevez et sort quand vous la rendez. Ce que vous retenez pour dégâts ne sort donc jamais et reste dans la caisse.",
@@ -1857,7 +1870,7 @@ var TXT = {
   payDel:"Supprimer le paiement", payDelAsk:"Supprimer ce paiement ?",
   payKinds:{rent:"Location",caution:"Caution",extra:"Supplément",refund:"Caution rendue",cancelback:"Remboursé (annulation)"},
   payMethods:{cash:"Espèces",card:"Carte",transfer:"Virement"},
-  ledH:"Cautions détenues", ledP:"De l'argent qui appartient encore à vos clients. Ce n'est pas votre chiffre d'affaires, et ça vieillit.",
+  ledH:"Cautions détenues", ledP:"L'argent de vos clients que vous gardez encore. Pas du chiffre d'affaires.",
   ledTotL:"Total en votre possession", ledNumL:"Contrats", ledLateL:"Encore à régler (délai dépassé)", ledOldL:"La plus ancienne", ledWithheldL:"Total retenu pour dommages",
   days:"jours", ledEmpty:"Vous ne détenez aucune caution en ce moment.",
   stWait:"amende en attente", stLate:"en retard", stToday:"à rendre", stOpen:"en cours",
@@ -2064,7 +2077,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   emptyRentH:"لا شيء جار", emptyRentP:"أنشئ كراء بمجرد أن يأخذ زبون سيارة.",
   alInsurance:"التأمين", alInspection:"الفحص التقني", alVignette:"الضريبة السنوية (الفينييت)",
   alExpired:"انتهت يوم", alExpires:"تنتهي يوم", alLate:function(n){ return "تأخير "+n+" يوم"; },
-  plH:"التخطيط", plP:"كل سيارة، كل يوم. المس شريطا لفتح الكراء.",
+  plH:"التخطيط", plP:"كل سيارة، يوما بيوم. المس شريطا.",
   plFine:"رمادي أخضر: محجوزة. أخضر: جارية. أحمر: كان يجب أن ترجع.",
   clH:"الزبناء", clP:"من سبق لهم الكراء، مع الوثائق والسجل.", clQ:"الاسم أو الهاتف أو رقم الوثيقة",
   clEmpty:"لا يوجد زبناء. الأول يأتي مع أول كراء، أو امسح وثيقة هنا.",
@@ -2144,7 +2157,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   nwBlocked:"هذا الزبون مسجل « لا تكري له ».", nwWarn:"انتبه مع هذا الزبون: ",
   nwFine:"الثمن المحسوب اقتراح. غيره كما تشاء — ما تضعه هنا يظهر في العقد.",
   flH:"السيارات", flP:"المس سيارة لتعديلها.", perDay:"لليوم", result:"النتيجة",
-  cwH:"سيارة", cwP:"البيانات والوثائق والشراء والمصاريف. النتيجة على الجانب.",
+  cwH:"سيارة", cwP:"ما تربحه، وثائقها ومصاريفها.",
   cwSecInfo:"البيانات", cwSecDocs:"الوثائق", cwSecBuy:"الشراء والقرض", cwSecExp:"المصاريف",
   cwModelL:"العلامة والطراز", cwPlateL:"رقم التسجيل", cwKmL:"الكيلومترات", cwRateL:"الثمن لليوم (درهم)", cwCautionL:"الضمانة الافتراضية (درهم)", cwFranchiseL:"الفرانشيز (درهم)", cwFuelL:"الوقود", optDiesel:"غازوال", optEssence:"بنزين",
   cwInsL:"التأمين إلى", cwInspL:"الفحص التقني إلى", cwVigL:"الفينييت إلى",
@@ -2152,7 +2165,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   exCatL:"النوع", exAmtL:"المبلغ (درهم)", exDateL:"التاريخ", exNoteL:"الوصف", exAdd:"إضافة المصروف",
   exCats:{loan:"قسط القرض",insurance:"التأمين",vignette:"الفينييت",inspection:"الفحص التقني",maintenance:"الصيانة",tires:"العجلات",repair:"الإصلاح",fine:"مخالفة",fuel:"الوقود",wash:"الغسيل",other:"أخرى"},
   exEmpty:"لا توجد مصاريف مسجلة.",
-  cwSave:"حفظ السيارة", cwDel:"حذف السيارة",
+  cwSave:"حفظ", cwDel:"حذف السيارة",
   plMore:"أرقام أكثر", plLess:"أرقام أقل",
   plH2:"النتيجة", plDue:"باقي للقبض", plRev:"المداخيل (المقبوضة)", plCost:"المصاريف", plNet:"النتيجة", plDays:"أيام الكراء", plUtil:"نسبة الاستعمال منذ الشراء",
   plBuy:"الشراء", plLoanLeft:"الباقي للأداء", plPayback:"تم استرجاع ثمن الشراء بنسبة", plNoData:"أدخل الشراء والمصاريف لرؤية النتيجة.",
@@ -2269,7 +2282,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   settleGap:function(a,b){ return "الضمانة المتفق عليها "+a+"، المقبوضة فعلا "+b+". لا يمكنك إرجاع إلا ما قبضته. إذا لم يكن هذا صحيحا، سجل الضمانة أولا في الأداءات."; },
   rReturned:"المرجع للزبون", rWithheld:"المقتطع (أضرار)", rWithholdNote:"السبب",
   qPartial:function(ret,held){ return "تمت التسوية: <strong>"+ret+"</strong> مرجعة، <strong>"+held+"</strong> مقتطعة للأضرار."; },
-  cashH:"الصندوق", cashP:"ما دخل وما خرج اليوم. لمطابقة الصندوق في المساء.",
+  cashH:"الصندوق", cashP:"ما دخل وما خرج اليوم.",
   cashNetL:"صافي اليوم", cashInL:"المداخيل", cashOutL:"الضمانات المرجعة", cashCashL:"منها نقدا", cashCardL:"منها بالبطاقة",
   cashEmpty:"لا حركة في هذا اليوم.", cashOpenH:"باقي للقبض", cashNoOpen:"كل شيء مؤدى.",
   cashFine:"الضمانة المحتفظ بها ليست رقم معاملات. تدخل عندما تقبضها وتخرج عندما ترجعها. ما تقتطعه للأضرار لا يخرج أبدا ويبقى في الصندوق.",
@@ -2281,7 +2294,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   payDel:"حذف الأداء", payDelAsk:"حذف هذا الأداء؟",
   payKinds:{rent:"الكراء",caution:"الضمانة",extra:"إضافي",refund:"ضمانة مرجعة",cancelback:"مرجع (إلغاء)"},
   payMethods:{cash:"نقدا",card:"بطاقة",transfer:"تحويل بنكي"},
-  ledH:"الضمانات المحتفظ بها", ledP:"مال ما زال في ملك زبنائك. ليس رقم معاملاتك، ويقدم مع الوقت.",
+  ledH:"الضمانات المحتفظ بها", ledP:"مال زبنائك الذي ما زال عندك. ليس رقم معاملات.",
   ledTotL:"المجموع الذي عندك", ledNumL:"العقود", ledLateL:"للتسوية (تجاوز الأجل)", ledOldL:"الأقدم", ledWithheldL:"مجموع المقتطع للأضرار",
   days:"أيام", ledEmpty:"ليس عندك أي ضمانة حاليا.",
   stWait:"في انتظار المخالفات", stLate:"متأخرة", stToday:"للإرجاع", stOpen:"جارية",
@@ -2403,6 +2416,12 @@ zetTekst("bvOpnieuw",{ nl:"Verklaring", fr:"Déclaration", ar:"التصريح" }
 zetTekst("bvLijst",{ nl:"Boetes bij deze verhuur", fr:"Amendes sur cette location", ar:"مخالفات هذا الكراء" });
 zetTekst("bvKlaar",{ nl:function(d){ return "verstuurd op "+d; }, fr:function(d){ return "envoyée le "+d; }, ar:function(d){ return "أرسل يوم "+d; } });
 zetTekst("borgL",{ nl:"Borg", fr:"Caution", ar:"الضمانة" });
+zetTekst("strBinnen",{ nl:"vandaag ontvangen", fr:"reçu aujourd’hui", ar:"المقبوض اليوم" });
+zetTekst("strBorg",{ nl:"borg in handen", fr:"cautions en main", ar:"الضمانات عندك" });
+zetTekst("strVrij",{ nl:"auto’s vrij", fr:"voitures libres", ar:"سيارات متاحة" });
+zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" papier verloopt")+" binnenkort — eerste op "+d; },
+                       fr:function(n,d){ return n+(n>1?" documents à renouveler":" document à renouveler")+" — le premier le "+d; },
+                       ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
 zetTekst("stRibL",{ nl:"RIB voor overschrijvingen", fr:"RIB pour les virements", ar:"رقم الحساب البنكي (RIB) للتحويلات" });
 zetTekst("stBankL",{ nl:"Bank", fr:"Banque", ar:"البنك" });
 zetTekst("stRibP",{ nl:"Klanten betalen dan met hun bankapp, zonder terminal. Atlas zet het RIB in het betaalverzoek.", fr:"Vos clients paient alors avec leur application bancaire, sans terminal. Atlas met ce RIB dans la demande de paiement.", ar:"يؤدي زبناؤك عبر تطبيق البنك، بدون جهاز أداء. أطلس يضع هذا الرقم في طلب الأداء." });
@@ -3048,28 +3067,39 @@ function renderDay(){
   var t=T(), box=$("dayBody"); box.innerHTML="";
   $("dayH").textContent=t.dayH;
   $("dayP").textContent=new Date().toLocaleDateString(t.loc,{weekday:"long",day:"numeric",month:"long"});
+  /* Wat niet vandaag hoeft (aanmelden, papieren die binnenkort verlopen) komt
+     onderaan, als rustige regels. Bovenaan staat alleen het werk van vandaag. */
+  var onder=[];
   if(LOCAL && !sbKlaar()){
-    if(sbIngesteld()){
-      var ab=el("div","aanmeldbalk"); ab.appendChild(el("span",null,t.sbBalk));
-      var kb=el("button","btn sm",t.stCloudIn); kb.type="button"; kb.addEventListener("click",naarAanmelden);
-      ab.appendChild(kb); box.appendChild(ab);
-    } else box.appendChild(el("div","banner",t.noDb));
+    if(sbIngesteld()) onder.push(voetregel(t.sbBalk,naarAanmelden));
+    else onder.push(el("div","banner",t.noDb));
   }
   if(!CARS.length){
+    onder.forEach(function(x){ box.appendChild(x); });
     var e=el("div","empty"); e.appendChild(el("h2",null,t.emptyCarsH)); e.appendChild(el("p",null,t.emptyCarsP));
     var b1=el("button","btn",t.emptyCarsB); b1.addEventListener("click",function(){ openCar(null); });
     var b2=el("button","btn ghost",t.demoB); b2.addEventListener("click",function(){ runDemo(b2,t.demoB); });
     e.appendChild(b1); e.appendChild(b2); box.appendChild(e); return;
   }
   var nu=today();
+  box.appendChild(dagStrook(nu));
   /* Papieren van een auto verlopen (verzekering, keuring, vignet): dat moet hij
-     zien voor hij die auto meegeeft. Kort, in rood, één tik naar de auto. */
-  var al=el("div","alerts");
-  docAlerts().forEach(function(a){
+     zien voor hij die auto meegeeft. Verlopen = bovenaan in rood, één tik naar de
+     auto. Binnenkort verlopen = één regel onderaan die openklapt. */
+  function alertKnop(a){
     var b=el("button","alert"+(a.bad?" bad":"")); b.innerHTML="<span><b>"+esc(a.car.model)+"</b> · "+a.label+" <small>— "+(a.bad?t.alExpired:t.alExpires)+" "+dShort(a.date)+"</small></span>›";
-    b.addEventListener("click",function(){ openCar(a.car); }); al.appendChild(b);
-  });
+    b.addEventListener("click",function(){ openCar(a.car); }); return b;
+  }
+  var al=el("div","alerts"), straks=[];
+  docAlerts().forEach(function(a){ if(a.bad) al.appendChild(alertKnop(a)); else straks.push(a); });
   if(al.children.length) box.appendChild(al);
+  if(straks.length){
+    straks.sort(function(x,y){ return x.date.localeCompare(y.date); });
+    var lijst=el("div","alerts"); lijst.hidden=true; lijst.style.marginTop="8px";
+    straks.forEach(function(a){ lijst.appendChild(alertKnop(a)); });
+    onder.unshift(lijst);
+    onder.unshift(voetregel(t.docStraks(straks.length,dShort(straks[0].date)),function(){ lijst.hidden=!lijst.hidden; }));
+  }
   function kop(tekst){ box.appendChild(el("p","sh",tekst)); }
   function kaart(r,wanneer,klasse,knoppen){
     var c=car(r.vehicleId), k=el("div","kaartje"+(klasse==="laat"?" laat":""));
@@ -3123,6 +3153,30 @@ function renderDay(){
       vl.appendChild(b); });
     box.appendChild(vl);
   }
+  if(onder.length){ var o=el("div","onderaan"); onder.forEach(function(x){ o.appendChild(x); }); box.appendChild(o); }
+}
+/* Een rustige regel onderaan Vandaag: tekst en een pijltje, geen kader. */
+function voetregel(tekst,fn){
+  var b=el("button","voetregel"); b.type="button";
+  b.appendChild(el("span",null,tekst)); b.appendChild(el("span","chev","\u203a"));
+  b.addEventListener("click",fn); return b;
+}
+/* ============ DE OCHTENDSTROOK ============
+   Drie cijfers waar een eigenaar elke ochtend naar kijkt: wat er vandaag
+   binnenkwam, hoeveel borg hij in handen heeft, en hoeveel auto's er vrij staan.
+   Elk cijfer is een tik naar het scherm erachter. */
+function dagStrook(nu){
+  var t=T(), w=el("div","strook");
+  var binnen=cashMoves(nu).filter(function(m){ return m.dir==="in"; }).reduce(function(a,m){ return a+m.amount; },0);
+  var borg=heldList().reduce(function(a,r){ return a+paidCaution(r); },0);
+  var vrij=CARS.filter(function(c){ return vrijeAuto(c,nu,plus(nu,1)); }).length;
+  [[dh(binnen),t.strBinnen,"vCash"],[dh(borg),t.strBorg,"vLed"],[ltr(vrij+"/"+CARS.length),t.strVrij,"vFleet"]].forEach(function(x){
+    var b=el("button"); b.type="button";
+    b.appendChild(el("b",null,x[0])); b.appendChild(el("span",null,x[1]));
+    b.addEventListener("click",function(){ view=x[2]; render(); });
+    w.appendChild(b);
+  });
+  return w;
 }
 /* Rij + de handelingen die op deze stap logisch zijn. Verlengen en betalen
    staan er meteen bij, niet verstopt in een formulier. */
@@ -7229,7 +7283,14 @@ function tekenBorgKnoppen(){
    laten hem zien wat er staat en wat vrij is; één tik is genoeg. Hetzelfde voor de
    duur: bijna elke verhuur is één, twee, drie of zeven dagen. */
 function vrijeAuto(c,van,tot){
-  return !RENTALS.some(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(van,tot,r.from,r.to); });
+  var morgen=plus(today(),1);
+  return !RENTALS.some(function(r){
+    if(!live(r) || r.vehicleId!==c.id || stage(r)==="done") return false;
+    /* Weg en te laat: de auto staat nog bij de klant. Niet "vrij" noemen tot hij
+       terug is (minstens tot morgen), anders verhuur je een auto die er niet is. */
+    var eind = (r.depart && !r.retour && r.to<today() && r.to<morgen) ? morgen : r.to;
+    return overlap(van,tot,r.from,eind);
+  });
 }
 function tekenAutoTegels(){
   var t=T(), doos=$("nwCarTegels"); if(!doos) return;
@@ -9060,7 +9121,7 @@ function renderCash(){
   var inn=mv.filter(function(m){ return m.dir==="in"; }).reduce(function(a,m){ return a+m.amount; },0);
   var uit=mv.filter(function(m){ return m.dir==="out"; }).reduce(function(a,m){ return a+m.amount; },0);
   function per(meth){ return mv.reduce(function(a,m){ return m.method===meth?a+(m.dir==="in"?m.amount:-m.amount):a; },0); }
-  $("cashNet").textContent=dh(inn-uit); $("cashIn").textContent=dh(inn); $("cashOut").textContent=dh(uit);
+  $("cashNet").textContent=dh(inn-uit); $("cashIn").textContent=dh(inn); $("cashOut").textContent=dh(uit); $("cashOut").className=uit>0?"bad":"";
   $("cashCash").textContent=dh(per("cash")); $("cashCard").textContent=dh(per("card"));
   var box=$("cashRows"); box.innerHTML="";
   if(!mv.length) box.appendChild(el("div","none",t.cashEmpty));
@@ -9197,7 +9258,8 @@ function renderLed(){
   var t=T(), held=heldList();
   $("lTot").textContent=dh(held.reduce(function(a,r){ return a+paidCaution(r); },0)); $("lNum").textContent=held.length;
   var late=held.filter(function(r){ return r.retour && (r.limit||limitDate(r))<today(); });
-  $("lLate").textContent=dh(late.reduce(function(a,r){ return a+paidCaution(r); },0));
+  var laatBedrag=late.reduce(function(a,r){ return a+paidCaution(r); },0);
+  $("lLate").textContent=dh(laatBedrag); $("lLate").className=laatBedrag>0?"bad":"";
   var oldest=held.slice().sort(function(a,b){ return (a.from||"").localeCompare(b.from||""); })[0];
   $("lOld").textContent=oldest?dayDiff(oldest.from,today())+" "+t.days:"—";
   var totalWithheld=RENTALS.filter(live).reduce(function(a,r){ return a+(Number(r.cautionWithheld)||0); },0);

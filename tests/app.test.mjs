@@ -201,3 +201,31 @@ for (const taal of ["fr", "ar"]) test(`Winst per auto in het wagenpark en vertro
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+for (const taal of ["fr", "ar"]) test(`Vandaag (${taal}): ochtendstrook, werk eerst, papieren als één regel onderaan`, async () => {
+  const { page, fouten } = await B.open({ taal });
+  const st = await page.evaluate(() => {
+    const kids = [...document.getElementById("dayBody").children];
+    const strook = [...document.querySelectorAll(".strook b")].map(b => b.textContent.replace(/[⁦-⁩]/g, "").replace(/\s/g, " "));
+    return { eerste: kids[0].className, strook,
+      alertsBoven: kids.filter(k => k.className === "alerts" && !k.closest(".onderaan") && !k.hidden).length,
+      voet: [...document.querySelectorAll(".onderaan .voetregel")].map(v => v.textContent),
+      lijstVerborgen: document.querySelector(".onderaan .alerts")?.hidden };
+  });
+  assert.equal(st.eerste, "strook");
+  assert.equal(st.strook[1].replace(/[.\s]/g, ""), "6000DH", "borg in handen");
+  assert.equal(st.strook[2], "2/4", "auto's vrij");
+  const libres = await page.evaluate(() => [...document.querySelectorAll(".vrijlijst button")].map(b => b.textContent));
+  assert.ok(!libres.includes("Dacia Duster"), "te late auto (nog niet terug) is niet vrij: " + libres);
+  assert.equal(st.alertsBoven, 0, "geen papieren bovenaan (niets verlopen)");
+  assert.equal(st.voet.length, 2, "papieren + aanmelden onderaan: " + st.voet);
+  assert.equal(st.lijstVerborgen, true);
+  await page.evaluate(() => document.querySelector(".onderaan .voetregel").click());
+  assert.equal(await page.evaluate(() => document.querySelector(".onderaan .alerts").hidden), false, "klapt open");
+  await page.evaluate(() => { document.querySelector(".onderaan .voetregel").click(); window.scrollTo(0, 0); });
+  await B.foto(page, taal + "-vandaag");
+  await page.evaluate(() => document.querySelector(".strook button").click());
+  assert.equal(await page.evaluate(() => view), "vCash");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
