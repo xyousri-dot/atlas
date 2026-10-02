@@ -59,7 +59,12 @@ export async function start() {
   poort = server.address().port;
   browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ["--no-sandbox", "--lang=fr-FR"] });
 }
-export async function stop() { await browser?.close(); await new Promise(r => server ? server.close(r) : r()); }
+export async function stop() {
+  await browser?.close();
+  /* Chrome houdt verbindingen open (keep-alive); zonder dit wacht close() eindeloos. */
+  server?.closeAllConnections();
+  await new Promise(r => server ? server.close(r) : r());
+}
 
 /* Opent de app in een telefoonvenster. Geeft pagina + lijst met JS-fouten. */
 export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390, hoog = 844 } = {}) {
