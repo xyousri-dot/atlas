@@ -147,3 +147,13 @@ Let op: je schermafdrukken van 2 oktober kwamen van de **live site (v131)**. Daa
 - **Contrat prêt:** groen vinkje als succesmoment.
 
 Tests: 25/25 groen (nieuw: vanzelf door na een zekere scan, blijft staan bij twijfel). Scanner, opslag en contract ongewijzigd.
+
+---
+
+## Ronde 6 — verwijderen, met "Annuler"
+
+- **Contract verwijderen:** onderaan elk contract "Supprimer ce contrat". Na een duidelijke vraag is het contract weg alsof het nooit gebeurde: betalingen, borg en boetes gaan mee (de kas klopt meteen weer), de auto staat weer vrij, de kilometerstand gaat terug als dit contract hem verhoogde, en een klant die alleen voor dit contract werd aangemaakt, verdwijnt ook.
+- **10 seconden "Annuler"** (zoals Gmail): zet alles exact terug, ook in de cloud. Getest: het teruggezette contract is byte-gelijk aan het origineel.
+- **Hetzelfde voor auto's, klanten, kosten en betalingen.** Belangrijk: een auto of klant werd tot nu toe **meteen en zonder vraag** verwijderd (een tik op de rode knop en weg). Nu eerst een vraag, daarna Annuler.
+
+Tests: 28/28 groen.

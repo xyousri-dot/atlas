@@ -294,3 +294,67 @@ test("Contract: na een zekere scan vanzelf naar stap 2; bij twijfel blijft stap 
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+const jaOpVraag = page => page.evaluate(() => document.querySelector(".ask .btn.dangerish").click());
+const neeOpVraag = page => page.evaluate(() => document.querySelector(".ask .btn.ghost").click());
+
+test("Contract verwijderen: alles weg (betalingen, auto vrij), Annuler zet alles exact terug", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
+  const voor = await page.evaluate(() => JSON.stringify(RENTALS.find(r => r.code === "AT-10001")));
+  const borgVoor = await page.evaluate(() => heldList().length);
+  await page.evaluate(() => receipt(RENTALS.find(r => r.code === "AT-10001"), "depart"));
+  await page.click("#delContract"); await wacht();
+  await neeOpVraag(page); await wacht();
+  assert.ok(await page.evaluate(() => RENTALS.some(r => r.code === "AT-10001")), "Nee = niets weg");
+  await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
+  assert.equal(await page.evaluate(() => view), "vDay");
+  assert.ok(!(await page.evaluate(() => RENTALS.some(r => r.code === "AT-10001"))), "contract weg");
+  assert.equal(await page.evaluate(() => heldList().length), borgVoor - 1, "borg uit de lijst");
+  assert.ok(await page.evaluate(() => vrijeAuto(CARS.find(c => c.model === "Dacia Logan"), today(), plus(today(), 1))), "auto weer vrij");
+  await B.foto(page, "fr-verwijderd-annuler");
+  await page.click("#herstelKnop"); await wacht(600);
+  const na = await page.evaluate(() => JSON.stringify(RENTALS.find(r => r.code === "AT-10001")));
+  assert.equal(na, voor, "exact teruggezet, met betalingen");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+test("Nieuw contract verwijderen: klant die ermee ontstond gaat mee, en komt mee terug", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
+  await page.evaluate(() => { pdfFromSheet = async () => {}; });
+  await page.click("#heldNieuw"); await wacht();
+  await page.type("#nwName", "NIEUWE KLANT"); await page.click("#bGo"); await wacht();
+  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
+  await page.click("#bGo"); await wacht(800);
+  assert.ok(await page.evaluate(() => CLIENTS.some(c => c.name === "NIEUWE KLANT")));
+  await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
+  assert.ok(!(await page.evaluate(() => CLIENTS.some(c => c.name === "NIEUWE KLANT"))), "klant mee weg");
+  assert.ok(!(await page.evaluate(() => RENTALS.some(r => r.clientName === "NIEUWE KLANT"))));
+  await page.click("#herstelKnop"); await wacht(600);
+  assert.ok(await page.evaluate(() => CLIENTS.some(c => c.name === "NIEUWE KLANT") && RENTALS.some(r => r.clientName === "NIEUWE KLANT")), "beide terug");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+test("Auto en klant verwijderen vragen eerst, en kunnen terug", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
+  await page.evaluate(() => openCar(CARS.find(c => c.model === "Hyundai i10"))); await wacht();
+  await page.click("#bBack"); await wacht();
+  assert.ok(await page.$(".ask"), "auto: eerst een vraag");
+  await jaOpVraag(page); await wacht(600);
+  assert.ok(!(await page.evaluate(() => CARS.some(c => c.model === "Hyundai i10"))));
+  await page.click("#herstelKnop"); await wacht(600);
+  assert.ok(await page.evaluate(() => CARS.some(c => c.model === "Hyundai i10")), "auto terug");
+  await page.evaluate(() => openClient(CLIENTS.find(c => c.name === "EL AMRANI SANAE"))); await wacht();
+  await page.click("#bBack"); await wacht();
+  assert.ok(await page.$(".ask"), "klant: eerst een vraag");
+  await jaOpVraag(page); await wacht(600);
+  assert.ok(!(await page.evaluate(() => CLIENTS.some(c => c.name === "EL AMRANI SANAE"))));
+  await page.click("#herstelKnop"); await wacht(600);
+  assert.ok(await page.evaluate(() => CLIENTS.some(c => c.name === "EL AMRANI SANAE")), "klant terug");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});

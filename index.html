@@ -670,6 +670,12 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .schud{animation:schud .35s}
 @keyframes schud{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){ .schud{animation:none} }
+/* Balk "Verwijderd · Annuleren" */
+.herstel span{white-space:nowrap}
+.herstel{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(122px + env(safe-area-inset-bottom,0px));z-index:75;display:flex;align-items:center;gap:16px;background:var(--ink);color:#fff;padding:10px 10px 10px 18px;border-radius:16px;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);font-weight:600;max-width:calc(100% - 32px);animation:herstelIn .2s ease-out}
+.herstel button{border:none;background:rgba(255,255,255,.14);color:#7FE0BA;font:inherit;font-weight:800;padding:9px 14px;border-radius:11px;cursor:pointer;white-space:nowrap}
+@keyframes herstelIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){ .herstel{animation:none} }
 /* ===== Groot scherm: één rustige kolom in het midden (zoals WhatsApp Web) ===== */
 @media (min-width:760px){
   .bar-in, .prog, .wrap, .dock-in{max-width:680px}
@@ -2534,6 +2540,16 @@ zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" pa
                        ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
 zetTekst("stGrpAg",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
 zetTekst("tabNieuw",{ nl:"Contract", fr:"Contrat", ar:"عقد" });
+zetTekst("delContract",{ nl:"Dit contract verwijderen", fr:"Supprimer ce contrat", ar:"حذف هذا العقد" });
+zetTekst("delVraag",{ nl:function(n,c){ return "Contract van "+n+" ("+c+") verwijderen? Betalingen, borg en boetes ervan verdwijnen en de auto staat weer vrij. Je kunt het daarna nog 10 seconden terugzetten."; },
+                      fr:function(n,c){ return "Supprimer le contrat de "+n+" ("+c+") ? Ses paiements, sa caution et ses amendes disparaissent et la voiture redevient libre. Vous pourrez annuler pendant 10 secondes."; },
+                      ar:function(n,c){ return "حذف عقد "+n+" ("+c+")؟ تختفي أداءاته وضمانته ومخالفاته وتصبح السيارة متاحة. يمكنك التراجع خلال 10 ثوان."; } });
+zetTekst("delCarVraag",{ nl:function(m){ return m+" verwijderen? Je kunt het daarna nog 10 seconden terugzetten."; }, fr:function(m){ return "Supprimer "+m+" ? Vous pourrez annuler pendant 10 secondes."; }, ar:function(m){ return "حذف "+m+"؟ يمكنك التراجع خلال 10 ثوان."; } });
+zetTekst("delKlantVraag",{ nl:function(m){ return m+" verwijderen? Je kunt het daarna nog 10 seconden terugzetten."; }, fr:function(m){ return "Supprimer "+m+" ? Vous pourrez annuler pendant 10 secondes."; }, ar:function(m){ return "حذف "+m+"؟ يمكنك التراجع خلال 10 ثوان."; } });
+zetTekst("delJa",{ nl:"Verwijderen", fr:"Supprimer", ar:"حذف" });
+zetTekst("delKlaar",{ nl:"Contract verwijderd", fr:"Contrat supprim\u00e9", ar:"تم حذف العقد" });
+zetTekst("herstelKnop",{ nl:"Ongedaan maken", fr:"Annuler", ar:"تراجع" });
+zetTekst("herstelKlaar",{ nl:"Teruggezet", fr:"R\u00e9tabli", ar:"تمت الاستعادة" });
 zetTekst("heldTaken",{ nl:function(n){ return n ? n+" te doen vandaag" : "Niets te doen vandaag"; },
                        fr:function(n){ return n ? n+" \u00e0 faire aujourd\u2019hui" : "Rien \u00e0 faire aujourd\u2019hui"; },
                        ar:function(n){ return n ? n+" مهام اليوم" : "لا شيء اليوم"; } });
@@ -7479,6 +7495,70 @@ $("nwCarTegels").addEventListener("click",function(e){
   if(!tg || tg.disabled || NWSTAP!==2) return;
   setTimeout(function(){ if(NWSTAP===2 && $("nwClash").hidden) huurNaarStap(3); },180);
 });
+/* ============ VERWIJDEREN, MET TERUGZETTEN ============
+   Eén manier voor alles wat je weggooit (contract, auto, klant, kost, betaling):
+   eerst een duidelijke vraag, daarna 10 seconden een balk "Verwijderd · Annuleren".
+   Annuleren zet alles precies terug zoals het was, ook in de cloud. */
+async function bewaarVoorHerstel(paden){
+  var snap=[];
+  for(var i=0;i<paden.length;i++) snap.push({ p:paden[i], d:await S.get(paden[i]) });
+  return snap;
+}
+function herstelBalk(tekst,snap){
+  var t=T(), oud=document.querySelector(".herstel"); if(oud) oud.remove();
+  var w=el("div","herstel"); w.setAttribute("role","status");
+  w.appendChild(el("span",null,tekst));
+  var b=el("button",null,t.herstelKnop); b.type="button"; b.id="herstelKnop";
+  b.addEventListener("click",async function(){
+    b.disabled=true;
+    for(var i=0;i<snap.length;i++){ if(snap[i].d==null) await S.del(snap[i].p); else await S.set(snap[i].p,snap[i].d); }
+    w.remove(); await reload(); render(); toast(t.herstelKlaar);
+  });
+  w.appendChild(b); document.body.appendChild(w);
+  setTimeout(function(){ w.remove(); },10000);
+}
+/* Contract weg = alsof het nooit gebeurd is: betalingen, borg en boetes gaan mee
+   (ze staan in het contract), de auto staat weer vrij, de kilometerstand gaat
+   terug als dit contract hem verhoogde, en een klant die alleen voor dit contract
+   is aangemaakt, verdwijnt ook. */
+function contractVerwijderKnop(r){
+  var t=T(), b=el("button","btn dangerish",t.delContract); b.type="button"; b.id="delContract";
+  b.style.cssText="width:100%;margin-top:18px";
+  b.addEventListener("click",function(){ verwijderContract(r); });
+  return b;
+}
+async function verwijderContract(r){
+  var t=T(), c=car(r.vehicleId), cl=client(r.clientId);
+  if(!await ask(t.delVraag(r.clientName||"",c.model||""),t.delJa)) return;
+  var anderen=RENTALS.filter(function(x){ return x.id!==r.id; });
+  /* klant alleen mee als hij met dit contract ontstond en nergens anders huurt */
+  var klantMee = cl && !anderen.some(function(x){ return x.clientId===cl.id; }) &&
+    cl.createdAt && r.createdAt && Math.abs(Date.parse(cl.createdAt)-Date.parse(r.createdAt))<15*60000;
+  /* kilometerstand terug als dit contract hem het hoogst zette */
+  var kmDit=Math.max(Number(r.depart&&r.depart.km)||0, Number(r.retour&&r.retour.km)||0);
+  var kmAnder=anderen.filter(function(x){ return x.vehicleId===c.id; }).reduce(function(m,x){
+    return Math.max(m, Number(x.depart&&x.depart.km)||0, Number(x.retour&&x.retour.km)||0); },0);
+  var kmTerug = c.id && kmDit && Number(c.km)===kmDit ? Math.max(kmAnder, Number(r.depart&&r.depart.km)||0) : null;
+  var paden=["rentals/"+r.id]; if(klantMee) paden.push("clients/"+cl.id); if(kmTerug!=null && kmTerug!==Number(c.km)) paden.push("vehicles/"+c.id);
+  var snap=await bewaarVoorHerstel(paden);
+  await S.del("rentals/"+r.id);
+  if(klantMee) await S.del("clients/"+cl.id);
+  if(kmTerug!=null && kmTerug!==Number(c.km)) await S.set("vehicles/"+c.id,stripId(Object.assign({},c,{ km:kmTerug })));
+  delete DRAFTS[r.id+"|depart"]; delete DRAFTS[r.id+"|retour"];
+  rental=null; draft=null; LAATSTEBON=null; LAATSTEKAART=null;
+  await reload(); naarKlaar("vDay");
+  herstelBalk(t.delKlaar,snap);
+}
+var delClientBasis=delClient;
+delClient=async function(){
+  if(!clientEdit) return delClientBasis();
+  var t=T(), id=clientEdit.id;
+  if(!await ask(t.delKlantVraag(clientEdit.name||""),t.delJa)) return;
+  var snap=await bewaarVoorHerstel(["clients/"+id]);
+  await delClientBasis();
+  var o=document.querySelector(".toast"); if(o) o.remove();
+  herstelBalk(t.deleted,snap);
+};
 /* ============ BORG OP MAAT ============
    De borg van de auto, de korting voor een vaste klant, en een lagere of hogere
    borg: één tik. Een onbekende klant met een dure auto vraagt iets anders dan een
@@ -8200,7 +8280,7 @@ function paintCarSide(){
   pl.ex.forEach(function(e){
     var r=el("div","row"); var k=el("span","k"); k.innerHTML="<b>"+esc(t.exCats[e.cat]||e.cat)+"</b><br><span style='font-size:13px;color:var(--ink3)'>"+dShort(e.date)+(e.note?" · "+esc(e.note):"")+"</span>";
     r.appendChild(k); r.appendChild(el("span","v",dh(e.amount)));
-    var x=el("button","x","×"); x.type="button"; x.addEventListener("click",async function(){ await S.del("expenses/"+e.id); await reload(); paintCarSide(); toast(t.deleted); });
+    var x=el("button","x","×"); x.type="button"; x.addEventListener("click",async function(){ var snap=await bewaarVoorHerstel(["expenses/"+e.id]); await S.del("expenses/"+e.id); await reload(); paintCarSide(); herstelBalk(t.deleted,snap); });
     r.appendChild(x); ex.appendChild(r);
   });
 }
@@ -8219,7 +8299,14 @@ async function saveCar(){
     purchasePrice:Number($("cwPrice").value)||0, purchaseDate:$("cwBought").value||"", loanMonthly:Number($("cwLoan").value)||0, loanMonthsLeft:Number($("cwLoanN").value)||0 };
   await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); naarKlaar("vFleet"); toast(t.saved);
 }
-async function delCar(){ if(!carEdit){ naarKlaar("vFleet"); return; } await S.del("vehicles/"+carEdit.id); await reload(); naarKlaar("vFleet"); toast(T().deleted); }
+async function delCar(){
+  if(!carEdit){ naarKlaar("vFleet"); return; }
+  var t=T(), c=carEdit;
+  if(!await ask(t.delCarVraag(c.model),t.delJa)) return;
+  var snap=await bewaarVoorHerstel(["vehicles/"+c.id]);
+  await S.del("vehicles/"+c.id); await reload(); naarKlaar("vFleet");
+  herstelBalk(t.deleted,snap);
+}
 
 /* ============ INSTELLINGEN ============ */
 var ATLASVER="136-herbouw";
@@ -8558,6 +8645,7 @@ function receipt(r,kind){
     if(!r.released && r.caution>0) side.appendChild(settlePanel(r));
   }
   if(kind!=="depart"){ var kb=el("button","btn ghost",t.kcBtn); kb.style.cssText="margin-top:10px;width:100%"; kb.addEventListener("click",function(){ openCard(r); }); side.appendChild(kb); }
+  if(!r.cancelled) $("rMain").appendChild(contractVerwijderKnop(r));
   show("vDone"); $("prog").hidden=true;
   $("bBack").hidden=true;
   $("bGo").disabled=false; $("bGo").textContent=t.klaarKnop;
@@ -9400,8 +9488,10 @@ function payPanel(r){
     var del=el("button","x","×"); del.type="button"; del.title=t.payDel;
     del.addEventListener("click",async function(){
       if(!await ask(t.payDelAsk,t.payDel)) return;
+      var snap=await bewaarVoorHerstel(["rentals/"+r.id]);
       var next=Object.assign({},r,{ payments:pays(r).filter(function(y){ return y.id!==x.id; }) });
       await S.set("rentals/"+r.id,stripId(next)); await reload();
+      setTimeout(function(){ herstelBalk(t.deleted,snap); },50);
       var fresh=RENTALS.filter(function(z){ return z.id===r.id; })[0]||next;
       receipt(fresh, fresh.retour?"retour":"depart");
     });
