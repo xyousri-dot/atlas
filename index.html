@@ -595,6 +595,8 @@ details.meer>div{padding:0 12px 12px}
 html[lang="ar"] body, html[lang="ar"] button, html[lang="ar"] input, html[lang="ar"] select, html[lang="ar"] textarea{font-family:"Noto Sans Arabic",Figtree,system-ui,sans-serif}
 html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3{font-family:"Noto Sans Arabic","Bricolage Grotesque",sans-serif;letter-spacing:0}
 html[lang="ar"] .lbl, html[lang="ar"] .groep-k b{letter-spacing:0;text-transform:none}
+/* Franse documenten (contract, verklaring) houden hun eigen letter. */
+html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, html[lang="ar"] #sheet h3{font-family:Figtree,Arial,sans-serif}
 [dir="rtl"] .prog-row span, [dir="rtl"] .title .add, [dir="rtl"] .state, [dir="rtl"] .vstap-ok, [dir="rtl"] .tl small{margin-left:0;margin-right:auto}
 [dir="rtl"] .job, [dir="rtl"] .slot, [dir="rtl"] .tegel, [dir="rtl"] .meerblad button.rij{text-align:right}
 [dir="rtl"] .job .amt, [dir="rtl"] .row .v, [dir="rtl"] .lrow .age, [dir="rtl"] .lrow .st, [dir="rtl"] .advice .kv span:nth-child(even), [dir="rtl"] .vstap-ok{text-align:left}
@@ -2367,6 +2369,24 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
 };
 /* Wat nog niet vertaald is, valt terug op het Frans (en het contract blijft Frans). */
 (function(){ for(var k in TXT.fr) if(!(k in TXT.ar)) TXT.ar[k]=TXT.fr[k]; })();
+/* ============ NIEUWE TEKSTEN (herbouw) ============
+   Per sleutel meteen de drie talen, zodat er nooit een taal achterblijft. */
+function zetTekst(k,o){ TXT.nl[k]=o.nl; TXT.fr[k]=o.fr; TXT.ar[k]=o.ar; }
+zetTekst("bvH",{ nl:"Boete: wijs de bestuurder aan", fr:"Amende : désigner le conducteur", ar:"مخالفة: تعيين السائق" });
+zetTekst("bvP",{ nl:"De boete staat op naam van de zaak. Met deze verklaring gaat ze naar de klant. Versturen binnen 30 dagen na ontvangst.",
+                 fr:"L’amende est au nom de l’agence. Cette déclaration la transfère au client. À envoyer dans les 30 jours après réception.",
+                 ar:"المخالفة باسم الوكالة. هذا التصريح ينقلها إلى الزبون. يرسل خلال 30 يوما من التوصل." });
+zetTekst("bvRefL",{ nl:"Nummer van de boete (optioneel)", fr:"N° de l’avis (facultatif)", ar:"رقم الإشعار (اختياري)" });
+zetTekst("bvOntvL",{ nl:"Ontvangen op", fr:"Reçue le", ar:"تاريخ التوصل" });
+zetTekst("bvKnop",{ nl:"Verklaring maken (PDF)", fr:"Créer la déclaration (PDF)", ar:"إنشاء التصريح (PDF)" });
+zetTekst("bvBezig",{ nl:"Verklaring maken…", fr:"Création de la déclaration…", ar:"جاري إنشاء التصريح…" });
+zetTekst("bvOpgeslagen",{ nl:"Boete vastgelegd. Hij staat op Vandaag tot je hem verstuurd hebt.", fr:"Amende enregistrée. Elle reste sur Aujourd’hui jusqu’à l’envoi.", ar:"تم تسجيل المخالفة. تبقى في صفحة اليوم حتى ترسلها." });
+zetTekst("bvVoor",{ nl:function(d){ return "verklaring versturen vóór "+d; }, fr:function(d){ return "déclaration à envoyer avant le "+d; }, ar:function(d){ return "أرسل التصريح قبل "+d; } });
+zetTekst("bvTeLaat",{ nl:function(n){ return "termijn "+n+" d. voorbij"; }, fr:function(n){ return "délai dépassé de "+n+" j"; }, ar:function(n){ return "تجاوز الأجل بـ "+n+" يوم"; } });
+zetTekst("bvVerstuurd",{ nl:"Verstuurd ✓", fr:"Envoyée ✓", ar:"تم الإرسال ✓" });
+zetTekst("bvOpnieuw",{ nl:"Verklaring", fr:"Déclaration", ar:"التصريح" });
+zetTekst("bvLijst",{ nl:"Boetes bij deze verhuur", fr:"Amendes sur cette location", ar:"مخالفات هذا الكراء" });
+zetTekst("bvKlaar",{ nl:function(d){ return "verstuurd op "+d; }, fr:function(d){ return "envoyée le "+d; }, ar:function(d){ return "أرسل يوم "+d; } });
 var LKEY="atlas-lang";
 var L=(function(){ try{ var x=localStorage.getItem(LKEY); return x==="nl"||x==="ar"?x:"fr"; }catch(e){ return "fr"; } })();
 function T(){ return TXT[L]; }
@@ -2650,6 +2670,9 @@ function uid(){ return "x"+Date.now().toString(36)+Math.random().toString(36).sl
 function today(){ return new Date().toISOString().slice(0,10); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]; }); }
 function plateHTML(c){ var mid=c.plateLtr?'<i>·</i><bdi>'+esc(c.plateLtr)+'</bdi>':''; return '<span class="plate"><bdi>'+esc(c.plateNum)+'</bdi>'+mid+'<i>·</i><bdi>'+esc(c.plateReg)+'</bdi></span>'; }
+/* Kenteken voor documenten: altijd nummer · letter · regio van links naar rechts.
+   Als gewone tekst draait de Arabische letter de volgorde om (77104 · 5 · أ). */
+function plateDoc(c){ return '<bdi dir="ltr">'+[c.plateNum,c.plateLtr,c.plateReg].filter(Boolean).map(function(x){ return "<bdi>"+esc(x)+"</bdi>"; }).join(" \u00b7 ")+"</bdi>"; }
 function plateTxt(c){ return [c.plateNum,c.plateLtr,c.plateReg].filter(Boolean).join(" · "); }
 function fuelTxt(v){ return T().fuelTxt[String(v)]||"—"; }
 function dLong(d){ return datum(new Date(d.slice(0,10)+"T12:00:00Z").toLocaleDateString(T().loc,{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})); }
@@ -3039,12 +3062,20 @@ function renderDay(){
        {label:t.bWijzig, ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]); }
   var nuTerug=weg.filter(function(r){ return r.to<=nu; }), laterTerug=weg.filter(function(r){ return r.to>nu; });
   var nuWeg=gepland.filter(function(r){ return r.from<=nu; }), laterWeg=gepland.filter(function(r){ return r.from>nu; });
-  var aantalNu=nuTerug.length+nuWeg.length+borg.length;
+  var boetes=openBoetes();
+  var aantalNu=nuTerug.length+nuWeg.length+borg.length+boetes.length;
   kop(t.hNu+(aantalNu?" ("+aantalNu+")":""));
   if(!aantalNu) box.appendChild(el("p","leegtje",t.geenNu));
   nuTerug.forEach(terugKaart);
   nuWeg.forEach(vertrekKaart);
   borg.forEach(function(r){ kaart(r, t.hBorgKort+" "+dh(r.caution), "", [{label:t.bBorg, fn:function(){ receipt(r,"retour"); }}]); });
+  /* Boete binnen: de bestuurder aanwijzen binnen 30 dagen. */
+  boetes.forEach(function(x){
+    var tm=boeteTermijn(x.b), over=dayDiff(tm,nu);
+    kaart(x.r, over>0?t.bvTeLaat(over):t.bvVoor(dShort(tm)), over>0?"laat":"vandaag",
+      [{label:t.bvVerstuurd, fn:async function(){ await bewaarBoete(x.r,Object.assign({},x.b,{ verstuurd:today() })); toast(t.saved); render(); }},
+       {label:t.bvOpnieuw, ghost:true, fn:function(){ boeteVerklaring(x.r,x.b,this); }}]);
+  });
   if(laterTerug.length){ kop(t.hOnderweg+" ("+laterTerug.length+")"); laterTerug.forEach(terugKaart); }
   if(laterWeg.length){ kop(t.hReserv+" ("+laterWeg.length+")"); laterWeg.forEach(vertrekKaart); }
   /* Vrije auto's: tik erop en het contract begint met die auto al gekozen. */
@@ -8776,7 +8807,7 @@ function makeAttestation(r,btn){
   var t=T(), c=car(r.vehicleId), cl=client(r.clientId)||{}, rec=r.depart||{};
   var html='<div class="hd"><div><div class="ag">'+esc(AG.name)+'</div><div class="ct">'+esc(AG.city)+' · Agence de location de voitures</div></div><div style="text-align:right"><h1>ATTESTATION DE LOCATION</h1><div class="ct">N° '+esc(r.code)+'</div></div></div>'+
     '<p style="font-size:13.5px;line-height:1.6">Nous soussignés, <b>'+esc(AG.name)+'</b>, '+esc(AG.city)+', attestons que le véhicule ci-dessous est loué à la personne ci-dessous pour la période indiquée, et que celle-ci est autorisée à le conduire.</p>'+
-    '<h2>Véhicule</h2><table><tr><td>Marque et modèle</td><td>'+esc(c.model)+'</td></tr><tr><td>Immatriculation</td><td>'+esc(plateTxt(c))+'</td></tr></table>'+
+    '<h2>Véhicule</h2><table><tr><td>Marque et modèle</td><td>'+esc(c.model)+'</td></tr><tr><td>Immatriculation</td><td>'+plateDoc(c)+'</td></tr></table>'+
     '<h2>Conducteur</h2><table><tr><td>Nom</td><td>'+esc(r.clientName)+'</td></tr>'+
     (cl.docNumber?'<tr><td>'+(cl.docType==="passport"?"Passeport":"CIN")+'</td><td>'+esc(cl.docNumber)+'</td></tr>':'')+
     (cl.licenceNumber?'<tr><td>Permis de conduire</td><td>'+esc(cl.licenceNumber)+'</td></tr>':'')+
@@ -9076,6 +9107,73 @@ function renderLed(){
     box.appendChild(row);
   });
 }
+/* ============ BOETE: BESTUURDER AANWIJZEN ============
+   Een radarboete komt op naam van de eigenaar: de verhuurder. Die heeft 30 dagen
+   om de bestuurder aan te wijzen met een ondertekende verklaring. Atlas weet wie
+   er reed (het contract), dus de verklaring is één tik. Het document is Frans,
+   zoals elk officieel stuk; de boete blijft op Vandaag staan tot ze verstuurd is. */
+function boeteTermijn(b){ return plus(b.ontvangen||today(),30); }
+function openBoetes(){
+  var uit=[];
+  RENTALS.forEach(function(r){ if(!live(r)) return; (r.boetes||[]).forEach(function(b){ if(!b.verstuurd) uit.push({ r:r, b:b }); }); });
+  return uit.sort(function(x,y){ return boeteTermijn(x.b).localeCompare(boeteTermijn(y.b)); });
+}
+async function bewaarBoete(r,b){
+  var lijst=(r.boetes||[]).filter(function(x){ return x.id!==b.id; }).concat([b]);
+  var next=Object.assign({},r,{ boetes:lijst });
+  await S.set("rentals/"+r.id,stripId(next)); await reload();
+  return RENTALS.filter(function(x){ return x.id===r.id; })[0]||next;
+}
+function boeteVerklaring(r,b,btn){
+  var t=T(), c=car(r.vehicleId), cl=client(r.clientId)||{}, d2=r.driver2||null;
+  function rij(k,v){ return v ? '<tr><td>'+k+'</td><td>'+esc(v)+'</td></tr>' : ''; }
+  var html='<div class="hd"><div><div class="ag">'+esc(AG.name)+'</div><div class="ct">'+esc(AG.city)+' · Agence de location de voitures</div></div>'+
+      '<div style="text-align:right"><h1>DÉSIGNATION DU CONDUCTEUR</h1><div class="ct">Contrat N° '+esc(r.code)+'</div></div></div>'+
+    '<p style="font-size:13.5px;line-height:1.6">Je soussigné(e), représentant légal de l’agence de location <b>'+esc(AG.name)+'</b>, '+esc(AG.city)+
+      ', titulaire du certificat d’immatriculation du véhicule désigné ci-dessous, déclare qu’à la date et à l’heure de l’infraction, ce véhicule était loué et sous la garde de la personne désignée ci-dessous, en vertu du contrat de location N° <b>'+esc(r.code)+'</b>.</p>'+
+    '<h2>Avis de contravention</h2><table>'+rij("N° de l’avis",b.ref)+rij("Date de l’infraction",dLong(b.datum)+(b.uur?" à "+b.uur:""))+rij("Avis reçu le",dLong(b.ontvangen))+'</table>'+
+    '<h2>Véhicule</h2><table>'+rij("Marque et modèle",c.model)+(c.plateNum?'<tr><td>Immatriculation</td><td>'+plateDoc(c)+'</td></tr>':'')+'</table>'+
+    '<h2>Conducteur désigné</h2><table>'+rij("Nom et prénom",r.clientName||cl.name)+
+      rij(cl.docType==="passport"?"Passeport N°":"C.I.N N°",cl.docNumber)+rij("Date de naissance",cl.birth?dLong(cl.birth):"")+
+      rij("Nationalité",cl.nationality)+rij("Permis de conduire N°",cl.licenceNumber)+rij("Délivré le",cl.licenceIssue?dLong(cl.licenceIssue):"")+
+      rij("Adresse",cl.address)+rij("Téléphone",r.clientTel||cl.tel)+'</table>'+
+    (d2&&d2.name ? '<h2>Second conducteur déclaré au contrat</h2><table>'+rij("Nom et prénom",d2.name)+rij("Permis de conduire N°",d2.licence)+'</table>' : '')+
+    '<h2>Location</h2><table>'+rij("Contrat N°",r.code)+rij("Du",dLong(r.from))+rij("Au",dLong(r.to))+'</table>'+
+    '<div class="box" style="font-size:12.5px;line-height:1.5">Déclaration à transmettre dans les <b style="font-size:13px">30 jours</b> suivant la réception de l’avis, au plus tard le <b style="font-size:13px">'+dLong(boeteTermijn(b))+'</b>.</div>'+
+    '<div class="sg"><div>Fait à '+esc(AG.city)+', le '+dLong(today())+'</div><div>Cachet et signature de l’agence</div></div>'+
+    '<div class="sm">Pièces jointes : copie du contrat de location signé par le locataire ; copie de sa pièce d’identité et de son permis de conduire.</div>';
+  return pdfFromSheet(html,"designation-"+(r.code||"")+"-"+(b.datum||"")+".pdf",btn,t.bvBezig);
+}
+boeteVerklaring=inHetFrans(boeteVerklaring);
+/* Het blok onder een gevonden verhuur in de boetezoeker. */
+function boetePaneel(r,datum,uur){
+  var t=T(), w=el("div","card"); w.style.marginTop="12px";
+  w.appendChild(Object.assign(el("h2","ch"),{textContent:t.bvH}));
+  w.appendChild(Object.assign(el("p","fine"),{textContent:t.bvP}));
+  var g=el("div","grid2");
+  var f1=el("div","f"); f1.appendChild(Object.assign(el("label","lbl"),{textContent:t.bvRefL,htmlFor:"bvRef"}));
+  var ref=document.createElement("input"); ref.type="text"; ref.id="bvRef"; ref.autocomplete="off"; f1.appendChild(ref); g.appendChild(f1);
+  var f2=el("div","f"); f2.appendChild(Object.assign(el("label","lbl"),{textContent:t.bvOntvL,htmlFor:"bvOntv"}));
+  var ontv=document.createElement("input"); ontv.type="date"; ontv.id="bvOntv"; ontv.value=today(); f2.appendChild(ontv); g.appendChild(f2);
+  w.appendChild(g);
+  var go=el("button","btn",t.bvKnop); go.type="button"; go.id="bvGo"; go.style.cssText="margin-top:12px;width:100%";
+  go.addEventListener("click",async function(){
+    var b={ id:uid(), datum:datum, uur:uur||"", ref:ref.value.trim(), ontvangen:ontv.value||today(), gemaakt:new Date().toISOString(), verstuurd:null };
+    var vers=await bewaarBoete(r,b);
+    await boeteVerklaring(vers,b,go);
+    toast(t.bvOpgeslagen);
+  });
+  w.appendChild(go);
+  var eerder=(r.boetes||[]);
+  if(eerder.length){
+    w.appendChild(Object.assign(el("p","lbl"),{textContent:t.bvLijst,style:"margin:14px 0 4px"}));
+    eerder.forEach(function(b){
+      var x=el("div","row"); x.appendChild(el("span","k",dShort(b.datum)+(b.ref?" · "+b.ref:"")));
+      x.appendChild(el("span","v",b.verstuurd?t.bvKlaar(dShort(b.verstuurd)):t.bvVoor(dShort(boeteTermijn(b))))); w.appendChild(x);
+    });
+  }
+  return w;
+}
 function lookup(){
   var t=T(), num=$("qP").value.trim(), d=$("qD").value, tm=$("qT").value||"12:00", out=$("qOut"); out.innerHTML="";
   function box(cls,h,p){ out.innerHTML='<div class="answer '+cls+'"><h3>'+h+'</h3><p>'+p+'</p></div>'; }
@@ -9092,6 +9190,7 @@ function lookup(){
   a.appendChild(p);
   if(hit.clientTel){ var cc=el("a","call","☏ "+hit.clientTel); cc.href="tel:"+hit.clientTel.replace(/\s/g,""); a.appendChild(cc); }
   out.appendChild(a);
+  out.appendChild(boetePaneel(hit,d,tm));
 }
 $("qGo").addEventListener("click",lookup);
 

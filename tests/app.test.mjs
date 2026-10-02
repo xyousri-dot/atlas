@@ -100,3 +100,35 @@ test("Frans: het contract is ongewijzigd t.o.v. v135", async () => {
   assert.ok(nu.length > 1000);
   assert.equal(nu, toen);
 });
+
+for (const taal of ["fr", "ar"]) test(`Boete (${taal}): zoeken → verklaring (Frans) → op Vandaag → verstuurd`, async () => {
+  const { page, fouten } = await B.open({ taal });
+  const dag = new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10);
+  await page.evaluate(() => { view = "vLed"; render(); pdfFromSheet = async (h) => { window.__pdf = h; }; });
+  await page.evaluate((dag) => { qP.value = "77104"; qD.value = dag; qT.value = "14:35"; }, dag);
+  await page.click("#qGo");
+  await page.waitForSelector("#bvGo");
+  await page.type("#bvRef", "R-2026-55871");
+  await B.foto(page, taal + "-boete-zoeken");
+  await page.click("#bvGo");
+  await page.waitForFunction(() => !!window.__pdf);
+  const pdf = await page.evaluate(() => window.__pdf);
+  for (const w of ["DÉSIGNATION DU CONDUCTEUR", "BADAOUI ADNANE", "GI4599", "07/182101", "AT-10003", "R-2026-55871", "14:35", "30 jours"])
+    assert.ok(pdf.includes(w), "verklaring mist: " + w);
+  assert.ok(!/[؀-ۿ]{3,}/.test(pdf.replace(/<bdi>[^<]*<\/bdi>/g, "").replace(/·\s*[؀-ۿ]\s*·/g, "")), "Arabische tekst in de verklaring");
+  const opgeslagen = await page.evaluate(() => RENTALS.find(r => r.code === "AT-10003").boetes);
+  assert.equal(opgeslagen.length, 1); assert.equal(opgeslagen[0].ref, "R-2026-55871"); assert.equal(opgeslagen[0].verstuurd, null);
+  /* Vandaag toont de termijn */
+  await page.evaluate(() => { view = "vDay"; render(); });
+  const kaart = await page.evaluate(() => [...document.querySelectorAll("#dayBody .kaartje")].map(k => k.textContent).find(x => /Déclaration|التصريح/.test(x)));
+  assert.ok(kaart, "boetekaart op Vandaag");
+  await B.foto(page, taal + "-boete-vandaag");
+  /* Verstuurd: weg van Vandaag, bewaard bij de verhuur */
+  await page.evaluate(() => [...document.querySelectorAll("#dayBody .kaartje button")].find(b => /Envoyée|تم الإرسال/.test(b.textContent)).click());
+  await page.waitForFunction(() => RENTALS.find(r => r.code === "AT-10003").boetes[0].verstuurd);
+  const nog = await page.evaluate(() => openBoetes().length);
+  assert.equal(nog, 0);
+  assert.equal(await page.evaluate(() => L), taal);
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
