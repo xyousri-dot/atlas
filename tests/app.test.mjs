@@ -184,3 +184,20 @@ test("Borg op maat: één tik past de borg aan, vaste klant krijgt ★", async (
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+for (const taal of ["fr", "ar"]) test(`Winst per auto in het wagenpark en vertrouwenspagina via Meer (${taal})`, async () => {
+  const { page, fouten } = await B.open({ taal });
+  await page.evaluate(() => { view = "vFleet"; render(); });
+  const regels = await page.evaluate(() => [...document.querySelectorAll("#flBody .job")].map(j => [j.querySelector("b").textContent, j.querySelector(".winst")?.textContent || ""]));
+  const clio = regels.find(r => r[0] === "Renault Clio")[1].replace(/[⁦-⁩]/g, "");
+  assert.match(clio, /\+2[\s.]800 DH/, "Clio: 2 x 1400 binnen, geen kosten → " + clio);
+  const logan = regels.find(r => r[0] === "Dacia Logan")[1].replace(/[⁦-⁩]/g, "");
+  assert.match(logan, /-150 DH/, "Logan: 750 binnen, 900 onderhoud → " + logan);
+  await B.foto(page, taal + "-wagenpark-winst");
+  await page.evaluate(() => { view = "vDay"; render(); openMeer(); });
+  await page.click("#meerTrust");
+  assert.ok(await page.evaluate(() => !document.getElementById("vTrust").hidden));
+  await B.foto(page, taal + "-vertrouwen");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});

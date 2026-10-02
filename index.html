@@ -609,6 +609,9 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 [dir="rtl"] .shot.on .cp{text-align:right}
 [dir="rtl"] details.kort[open]>summary{padding-left:0;padding-right:2px}
 /* De planning is een kalender: die blijft van links naar rechts lopen. */
+.job .winst{font-size:13.5px;font-weight:700;margin-top:4px}
+.job .winst.plus{color:var(--brand)}
+.job .winst.min{color:var(--warn)}
 /* Borg op maat: kop erboven, vier knoppen op één rij. */
 .borgen{flex-wrap:nowrap!important}
 .borgen .lbl{display:none}
@@ -2936,6 +2939,7 @@ var TABICOON={
   vPlan:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
   vClients:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
   vFleet:'<svg viewBox="0 0 24 24"><path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="15" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="19.5" r="1.5"/><circle cx="16.5" cy="19.5" r="1.5"/></svg>',
+  vTrust:'<svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
   meer:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
   vLed:'<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M7 15h3"/></svg>',
   vCash:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -2955,6 +2959,10 @@ function openMeer(){
     k.addEventListener("click",function(){ w.remove(); stashDraft(); rental=null; draft=null; view=x[0]; render(); });
     b.appendChild(k);
   });
+  /* De vertrouwenspagina: echte cijfers om te delen. Hoort niet verstopt onder Instellingen. */
+  var tr=el("button","rij"); tr.type="button"; tr.id="meerTrust"; tr.innerHTML=TABICOON.vTrust+"<span>"+esc(t.stTrustH)+"</span>";
+  tr.addEventListener("click",function(){ w.remove(); stashDraft(); rental=null; draft=null; openTrust(); });
+  b.appendChild(tr);
   var tl=el("div","talen");
   [["fr","Fran\u00e7ais"],["ar","\u0627\u0644\u0639\u0631\u0628\u064a\u0629"],["nl","Nederlands"]].forEach(function(x){
     var k=el("button",null,x[1]); k.type="button"; k.setAttribute("aria-pressed",L===x[0]?"true":"false");
@@ -7835,6 +7843,12 @@ function renderFleet(){
     var b=el("button","job"); b.type="button";
     var who=el("div","who"); who.appendChild(el("b",null,c.model));
     var cl=el("div","car"); var pp=document.createElement("span"); pp.innerHTML=plateHTML(c); cl.appendChild(pp); cl.appendChild(el("span",null,kmf(c.km)+" · "+dh(c.rate)+" "+t.perDay)); who.appendChild(cl);
+    /* Winst per auto, meteen zichtbaar: wat binnenkwam min de kosten. */
+    if(pl.rev || pl.cost){
+      var w=el("div","winst "+(pl.net>=0?"plus":"min"));
+      w.textContent=t.plNet+" : "+(pl.net>0?ltr("+"+dh(pl.net)):dh(pl.net));
+      who.appendChild(w);
+    }
     b.appendChild(who);
     /* Wat de verhuurder over een auto wil weten: staat hij hier of is hij weg? */
     var a=el("div","amt"), nu=today();
@@ -7921,7 +7935,7 @@ async function saveCar(){
 async function delCar(){ if(!carEdit){ naarKlaar("vFleet"); return; } await S.del("vehicles/"+carEdit.id); await reload(); naarKlaar("vFleet"); toast(T().deleted); }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="135";
+var ATLASVER="136-herbouw";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
