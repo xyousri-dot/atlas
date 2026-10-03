@@ -697,6 +697,10 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
   .btn, .held-knop, .tabs button.tab-plus svg{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
   .btn:active:not(:disabled), .held-knop:active, .tabs button.tab-plus:active svg{transform:scale(.96);transition-duration:.08s}
 }
+/* Demo-balk */
+.demobalk{position:fixed;left:0;right:0;top:0;z-index:80;display:flex;justify-content:center;align-items:center;gap:12px;padding:7px 14px;background:#1F2A24;color:#fff;font-size:13px;font-weight:600;text-align:center}
+.demobalk a{color:#7FE0BA;font-weight:800;white-space:nowrap}
+body.demo .bar{z-index:41}
 /* Controlekaart na de scan */
 #vNew.ctl-aan #nwDocWrap, #vNew.ctl-aan #nwLicWrap{display:none!important}
 #vNew.ctl-aan #nwNewWrap > .f:first-child{display:none}
@@ -773,6 +777,7 @@ html[lang="ar"] .ctl-kop b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 .strook b{display:block;font-family:"Bricolage Grotesque",Figtree,sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 .strook span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;line-height:1.25}
+.strook b.lang{font-size:15.5px;letter-spacing:-.02em;text-overflow:clip}
 /* Rustige regels onderaan Vandaag */
 .onderaan{margin-top:26px;border-top:1px solid var(--line)}
 .voetregel{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;background:none;border:none;border-bottom:1px solid var(--line);padding:14px 2px;font:inherit;font-size:14.5px;color:var(--ink2);text-align:start;cursor:pointer}
@@ -2587,6 +2592,9 @@ zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" pa
                        ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
 zetTekst("stGrpAg",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
 zetTekst("tabNieuw",{ nl:"Contract", fr:"Contrat", ar:"عقد" });
+zetTekst("demoBalk",{ nl:"Demo \u00b7 voorbeeldgegevens", fr:"D\u00e9mo \u00b7 donn\u00e9es d\u2019exemple", ar:"عرض تجريبي \u00b7 بيانات للمثال" });
+zetTekst("demoUit",{ nl:"Stoppen", fr:"Quitter", ar:"خروج" });
+zetTekst("demoOpen",{ nl:"Demo bekijken (voorbeeld)", fr:"Voir la d\u00e9mo (exemple)", ar:"مشاهدة العرض التجريبي" });
 zetTekst("ctlH",{ nl:"Gelezen van de kaart — kijk het na", fr:"Lu sur la carte — vérifiez", ar:"ما قُرئ من البطاقة — تحقق منه" });
 zetTekst("ctlSom",{ nl:function(o,w,f){ return "✓ "+o+" in orde"+(w?" · "+w+" nakijken":"")+(f?" · "+f+" fout":""); },
                     fr:function(o,w,f){ return "✓ "+o+" correct"+(o>1?"s":"")+(w?" · "+w+" à vérifier":"")+(f?" · "+f+" problème"+(f>1?"s":""):""); },
@@ -2977,6 +2985,64 @@ async function recheckScan(){
   }catch(e){}
 })();
 /* ============ boot ============ */
+/* ============ DEMO-STAND (?demo=1) ============
+   Om Atlas aan een verhuurder te laten zien, of hem zelf te laten proberen via
+   een link: een volle app met voorbeeldgegevens. De echte gegevens en de cloud
+   worden niet aangeraakt: de opslag kijkt in de demo alleen naar een eigen
+   geheugen, en alles wat je doet verdwijnt bij verversen. De opslagcode zelf
+   verandert niet; alleen in de demo krijgen dezelfde vier handelingen een ander
+   geheugen. */
+var DEMO=/[?&]demo=1(&|$)/.test(location.search);
+function demoGegevens(){
+  var nu=new Date().toISOString(), d=function(n){ return plus(today(),n); }, L={};
+  L["settings/agency"]={ name:"Atlas Location", city:"Marrakech", init:"AL", caution:3000, window:30, franchise:8000, promise:true, loyal:true, rib:"230 450 0123456789012345 67", bank:"CIH" };
+  var autos=[["a1","Dacia Logan","48213","\u0623","40",250,2500,52300],["a2","Dacia Sandero","51977","\u0628","40",280,2500,31800],["a3","Renault Clio 5","60342","\u062f","40",350,3000,24100],
+             ["a4","Peugeot 208","27719","\u0647","40",380,3000,18650],["a5","Hyundai Accent","33085","\u0623","40",320,3000,41200],["a6","Dacia Duster","72604","\u0648","40",450,5000,29900]];
+  autos.forEach(function(a){ L["vehicles/"+a[0]]={ model:a[1], plateNum:a[2], plateLtr:a[3], plateReg:a[4], rate:a[5], caution:a[6], km:a[7], fuel:"diesel",
+    insuranceUntil:d(140), inspectionUntil:d(a[0]==="a2"?12:200), vignetteUntil:d(90), purchasePrice:a[5]*480, purchaseDate:d(-420), loanMonthly:2600, loanMonthsLeft:18 }; });
+  var klanten=[["k1","BENNANI YOUSSEF","+212 661 204 118","BJ482190","1988-04-12","12/204571"],["k2","EL IDRISSI KHADIJA","+212 662 731 045","AB338172","1993-09-30","07/182101"],
+               ["k3","AMRANI KARIM","+212 670 118 342","EE910245","1985-01-22","05/339870"],["k4","TAZI SALMA","+212 677 552 901","BK126604","1997-06-05","12/550129"],["k5","MARTIN PAUL","+33 6 12 34 56 78","X4RTBPFW4","1978-03-12","19AB34567"]];
+  klanten.forEach(function(k){ L["clients/"+k[0]]={ name:k[1], tel:k[2], docType:k[0]==="k5"?"passport":"cin", docNumber:k[3], birth:k[4], licenceNumber:k[5], nationality:k[0]==="k5"?"FRA":"MAR", address:k[0]==="k5"?"":"MARRAKECH", flag:"ok", note:"", scans:{}, createdAt:nu }; });
+  function huur(id,kid,aid,van,tot,dep,ret,betaald,extra){
+    var a=L["vehicles/"+aid], k=L["clients/"+kid], dagen=Math.max(1,dayDiff(van,tot));
+    var r={ code:"AL-"+(10200+Number(id.slice(1))), clientId:kid, clientName:k.name, clientTel:k.tel, vehicleId:aid, from:van, to:tot, days:dagen, rate:a.rate, total:a.rate*dagen, caution:a.caution,
+      depart:dep?{ marks:[], shots:{}, km:a.km-dagen*180, fuel:"100", sig:null, at:van+"T09:30:00.000Z", snel:true }:null,
+      retour:ret?{ marks:[], shots:{}, km:a.km, fuel:"100", sig:null, at:tot+"T18:00:00.000Z" }:null, released:false, limit:plus(tot,30), payments:[], createdAt:nu };
+    (betaald||[]).forEach(function(b,i){ r.payments.push({ id:id+"p"+i, amount:b[0]==="rent"?r.total:r.caution, kind:b[0], method:b[1], date:b[2] }); });
+    L["rentals/"+id]=Object.assign(r,extra||{});
+  }
+  huur("r1","k1","a1",d(-4),d(0),true,false,[["rent","cash",d(-4)],["caution","cash",d(-4)]]);
+  huur("r2","k2","a3",d(0),d(3),false,false,[["rent","transfer",d(0)]]);
+  huur("r3","k3","a6",d(-6),d(-1),true,false,[["rent","card",d(-6)],["caution","cash",d(-6)]]);
+  huur("r4","k4","a4",d(-9),d(-2),true,true,[["rent","cash",d(-9)],["caution","cash",d(-9)]]);
+  huur("r5","k5","a5",d(-1),d(5),true,false,[["rent","card",d(0)],["caution","cash",d(0)]]);
+  huur("r6","k2","a2",d(-30),d(-25),true,true,[["rent","cash",d(-30)],["caution","cash",d(-30)]],{ released:true, releasedAt:d(-23), cautionReturned:2500 });
+  huur("r7","k1","a3",d(-50),d(-44),true,true,[["rent","cash",d(-50)],["caution","cash",d(-50)]],{ released:true, releasedAt:d(-41), cautionReturned:3000 });
+  L["expenses/e1"]={ vehicleId:"a1", cat:"maintenance", amount:850, date:d(-40), note:"Vidange" };
+  L["expenses/e2"]={ vehicleId:"a6", cat:"tires", amount:2400, date:d(-70), note:"4 pneus" };
+  L["expenses/e3"]={ vehicleId:"a4", cat:"insurance", amount:4200, date:d(-200), note:"" };
+  return L;
+}
+if(DEMO){
+  (function(){
+    var mem=demoGegevens();
+    S.get=async function(p){ return clone(mem[p])||null; };
+    S.set=async function(p,d){ mem[p]=clone(d); };
+    S.del=async function(p){ delete mem[p]; };
+    S.list=async function(c){ return Object.keys(mem).filter(function(p){ return p.split("/")[0]===c && p.split("/").length===2; }).map(function(p){ var o=clone(mem[p]); o.id=p.split("/")[1]; return o; }); };
+  })();
+}
+/* Een smalle balk bovenaan: je bent in de demo, en de weg terug. */
+function demoBalk(){
+  if(!DEMO) return;
+  var t=T(), b=$("demoBalk");
+  if(!b){ b=el("div","demobalk"); b.id="demoBalk"; document.body.appendChild(b); }
+  b.innerHTML=""; b.appendChild(el("span",null,t.demoBalk));
+  var uit=el("a",null,t.demoUit); uit.href=location.pathname; b.appendChild(uit);
+  document.body.classList.add("demo");
+  document.body.style.paddingTop=b.offsetHeight+"px";
+  var kop=document.querySelector(".bar"); if(kop) kop.style.top=b.offsetHeight+"px";
+}
 (async function boot(){
   try{
     if(window.claude&&claude.use){
@@ -2990,7 +3056,7 @@ async function recheckScan(){
      start dus met wat er op de andere toestellen gebeurd is, niet met een oud beeld. */
   if(sbKlaar()){ try{ await sbWerk(); await sbHaal(); }catch(e){} }
   try{ await reload(); }catch(e){ dbErr(e); }
-  applyLang(); render();
+  applyLang(); render(); demoBalk();
   /* Daarna blijft hij zichzelf bijwerken: elke halve minuut, en meteen wanneer de
      verhuurder terugkomt in het tabblad. */
   setInterval(function(){ if(!document.hidden) sbRond(); },30000);
@@ -3189,6 +3255,12 @@ function openMeer(){
   var tr=el("button","rij"); tr.type="button"; tr.id="meerTrust"; tr.innerHTML=TABICOON.vTrust+"<span>"+esc(t.stTrustH)+"</span>";
   tr.addEventListener("click",function(){ w.remove(); stashDraft(); rental=null; draft=null; openTrust(); });
   b.appendChild(tr);
+  if(!DEMO){
+    var dm=el("button","rij"); dm.type="button"; dm.id="meerDemo";
+    dm.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M10 9l5 2.5-5 2.5z"/></svg><span>'+esc(t.demoOpen)+'</span>';
+    dm.addEventListener("click",function(){ w.remove(); window.open(location.pathname+"?demo=1","_blank"); });
+    b.appendChild(dm);
+  }
   var tl=el("div","talen");
   [["fr","Fran\u00e7ais"],["ar","\u0627\u0644\u0639\u0631\u0628\u064a\u0629"],["nl","Nederlands"]].forEach(function(x){
     var k=el("button",null,x[1]); k.type="button"; k.setAttribute("aria-pressed",L===x[0]?"true":"false");
@@ -3218,7 +3290,8 @@ function inHetFrans(fn){
 }
 makeContract=inHetFrans(makeContract);
 makeAttestation=inHetFrans(makeAttestation);
-function setLang(x){ L=x; try{ localStorage.setItem(LKEY,x); }catch(e){} stashDraft(); applyLang(); view="vDay"; rental=null; draft=null; render(); }
+function setLang(x){ setTimeout(demoBalk,0); setLangBasis(x); }
+function setLangBasis(x){ L=x; try{ localStorage.setItem(LKEY,x); }catch(e){} stashDraft(); applyLang(); view="vDay"; rental=null; draft=null; render(); }
 
 /* ============ DAG ============ */
 function stage(r){ if(r.cancelled) return "cancelled"; if(!r.depart) return "depart"; if(!r.retour) return "retour"; return "done"; }
@@ -3398,7 +3471,8 @@ function dagStrook(nu,aantal){
   [[binnen,dh,t.strBinnen,"vCash"],[borg,dh,t.strBorg,"vLed"],[vrij,function(n){ return ltr(n+"/"+CARS.length); },t.strVrij,"vFleet"]].forEach(function(y){
     var x=[null,y[2],y[3]];
     var b=el("button"); b.type="button";
-    var getal=el("b"); if(openen) telOp(getal,y[0],y[1]); else getal.textContent=y[1](y[0]);
+    var getal=el("b"); if(String(y[1](y[0])).replace(/[\u2066-\u2069]/g,"").length>8) getal.className="lang";
+    if(openen) telOp(getal,y[0],y[1]); else getal.textContent=y[1](y[0]);
     b.appendChild(getal); b.appendChild(el("span",null,x[1]));
     b.addEventListener("click",function(){ view=x[2]; render(); });
     w.appendChild(b);
@@ -8522,7 +8596,7 @@ async function delCar(){
 }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="136-herbouw";
+var ATLASVER="136";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();

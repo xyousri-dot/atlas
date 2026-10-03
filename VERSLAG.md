@@ -196,3 +196,14 @@ Easing power3.out `cubic-bezier(.22,1,.36,1)`, elke animatie ≤ 0,4 s (alleen h
 Geen teksten, kleuren of indeling veranderd; scanner, contract, opslag en de 78 schermelementen onveranderd (vingerafdruktests groen). Bewegingen spelen alleen bij openen/vooruitgaan, niet bij elke verversing.
 
 Tests: **50/50 groen** (22 bewegingstests in FR, AR en NL op 390×844, telkens zonder consolefouten). De gewone tests draaien met "minder beweging", zodat ze niet halverwege een animatie meten. Eén keer brak Chrome halverwege af ("Target closed"); de testbestanden draaien daarom nu na elkaar (± 3,5 min). Daarna twee rondes op rij groen.
+
+---
+
+## Ronde 9 — demo-stand en live
+
+- **Demo-stand** via `…/atlas/?demo=1` (en onder Plus: "Voir la démo"): een volle app met 6 auto's, 5 klanten, contracten en geld van vandaag, om te laten zien of als link naar een verhuurder te sturen. Je echte gegevens en de cloud worden niet aangeraakt (getest: ook na verwijderen en opslaan in de demo staat er in de browser exact hetzelfde en wacht er niets op de cloud). Verversen = demo weer als nieuw.
+- De oude knop "Charger un exemple" wist eerst al je gegevens (en met cloud ook daar); die blijft verstopt onder Hulpmiddelen, gebruik hem niet.
+- Grote bedragen in de groene kop (bv. 13.500 DH) werden afgekapt: nu kleinere letter, altijd volledig (getest).
+- Versie: **136**.
+
+Tests: 53/53 groen, twee rondes.

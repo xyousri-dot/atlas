@@ -384,3 +384,38 @@ test("Auto en klant verwijderen vragen eerst, en kunnen terug", async () => {
   assert.deepEqual(fouten, []);
   await page.close();
 });
+
+for (const taal of ["fr", "ar"]) test(`Demo-stand (${taal}): volle voorbeeldapp, echte gegevens en cloud onaangeroerd`, async () => {
+  const { page, fouten } = await B.open({ taal, pad: "/?demo=1" });
+  /* wat er vóór de demo in de browser stond (de "echte" gegevens van deze test) */
+  const echt = await page.evaluate(() => localStorage.getItem("atlas-local-2"));
+  const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
+  const st = await page.evaluate(() => ({ ag: AG.name, autos: CARS.length, huur: RENTALS.length, balk: !!document.getElementById("demoBalk"), taken: document.querySelectorAll("#dayBody .kaartje").length }));
+  assert.equal(st.ag, "Atlas Location"); assert.equal(st.autos, 6); assert.ok(st.huur >= 7); assert.ok(st.balk, "demo-balk zichtbaar"); assert.ok(st.taken >= 4, "Vandaag is gevuld");
+  await new Promise(r => setTimeout(r, 1200));
+  const vorm = await page.evaluate(() => ({ balkOnder: document.getElementById("demoBalk").getBoundingClientRect().bottom,
+    kopBoven: document.querySelector(".bar").getBoundingClientRect().top,
+    afgekapt: [...document.querySelectorAll(".strook b")].filter(b => b.scrollWidth > b.clientWidth + 1).map(b => b.textContent) }));
+  assert.ok(vorm.balkOnder <= vorm.kopBoven + 1, "demobalk valt niet over de kop: " + JSON.stringify(vorm));
+  assert.deepEqual(vorm.afgekapt, [], "geen bedrag afgekapt");
+  await B.foto(page, taal + "-demo");
+  /* in de demo een contract verwijderen en een auto opslaan */
+  await page.evaluate(() => receipt(RENTALS[0], "depart")); await wacht();
+  await page.click("#delContract"); await wacht(); await page.evaluate(() => document.querySelector(".ask .btn.dangerish").click()); await wacht(600);
+  await page.evaluate(async () => { await S.set("vehicles/nieuw", { model: "TEST" }); });
+  const opslag = await page.evaluate(() => ({ lokaal: localStorage.getItem("atlas-local-2"), rij: localStorage.getItem("atlas-sb-rij") }));
+  assert.equal(opslag.lokaal, echt, "echte gegevens in de browser onaangeroerd");
+  assert.ok(!opslag.rij || JSON.parse(opslag.rij).length === 0, "niets klaargezet voor de cloud");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+test("Zonder ?demo: gewone app met de eigen gegevens, knop naar de demo onder Plus", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  assert.equal(await page.evaluate(() => AG.name), "Atlas Kenitra");
+  assert.equal(await page.evaluate(() => !!document.getElementById("demoBalk")), false);
+  await page.evaluate(() => openMeer());
+  assert.ok(await page.$("#meerDemo"), "Voir la démo onder Plus");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
