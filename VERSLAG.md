@@ -224,3 +224,31 @@ Doorloop als nieuwe verhuurder (lege browser): eerste keer openen → auto's toe
 **E.** Nieuwe auto: alleen wat nodig is (documenten en aankoop achter "Plus de détails"); na de eerste auto naar Vandaag; voorbeeldtekst in vakken lichter.
 
 Scanner: ongewijzigd (147 gevallen + vingerafdruk groen). Tests: 54/54 groen, twee rondes. De bewegingstests krijgen één herkansing bij een browserfout van headless Chrome (nooit bij een mislukte controle; in de laatste twee rondes niet nodig geweest).
+
+---
+
+## Ronde 11 — scanner gemeten en verbeterd (4 oktober)
+
+**Hoe getest:** 11 voorbeeldkaarten met verzonnen personen (3 Marokkaanse CIN's, 2 Marokkaanse rijbewijzen, 6 paspoorten MAR/FRA/NLD/ESP/BEL/USA), strookletter OCR-B, geldige controlecijfers. Van elke kaart 5 telefoonfoto's (goed, scheef, ver, donker, staand) = 55 foto's, elk door de app zoals op een telefoon (+ → foto → scanner). Testbank: `tests/scanbank/`. Gemeten: de **eigen lezer** van de app (de slimme scan vraagt een login).
+
+**Gevonden en opgelost:**
+- Paspoort: de lezer las het goed (6x hetzelfde nummer, datums bevestigd), maar de app gooide alles weg omdat de naam niet streng genoeg bevestigd was → "Rien de lisible". Nu: invullen, en bij twijfel markeren.
+- CIN-nummer werd soms "gerepareerd" tot een fout nummer, zonder waarschuwing. Nu alleen groen bij 3 gelijke lezingen.
+- Adres: strookrommel kwam in het adresvak. Nu blijft het leeg als het geen adres is (ook adressen zonder huisnummer, zoals DOUAR …, blijven mogelijk).
+- Rijbewijs op een staande foto: de regel wordt nu ook gedraaid gezocht.
+- **Regel op de controlekaart: groen alleen als het bewezen is.** Naam uit de eigen lezer = altijd nakijken (geen controlecijfer); nummer groen alleen bij 3 gelijke lezingen of via de slimme scan; onbevestigde lezing → ook de datums nakijken.
+
+**Uitslag (54 foto's):**
+
+| Veld | Goed | Leeg | Fout, maar gemarkeerd | **Fout zonder markering** |
+|---|---|---|---|---|
+| Naam | 5 | 15 | 34 | **0** (was 5) |
+| Nummer (CIN/paspoort) | 17 (was 5 op 30) | 4 | 22 | **1** |
+| Geboortedatum | 40 | 2 | 2 | **0** (was 2) |
+| Geldig tot / nationaliteit | 42 | 2 | 0 | 0 |
+| Adres | 0 | 13 | 0 | **1** (bijna goed) |
+| Rijbewijs | 4-5 van 10 | 5-6 | 0 | 0 |
+
+**Eerlijk:** de eigen lezer verwart in namen letters (R/P, S/B, N/M, Y/T) en leest rijbewijzen alleen goed als de foto recht is. Dat los je niet op met regels; daarvoor is de **slimme scan** (Claude, ingelogd) er. Wat nu wél zeker is: een fout komt bijna nooit meer **groen** door, dus de verhuurder ziet wat hij moet nakijken. Restrisico: 1 Marokkaans paspoortnummer (QK1234567 → G1234567) kwam 3x gelijk door het controlecijfer.
+
+Scannercode: bewust veranderd (keurNaam, keurAlt, fillFromMRZ, adresUitRegelsRuw, soortVanFoto, nieuw adresGeloofwaardig), met toestemming; de 147 vaste scangevallen geven nog exact dezelfde uitkomst. Majorelle (andere sessie) is samengevoegd. Tests 55/55 groen. **Nog niet live.**

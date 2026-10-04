@@ -287,6 +287,8 @@ test("Na de scan: controlekaart met alle velden, fouten zichtbaar, aanpassingen 
     SNELKLANT = { name: "BADAOUI ADNANE", tel: "", docType: "cin", docNumber: "GI4599", birth: "2000-07-01", docExpiry: "2030-08-10",
       nationality: "MAR", address: "HAY EL KHEIR RUE 12 KENITRA", licenceNumber: "07/182101", licenceIssue: "2019-03-15", licenceExpiry: plus(today(), -2),
       scans: { cin: { data: "data:image/gif;base64,R0lGODlhAQABAAAAACw=" } } };
+    /* het nummer is bewezen (3 gelijke lezingen met controlecijfers), de naam komt uit de eigen lezer */
+    SCANTWIJFEL.docOk = true; SCANTWIJFEL.name = true;
     markKlantKlaar();
   });
   await wacht(1200);
@@ -296,7 +298,8 @@ test("Na de scan: controlekaart met alle velden, fouten zichtbaar, aanpassingen 
   assert.equal(st.rijen.length, 9);
   assert.equal(st.fotos, 1, "foto erbij");
   const s = Object.fromEntries(st.rijen);
-  assert.equal(s.docNumber, "ok"); assert.equal(s.birth, "ok"); assert.equal(s.licenceExpiry, "bad", "verlopen rijbewijs = fout");
+  assert.equal(s.docNumber, "ok", "bewezen nummer = groen"); assert.equal(s.birth, "ok");
+  assert.equal(s.name, "warn", "naam uit de eigen lezer is nooit groen (geen controlecijfer)"); assert.equal(s.licenceExpiry, "bad", "verlopen rijbewijs = fout");
   await B.foto(page, "fr-controle-na-scan");
   /* met een fout: Suivant vraagt eerst */
   await page.click("#bGo"); await wacht();
@@ -427,6 +430,23 @@ test("Contract: samengestelde achternaam blijft heel (EL AMRANI SANAE → Nom EL
   assert.deepEqual(uit, [{ nom: "EL AMRANI", prenom: "SANAE" }, { nom: "BADAOUI", prenom: "ADNANE" }, { nom: "AIT BEN ALI", prenom: "KARIM" }, { nom: "EL FASSI", prenom: "SAMIRA FATIMA" }, { nom: "MARTIN", prenom: "" }]);
   const html = await page.evaluate(async () => { let h = ""; pdfFromSheet = async x => { h = x; }; await makeContract(RENTALS.find(x => x.code === "AT-10004"), document.createElement("button")); return h; });
   assert.ok(/Nom<\/span><b>EL AMRANI<\/b>/.test(html) && /Pr\u00e9nom<\/span><b>SANAE<\/b>/.test(html), "op het contract");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+
+test("Controlekaart: groen alleen als het bewezen is (eigen lezer, niet bevestigd)", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  await page.click("#heldNieuw"); await new Promise(r => setTimeout(r, 300));
+  const s = await page.evaluate(() => {
+    $("nwName").value = "PEETEPS LUC";
+    SNELKLANT = { name: "PEETEPS LUC", docType: "passport", docNumber: "EH1234567", birth: "1969-02-05", docExpiry: "2030-12-01", nationality: "BEL", address: "TDMAR IEN19D92/ CZ 201A 7 RM", scans: {} };
+    SCANTWIJFEL = { name: true, docNumber: true, birth: true, docExpiry: true };   /* maar 2x gelijk gelezen */
+    markKlantKlaar();
+    return Object.fromEntries([...document.querySelectorAll("#nwControle .ctl-rij")].map(r => [r.querySelector("input").dataset.veld, r.dataset.s]));
+  });
+  for (const k of ["name", "docNumber", "birth", "docExpiry"]) assert.equal(s[k], "warn", k + " oranje");
+  assert.equal(await page.evaluate(() => SNELKLANT.address), "", "rommeladres leeggemaakt");
   assert.deepEqual(fouten, []);
   await page.close();
 });

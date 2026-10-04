@@ -1,0 +1,487 @@
+[
+ {
+  "foto": "cin1-donker.jpg",
+  "doc": "cin1",
+  "variant": "donker",
+  "sec": 19,
+  "klaar": true,
+  "score": {
+   "name": "OK",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(OL IOMARJFO123456)"
+  },
+  "stat": "✓ EL FASSI SAMIRA · né(e) le 30/09/1993  ·  numéro pas lu avec certitude — recopiez-le du document",
+  "fouten": []
+ },
+ {
+  "foto": "cin1-goed.jpg",
+  "doc": "cin1",
+  "variant": "goed",
+  "sec": 5,
+  "klaar": true,
+  "score": {
+   "name": "OK",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(TDMAR IEN19D92/ CZ 201A 7 RM)"
+  },
+  "stat": "✓ EL FASSI SAMIRA · né(e) le 30/09/1993  ·  numéro pas lu avec certitude — recopiez-le du document",
+  "fouten": []
+ },
+ {
+  "foto": "cin1-scheef.jpg",
+  "doc": "cin1",
+  "variant": "scheef",
+  "sec": 5,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(IDMARJF012545638K1234564666444)"
+  },
+  "stat": "Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
+  "fouten": []
+ },
+ {
+  "foto": "cin1-staand.jpg",
+  "doc": "cin1",
+  "variant": "staand",
+  "sec": 9,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "FOUT(BA123456)",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "leeg"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin1-ver.jpg",
+  "doc": "cin1",
+  "variant": "ver",
+  "sec": 7,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "FOUT(BM123456)",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(IDMARUF01234563BK1234564644444)"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin2-donker.jpg",
+  "doc": "cin2",
+  "variant": "donker",
+  "sec": 4,
+  "klaar": true,
+  "score": {
+   "name": "OK",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(UL ROMARIK76543215)"
+  },
+  "stat": "✓ BENNANI YOUSSEF · né(e) le 12/04/1988  ·  numéro pas lu avec certitude — recopiez-le du document",
+  "fouten": []
+ },
+ {
+  "foto": "cin2-goed.jpg",
+  "doc": "cin2",
+  "variant": "goed",
+  "sec": 6,
+  "klaar": true,
+  "score": {
+   "name": "FOUT(BENNANIK YOUSSEF)",
+   "docNumber": "OK",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(TDMABR1IK74 CE/ 29990 1ROG 2 0M 0)"
+  },
+  "stat": "✓ BENNANIK YOUSSEF · CIN JE987654 · né(e) le 12/04/1988",
+  "fouten": []
+ },
+ {
+  "foto": "cin2-scheef.jpg",
+  "doc": "cin2",
+  "variant": "scheef",
+  "sec": 14,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "FOUT(UF987654)",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(DDHARIK765432191E98765 4666666)"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin2-staand.jpg",
+  "doc": "cin2",
+  "variant": "staand",
+  "sec": 15,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "FOUT(UF987654)",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "leeg"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin2-ver.jpg",
+  "doc": "cin2",
+  "variant": "ver",
+  "sec": 23,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "FOUT(IF987654)",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(VW AL WAHDA NR 7 KENITRA)"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin3-donker.jpg",
+  "doc": "cin3",
+  "variant": "donker",
+  "sec": 4,
+  "klaar": true,
+  "score": {
+   "name": "OK",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(O 1OMARUA11223343)"
+  },
+  "stat": "✓ AIT TALEB KARIM · né(e) le 22/01/1975  ·  numéro pas lu avec certitude — recopiez-le du document",
+  "fouten": []
+ },
+ {
+  "foto": "cin3-goed.jpg",
+  "doc": "cin3",
+  "variant": "goed",
+  "sec": 5,
+  "klaar": true,
+  "score": {
+   "name": "FOUT(AIT TALEB KKARIM)",
+   "docNumber": "OK",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(TDMAR IA119922/ 2A FR 7-0 -)"
+  },
+  "stat": "✓ AIT TALEB KKARIM · CIN G456789 · né(e) le 22/01/1975",
+  "fouten": []
+ },
+ {
+  "foto": "cin3-scheef.jpg",
+  "doc": "cin3",
+  "variant": "scheef",
+  "sec": 3,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "OK",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(0ITILFGHSH78ICCCCCSSS)"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin3-staand.jpg",
+  "doc": "cin3",
+  "variant": "staand",
+  "sec": 9,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "OK",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "leeg"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "cin3-ver.jpg",
+  "doc": "cin3",
+  "variant": "ver",
+  "sec": 6,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "OK",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK",
+   "address": "FOUT(IDMARUA11223343645678944646444)"
+  },
+  "stat": "Le nom n’était pas lisible — tapez-le ci-dessous. Ce qui a été lu figure sur le contrat.",
+  "fouten": []
+ },
+ {
+  "foto": "lic1-donker.jpg",
+  "doc": "lic1",
+  "variant": "donker",
+  "sec": 9,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "leeg",
+   "licenceIssue": "leeg",
+   "licenceExpiry": "leeg",
+   "name": "leeg"
+  },
+  "stat": "C’est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, numéro, dates et adresse ",
+  "fouten": []
+ },
+ {
+  "foto": "lic1-goed.jpg",
+  "doc": "lic1",
+  "variant": "goed",
+  "sec": 4,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "OK",
+   "licenceIssue": "OK",
+   "licenceExpiry": "OK",
+   "name": "leeg"
+  },
+  "stat": "✓ Permis 07/182101 — prenez aussi une photo du VERSO de la CIN pour le nom et le numéro.",
+  "fouten": []
+ },
+ {
+  "foto": "lic1-scheef.jpg",
+  "doc": "lic1",
+  "variant": "scheef",
+  "sec": 4,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "leeg",
+   "licenceIssue": "leeg",
+   "licenceExpiry": "leeg",
+   "name": "leeg"
+  },
+  "stat": "C’est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, numéro, dates et adresse ",
+  "fouten": []
+ },
+ {
+  "foto": "lic1-staand.jpg",
+  "doc": "lic1",
+  "variant": "staand",
+  "sec": 7,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "leeg",
+   "licenceIssue": "leeg",
+   "licenceExpiry": "leeg",
+   "name": "leeg"
+  },
+  "stat": "C’est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, numéro, dates et adresse ",
+  "fouten": []
+ },
+ {
+  "foto": "lic1-ver.jpg",
+  "doc": "lic1",
+  "variant": "ver",
+  "sec": 11,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "leeg",
+   "licenceIssue": "leeg",
+   "licenceExpiry": "leeg",
+   "name": "leeg"
+  },
+  "stat": "C’est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, numéro, dates et adresse ",
+  "fouten": []
+ },
+ {
+  "foto": "lic2-donker.jpg",
+  "doc": "lic2",
+  "variant": "donker",
+  "sec": 3,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "leeg",
+   "licenceIssue": "leeg",
+   "licenceExpiry": "leeg",
+   "name": "leeg"
+  },
+  "stat": "C’est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, numéro, dates et adresse ",
+  "fouten": []
+ },
+ {
+  "foto": "lic2-goed.jpg",
+  "doc": "lic2",
+  "variant": "goed",
+  "sec": 4,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "OK",
+   "licenceIssue": "OK",
+   "licenceExpiry": "OK",
+   "name": "leeg"
+  },
+  "stat": "✓ Permis 12/204571 — prenez aussi une photo du VERSO de la CIN pour le nom et le numéro.",
+  "fouten": []
+ },
+ {
+  "foto": "lic2-scheef.jpg",
+  "doc": "lic2",
+  "variant": "scheef",
+  "sec": 3,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "OK",
+   "licenceIssue": "OK",
+   "licenceExpiry": "OK",
+   "name": "leeg"
+  },
+  "stat": "✓ Permis 12/204571 — prenez aussi une photo du VERSO de la CIN pour le nom et le numéro.",
+  "fouten": []
+ },
+ {
+  "foto": "lic2-staand.jpg",
+  "doc": "lic2",
+  "variant": "staand",
+  "sec": 15,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "leeg",
+   "licenceIssue": "leeg",
+   "licenceExpiry": "leeg",
+   "name": "leeg"
+  },
+  "stat": "C’est le recto. Retournez la CIN et photographiez le verso (avec les lignes <<< en bas) : nom, numéro, dates et adresse ",
+  "fouten": []
+ },
+ {
+  "foto": "lic2-ver.jpg",
+  "doc": "lic2",
+  "variant": "ver",
+  "sec": 3,
+  "klaar": true,
+  "score": {
+   "licenceNumber": "OK",
+   "licenceIssue": "OK",
+   "licenceExpiry": "OK",
+   "name": "leeg"
+  },
+  "stat": "✓ Permis 12/204571 — prenez aussi une photo du VERSO de la CIN pour le nom et le numéro.",
+  "fouten": []
+ },
+ {
+  "foto": "pas-bel-donker.jpg",
+  "doc": "pas-bel",
+  "variant": "donker",
+  "sec": 11,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK"
+  },
+  "stat": "Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
+  "fouten": []
+ },
+ {
+  "foto": "pas-bel-goed.jpg",
+  "doc": "pas-bel",
+  "variant": "goed",
+  "sec": 4,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK"
+  },
+  "stat": "Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
+  "fouten": []
+ },
+ {
+  "foto": "pas-bel-scheef.jpg",
+  "doc": "pas-bel",
+  "variant": "scheef",
+  "sec": 3,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK"
+  },
+  "stat": "Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
+  "fouten": []
+ },
+ {
+  "foto": "pas-bel-staand.jpg",
+  "doc": "pas-bel",
+  "variant": "staand",
+  "sec": 5,
+  "klaar": true,
+  "score": {
+   "name": "FOUT(PEETEPS LUC)",
+   "docNumber": "leeg",
+   "birth": "OK",
+   "docExpiry": "OK",
+   "nationality": "OK"
+  },
+  "stat": "✓ PEETEPS LUC · né(e) le 05/02/1969  ·  numéro pas lu avec certitude — recopiez-le du document",
+  "fouten": []
+ },
+ {
+  "foto": "pas-bel-ver.jpg",
+  "doc": "pas-bel",
+  "variant": "ver",
+  "sec": 14,
+  "klaar": true,
+  "score": {
+   "name": "leeg",
+   "docNumber": "leeg",
+   "birth": "FOUT(2009-02-05)",
+   "docExpiry": "OK",
+   "nationality": "OK"
+  },
+  "stat": "Rien de lisible sur cette photo. Prenez le verso de la carte, bien de face, avec les lignes du bas.",
+  "fouten": []
+ }
+]

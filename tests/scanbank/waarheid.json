@@ -1,0 +1,130 @@
+{
+ "cin1": {
+  "name": "EL FASSI SAMIRA",
+  "docType": "cin",
+  "docNumber": "BK123456",
+  "birth": "1993-09-30",
+  "docExpiry": "2031-05-12",
+  "nationality": "MAR",
+  "address": "HAY RIAD RUE 4 N 12 RABAT",
+  "mrz": [
+   "IDMARJF01234563BK123456<<<<<<<",
+   "9309304F3105124MAR<<<<<<<<<<<6",
+   "EL<FASSI<<SAMIRA<<<<<<<<<<<<<<"
+  ]
+ },
+ "cin2": {
+  "name": "BENNANI YOUSSEF",
+  "docType": "cin",
+  "docNumber": "JE987654",
+  "birth": "1988-04-12",
+  "docExpiry": "2029-11-03",
+  "nationality": "MAR",
+  "address": "LOT AL WAHDA NR 7 KENITRA",
+  "mrz": [
+   "IDMARJK76543219JE987654<<<<<<<",
+   "8804123M2911032MAR<<<<<<<<<<<6",
+   "BENNANI<<YOUSSEF<<<<<<<<<<<<<<"
+  ]
+ },
+ "cin3": {
+  "name": "AIT TALEB KARIM",
+  "docType": "cin",
+  "docNumber": "G456789",
+  "birth": "1975-01-22",
+  "docExpiry": "2027-02-14",
+  "nationality": "MAR",
+  "address": "DOUAR AIT OURIR MARRAKECH",
+  "mrz": [
+   "IDMARJA11223343G456789<<<<<<<<",
+   "7501229M2702146MAR<<<<<<<<<<<9",
+   "AIT<TALEB<<KARIM<<<<<<<<<<<<<<"
+  ]
+ },
+ "lic1": {
+  "name": "EL FASSI SAMIRA",
+  "licenceNumber": "07/182101",
+  "licenceIssue": "2015-03-15",
+  "licenceExpiry": "2035-03-14",
+  "d1": "D1AMA07<182101150315ELFASSI<<9"
+ },
+ "lic2": {
+  "name": "BENNANI YOUSSEF",
+  "licenceNumber": "12/204571",
+  "licenceIssue": "2010-06-02",
+  "licenceExpiry": "2030-06-01",
+  "d1": "D1AMA12<204571020610BENNANI<<9"
+ },
+ "pas-mar": {
+  "name": "BENNANI YOUSSEF",
+  "docType": "passport",
+  "docNumber": "QK1234567",
+  "birth": "1988-04-12",
+  "docExpiry": "2030-08-19",
+  "nationality": "MAR",
+  "mrz": [
+   "P<MARBENNANI<<YOUSSEF<<<<<<<<<<<<<<<<<<<<<<<",
+   "QK12345670MAR8804123M3008199<<<<<<<<<<<<<<<2"
+  ]
+ },
+ "pas-fra": {
+  "name": "MARTIN PAUL",
+  "docType": "passport",
+  "docNumber": "18AB12345",
+  "birth": "1978-03-12",
+  "docExpiry": "2029-01-01",
+  "nationality": "FRA",
+  "mrz": [
+   "P<FRAMARTIN<<PAUL<<<<<<<<<<<<<<<<<<<<<<<<<<<",
+   "18AB123451FRA7803129M2901019<<<<<<<<<<<<<<<6"
+  ]
+ },
+ "pas-nld": {
+  "name": "DE VRIES SARAH",
+  "docType": "passport",
+  "docNumber": "NX3K9L2P7",
+  "birth": "1990-07-02",
+  "docExpiry": "2032-04-30",
+  "nationality": "NLD",
+  "mrz": [
+   "P<NLDDE<VRIES<<SARAH<<<<<<<<<<<<<<<<<<<<<<<<",
+   "NX3K9L2P77NLD9007024F3204304<<<<<<<<<<<<<<<6"
+  ]
+ },
+ "pas-esp": {
+  "name": "GARCIA LOPEZ MARIA",
+  "docType": "passport",
+  "docNumber": "PAA123456",
+  "birth": "1985-11-23",
+  "docExpiry": "2028-06-15",
+  "nationality": "ESP",
+  "mrz": [
+   "P<ESPGARCIA<LOPEZ<<MARIA<<<<<<<<<<<<<<<<<<<<",
+   "PAA1234560ESP8511238F2806158<<<<<<<<<<<<<<<0"
+  ]
+ },
+ "pas-bel": {
+  "name": "PEETERS LUC",
+  "docType": "passport",
+  "docNumber": "EH1234567",
+  "birth": "1969-02-05",
+  "docExpiry": "2027-12-01",
+  "nationality": "BEL",
+  "mrz": [
+   "P<BELPEETERS<<LUC<<<<<<<<<<<<<<<<<<<<<<<<<<<",
+   "EH12345677BEL6902058M2712011<<<<<<<<<<<<<<<8"
+  ]
+ },
+ "pas-usa": {
+  "name": "SMITH JOHN",
+  "docType": "passport",
+  "docNumber": "545612345",
+  "birth": "1982-10-10",
+  "docExpiry": "2031-03-03",
+  "nationality": "USA",
+  "mrz": [
+   "P<USASMITH<<JOHN<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
+   "5456123457USA8210106M3103038<<<<<<<<<<<<<<<8"
+  ]
+ }
+}

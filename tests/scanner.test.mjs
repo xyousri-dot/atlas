@@ -11,6 +11,12 @@ import G from "./scanner-golden.json" with { type: "json" };
 const BEWUST = {
   snelTerug: "auto terug: borg terug = alleen wat echt ontvangen is (kas klopte niet); km niet meer vooraf ingevuld",
   nomPrenom: "contract: samengestelde achternamen (EL FASSI, BEN ALI, AIT ...) niet meer gesplitst",
+  keurNaam: "scan: naam zonder ruime meerderheid niet meer leeg, maar ingevuld met twijfelvlag (controlekaart)",
+  keurAlt: "scan: CIN-nummer pas zeker bij 3 gelijke lezingen, anders twijfelvlag",
+  fillFromMRZ: "scan: onzeker nummer wel invullen met twijfelvlag i.p.v. leeg laten (paspoort bleef leeg)",
+  adresUitRegelsRuw: "scan: regel na 'Adresse' alleen als adres als het geen strookrommel is",
+  soortVanFoto: "scan: rijbewijsregel ook zoeken als de foto staand is genomen",
+  adresGeloofwaardig: "scan (nieuw): controle dat een gelezen adres geen strookrommel is",
 };
 const html = A.leesHtml();
 const src = A.scriptUit(html);

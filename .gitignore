@@ -1,3 +1,7 @@
 node_modules/
 .DS_Store
 tests/.v135.html
+tests/scanbank/ocr-b-outline/
+tests/scanbank/ocrb.zip
+tests/scanbank/png/
+tests/scanbank/fotos/
