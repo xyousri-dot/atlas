@@ -901,6 +901,8 @@ input[type="date"]{min-width:0;max-width:100%}
   #flBody .jobs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
   #flBody .jobs > *{margin:0}
 }
+/* Formulieren (Réglages e.d.): beide kolommen van .two even breed onder elkaar. */
+@media (min-width:760px){ .wrap .two > *{width:100%;max-width:none} }
 
 .tabs button:focus-visible{outline:2px solid var(--brand);outline-offset:-6px;border-radius:14px}
 /* Tablet: het menu zweeft en is precies even breed als de kaarten (680 − 2×20).
@@ -1845,9 +1847,9 @@ var TXT = {
   stTrustH:"Jouw vertrouwenspagina", stTrustP:"Wat jouw zaak beter maakt dan de buurman, met echte cijfers uit dit systeem.", stTrustBtn:"Pagina bekijken",
   trH:"Jouw pagina", trP:"Echte cijfers. Dit zet je op Instagram, Google en je WhatsApp-status.",
   trRentals:"Verhuringen", trReleased:"Borgen terugbetaald", trAvg:"Gemiddeld terug na", trWithin:"Binnen 7 dagen",
-  trBadgeH:"Borg gegarandeerd terug", trBadgeP:"Bij elke verhuur: foto's van de auto bij vertrek en terugkomst, een contract in klare taal, en een geschreven datum waarna niets meer wordt ingehouden.",
+  trBadgeH:"Borg gegarandeerd terug", trBadgeP:"Bij elke verhuur: de staat van de auto vastgelegd bij vertrek en terugkomst, een contract in klare taal, en een geschreven datum waarna niets meer wordt ingehouden.",
   trCopyH:"Tekst om te kopiëren",
-  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nBorg gegarandeerd terug. "+(st.released?"Gemiddeld na "+st.avg+" dagen, "+st.within+"% binnen 7 dagen ("+st.released+" huurders).":"Foto's bij vertrek en terugkomst, geschreven teruggavedatum op elk contract.")+"\nContract met foto's en vaste teruggavedatum bij elke huur."; },
+  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nBorg gegarandeerd terug. "+(st.released?"Gemiddeld na "+st.avg+" dagen, "+st.within+"% binnen 7 dagen ("+st.released+" huurders).":"Staat van de auto vastgelegd bij vertrek en terugkomst, geschreven teruggavedatum op elk contract.")+"\nHelder contract en vaste teruggavedatum bij elke huur."; },
   trPdf:"Pagina als PDF", trNoData:"Nog geen afgeronde verhuringen. De cijfers vullen zich vanzelf.",
   trFine:"Dit zijn cijfers uit jouw eigen administratie. Ze worden pas sterk als je consequent de borg op tijd teruggeeft — het systeem beloont dat.",
   days:"dagen",
@@ -2179,7 +2181,7 @@ var TXT = {
   kcSteps:["Réservée","Clés remises","Voiture rendue","Caution restituée"], kcStepPartial:"Caution réglée (partiellement retenue)",
   kcPhotos:"Photos au départ", kcPhotosR:"Photos au retour", kcDmg:"Dommages constatés au départ", kcNoDmg:"Aucun dommage constaté au départ",
   kcContact:"Une question ? Appelez ou écrivez-nous.", kcPdf:"Fiche client en PDF", kcWa:"Envoyer sur WhatsApp",
-  kcWaMsg:function(r,c,ag,lim){ return "Bonjour "+r.clientName+", voici votre fiche de location "+ag.name+" : "+c.model+", du "+r.from+" au "+r.to+". Caution "+r.caution+" DH, rendue apres controle a la reprise."+(ag.promise!==false?" Plus aucune retenue apres le "+lim+".":"")+" Les photos du vehicule ont ete prises au depart."; },
+  kcWaMsg:function(r,c,ag,lim){ return "Bonjour "+r.clientName+", voici votre fiche de location "+ag.name+" : "+c.model+", du "+r.from+" au "+r.to+". Caution "+r.caution+" DH, rendue apres controle a la reprise."+(ag.promise!==false?" Plus aucune retenue apres le "+lim+".":"")+(r.depart&&r.depart.shots&&Object.keys(r.depart.shots).length?" Les photos du vehicule ont ete prises au depart.":""); },
   kcFine:"Sur votre propre serveur, ceci devient un lien que le client ouvre lui-même. Tout ce qui est ici y sera aussi.",
   stCheckH:"Vérification du système", stCheckP:"Testez en un clic si chaque élément fonctionne sur cet appareil : stockage, PDF, porte-clés QR, caméra et lecture des documents.", stCheckBtn:"Tout vérifier",
   ckBusy:"Vérification en cours…", ckOk:"fonctionne", ckLibNo:"bibliothèque non chargée — vérifiez la connexion internet et rechargez",
@@ -2198,9 +2200,9 @@ var TXT = {
   stTrustH:"Votre page de confiance", stTrustP:"Ce qui rend votre agence meilleure que le voisin, avec de vrais chiffres tirés de ce système.", stTrustBtn:"Voir la page",
   trH:"Votre page", trP:"De vrais chiffres. À mettre sur Instagram, Google et votre statut WhatsApp.",
   trRentals:"Locations", trReleased:"Cautions rendues", trAvg:"Rendue en moyenne après", trWithin:"Sous 7 jours",
-  trBadgeH:"Caution garantie", trBadgeP:"À chaque location : photos du véhicule au départ et au retour, un contrat clair, et une date écrite après laquelle plus rien n'est retenu.",
+  trBadgeH:"Caution garantie", trBadgeP:"À chaque location : l'état du véhicule noté au départ et au retour, un contrat clair, et une date écrite après laquelle plus rien n'est retenu.",
   trCopyH:"Texte à copier",
-  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nCaution garantie. "+(st.released?"Rendue en moyenne après "+st.avg+" jours, "+st.within+"% sous 7 jours ("+st.released+" locataires).":"Photos au départ et au retour, date de restitution écrite sur chaque contrat.")+"\nContrat avec photos et date de restitution fixe à chaque location."; },
+  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nCaution garantie. "+(st.released?"Rendue en moyenne après "+st.avg+" jours, "+st.within+"% sous 7 jours ("+st.released+" locataires).":"État du véhicule noté au départ et au retour, date de restitution écrite sur chaque contrat.")+"\nContrat clair et date de restitution fixe à chaque location."; },
   trPdf:"Page en PDF", trNoData:"Aucune location terminée pour l'instant. Les chiffres se remplissent tout seuls.",
   trFine:"Ce sont les chiffres de votre propre gestion. Ils deviennent forts si vous rendez la caution à temps, systématiquement — le système le récompense.",
   days:"jours",
@@ -2603,7 +2605,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   kcSteps:["محجوز","تم تسليم المفاتيح","رجعت السيارة","تم إرجاع الضمانة"], kcStepPartial:"تمت تسوية الضمانة (اقتطاع جزئي)",
   kcPhotos:"صور الخروج", kcPhotosR:"صور الرجوع", kcDmg:"الأضرار المسجلة عند الخروج", kcNoDmg:"لا ضرر مسجل عند الخروج",
   kcContact:"سؤال؟ اتصل بنا أو راسلنا.", kcPdf:"بطاقة الزبون PDF", kcWa:"إرسال عبر واتساب",
-  kcWaMsg:function(r,c,ag,lim){ return "مرحبا "+r.clientName+"، هذه بطاقة كرائك عند "+ag.name+": "+c.model+"، من "+r.from+" إلى "+r.to+". الضمانة "+r.caution+" درهم، ترجع بعد المراقبة عند الاستلام."+(ag.promise!==false?" لا اقتطاع بعد "+lim+".":"")+" صور السيارة التقطت عند الخروج."; },
+  kcWaMsg:function(r,c,ag,lim){ return "مرحبا "+r.clientName+"، هذه بطاقة كرائك عند "+ag.name+": "+c.model+"، من "+r.from+" إلى "+r.to+". الضمانة "+r.caution+" درهم، ترجع بعد المراقبة عند الاستلام."+(ag.promise!==false?" لا اقتطاع بعد "+lim+".":"")+(r.depart&&r.depart.shots&&Object.keys(r.depart.shots).length?" صور السيارة التقطت عند الخروج.":""); },
   kcFine:"على خادمك الخاص، تصبح هذه رابطا يفتحه الزبون بنفسه. كل ما هنا سيكون هناك.",
   stCheckH:"فحص النظام", stCheckP:"اختبر بنقرة واحدة إن كان كل عنصر يعمل على هذا الجهاز: التخزين، PDF، رموز QR، الكاميرا وقراءة الوثائق.", stCheckBtn:"فحص الكل",
   ckBusy:"جاري الفحص…", ckOk:"يعمل", ckLibNo:"المكتبة لم تحمل — تحقق من الإنترنت وأعد التحميل",
@@ -2622,9 +2624,9 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   stTrustH:"صفحة الثقة الخاصة بك", stTrustP:"ما يجعل وكالتك أفضل من الجار، بأرقام حقيقية من هذا النظام.", stTrustBtn:"عرض الصفحة",
   trH:"صفحتك", trP:"أرقام حقيقية. ضعها في إنستغرام وغوغل وحالة واتساب.",
   trRentals:"عمليات الكراء", trReleased:"ضمانات مرجعة", trAvg:"ترجع في المتوسط بعد", trWithin:"خلال 7 أيام",
-  trBadgeH:"ضمانة مضمونة", trBadgeP:"في كل كراء: صور السيارة عند الخروج والرجوع، عقد واضح، وتاريخ مكتوب لا يقتطع بعده أي شيء.",
+  trBadgeH:"ضمانة مضمونة", trBadgeP:"في كل كراء: حالة السيارة مسجلة عند الخروج والرجوع، عقد واضح، وتاريخ مكتوب لا يقتطع بعده أي شيء.",
   trCopyH:"نص للنسخ",
-  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nضمانة مضمونة. "+(st.released?"ترجع في المتوسط بعد "+st.avg+" أيام، "+st.within+"% خلال 7 أيام ("+st.released+" زبون).":"صور عند الخروج والرجوع، وتاريخ إرجاع مكتوب في كل عقد.")+"\nعقد مع صور وتاريخ إرجاع محدد في كل كراء."; },
+  trCopy:function(ag,st){ return ag.name+" — "+ag.city+"\nضمانة مضمونة. "+(st.released?"ترجع في المتوسط بعد "+st.avg+" أيام، "+st.within+"% خلال 7 أيام ("+st.released+" زبون).":"حالة السيارة مسجلة عند الخروج والرجوع، وتاريخ إرجاع مكتوب في كل عقد.")+"\nعقد واضح وتاريخ إرجاع محدد في كل كراء."; },
   trPdf:"الصفحة PDF", trNoData:"لا يوجد كراء منته بعد. الأرقام تمتلئ وحدها.",
   trFine:"هذه أرقام تسييرك أنت. تصبح قوية إذا أرجعت الضمانة في وقتها، دائما — النظام يكافئ ذلك.",
   /* scanner: lezen van het rijbewijs, camera en plakken */
@@ -3724,7 +3726,13 @@ function renderPlan(){
       var st=stage(r), cls = st==="done"?"fin":st==="depart"?"res":(r.to<today()?"late":"out");
       var bar=el("button","bar "+cls,r.clientName); bar.type="button";
       bar.style.left="2px"; bar.style.width=((e-s+1)*vak-4)+"px";
-      bar.addEventListener("click",function(){ st==="done"?receipt(r,"retour"):openForm(r,st); });
+      /* Zelfde als een tik op de kaart in Vandaag: lopend = contract, gepland = wijzigen,
+         afgerond = afrekening. Niet meteen het meegeef- of terugnameformulier openen. */
+      bar.addEventListener("click",function(){
+        if(st==="done") receipt(r,"retour");
+        else if(st==="depart"){ editRental=null; openNew(null,r); }
+        else receipt(r,"depart");
+      });
       rowCells[s].appendChild(bar);
     });
   });
@@ -9054,6 +9062,8 @@ function toonStap(){
   window.scrollTo(0,0);
   refresh();
 }
+/* "1 jour", "2 jours": enkelvoud bij 1, in elke taal. */
+function nDagen(n){ var t=T(); return n+" "+(n===1?({fr:"jour",nl:"dag",ar:"\u064a\u0648\u0645"}[String(t.loc||"fr").slice(0,2)]||t.days):t.days); }
 function magDoor(s){ return !!(s && (s.ok || s.opt)); }
 function stapVooruit(){ var st=steps(); if(FSTAP<formKaarten().length && magDoor(st[FSTAP])){ FSTAP++; toonStap(); return true; } return false; }
 function refresh(){
@@ -9816,7 +9826,7 @@ function trustStats(){
   var ds=rel.map(function(r){ return Math.max(0,dayDiff(r.retour.at,r.releasedAt)); });
   var avg=ds.length?Math.round(ds.reduce(function(a,b){return a+b;},0)/ds.length*10)/10:0;
   var within=ds.length?Math.round(ds.filter(function(d){ return d<=7; }).length/ds.length*100):0;
-  return { rentals:done.length, released:rel.length, avg:avg, within:within };
+  return { rentals:done.length, released:rel.length, avg:Number(avg).toLocaleString(T().loc), within:within };
 }
 function openTrust(){
   var t=T(), st=trustStats();
@@ -10126,7 +10136,7 @@ function renderLed(){
   var laatBedrag=late.reduce(function(a,r){ return a+paidCaution(r); },0);
   $("lLate").textContent=dh(laatBedrag); $("lLate").className=laatBedrag>0?"bad":"";
   var oldest=held.slice().sort(function(a,b){ return (a.from||"").localeCompare(b.from||""); })[0];
-  $("lOld").textContent=oldest?dayDiff(oldest.from,today())+" "+t.days:"—";
+  $("lOld").textContent=oldest?nDagen(dayDiff(oldest.from,today())):"—";
   var totalWithheld=RENTALS.filter(live).reduce(function(a,r){ return a+(Number(r.cautionWithheld)||0); },0);
   $("lWithheld").textContent=dh(totalWithheld);
   var box=$("lRows"); box.innerHTML="";
@@ -10135,7 +10145,7 @@ function renderLed(){
     var c=car(r.vehicleId), age=dayDiff(r.from,today()), lim=r.limit||limitDate(r), out=!r.retour, open=r.retour&&lim>=today(), over=r.retour&&lim<today();
     var row=el("div","lrow"); var w=el("div","who"); w.appendChild(el("b",null,r.clientName));
     var cl=el("div","car"); cl.appendChild(el("span",null,c.model)); var pp=document.createElement("span"); pp.innerHTML=plateHTML(c); cl.appendChild(pp); cl.appendChild(el("span",null,"· "+r.code)); w.appendChild(cl); row.appendChild(w);
-    var a=el("div","age"); var ab=el("b",null,dh(paidCaution(r))); if(over) ab.className="bad"; a.appendChild(ab); a.appendChild(el("span",null,age+" "+t.days)); row.appendChild(a);
+    var a=el("div","age"); var ab=el("b",null,dh(paidCaution(r))); if(over) ab.className="bad"; a.appendChild(ab); a.appendChild(el("span",null,nDagen(age))); row.appendChild(a);
     var s=el("div","st"); var pl=el("span","pill "+(out?"dep":open?"ret":"warn")); pl.textContent=out?t.stOpen:open?t.stWait:t.stLate; s.appendChild(pl);
     s.appendChild(el("span","why", out?t.whyOut:open?(t.blocked+dShort(lim)):t.whyBack)); row.appendChild(s);
     row.style.cursor="pointer"; row.addEventListener("click",function(){ r.retour?receipt(r,"retour"):openForm(r,"retour"); });
