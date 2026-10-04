@@ -841,6 +841,16 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 .betaalkeuze[aria-pressed="true"] .ico{color:var(--brand)}
 /* Verwijderen is geen hoofdactie: een rustige tekstlink, niet even groot als de rest. */
 #delContract{background:none;box-shadow:none;font-size:15px;font-weight:600;padding:12px 8px;text-decoration:underline;text-underline-offset:3px}
+/* De kop blijft staan bij scrollen: een haarlijn eronder, zodat kaarten er netjes onder
+   verdwijnen in plaats van afgesneden te lijken. */
+/* Geen backdrop-filter op .bar: het menu (.tabs, position:fixed) staat erin en zou dan
+   aan de kop vastzitten in plaats van aan het scherm. */
+.bar{background:var(--bg);box-shadow:0 1px 0 var(--line)}
+.tabs button:focus-visible{outline:2px solid var(--brand);outline-offset:-6px;border-radius:14px}
+/* Breed scherm: het menu zweeft en is precies even breed als de kaarten (680 − 2×20). */
+@media (min-width:760px){
+  .tabs{width:640px;max-width:calc(100% - 40px);bottom:14px;border-radius:22px;border:1px solid var(--line);box-shadow:var(--sh)}
+}
 </style>
 
 <div class="bar">
