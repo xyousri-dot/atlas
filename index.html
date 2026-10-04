@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F1F4F1">
+<meta name="theme-color" content="#F6F1E7">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
@@ -810,6 +810,32 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 [dir="rtl"] .plate{direction:ltr}
 /* Kentekens, bedragen en nummers blijven leesbaar in hun eigen richting. */
 [dir="rtl"] input[type="tel"], [dir="rtl"] input[type="number"], [dir="rtl"] input[type="email"], [dir="rtl"] input[type="url"]{direction:ltr;text-align:right}
+/* ---- Stijl Majorelle: blauw van de Jardin Majorelle, saffraan als accent, zand als grond.
+   Platte kleur, dunne zwarte rand en een harde schaduw. Alles via box-shadow,
+   zodat er geen pixel van de indeling verschuift. ---- */
+:root{
+  --bg:#F6F1E7; --ink:#14161F; --ink2:#44464F; --ink3:#5A5C66;
+  --line:#E3DBCB; --line2:#CFC5B1; --rand:#8A8270; --focus:#2F4AD0;
+  --brand:#2F4AD0; --brand-2:#1E35A8; --brand-soft:#E4E9FB;
+  --warn:#A33A24; --warn-soft:#F8E1DA; --gold:#7A4F00; --gold-soft:#FCEFCF;
+  --saffraan:#F2B233;
+  --sh:0 0 0 2px var(--ink), 3px 3px 0 2px var(--ink);
+}
+.held{background:var(--brand);box-shadow:0 0 0 2px var(--ink),5px 5px 0 2px var(--ink)}
+.held::after{background:var(--saffraan);opacity:.18}
+.held-knop{background:var(--saffraan);color:var(--ink);box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px var(--ink)}
+.held .strook{background:rgba(255,255,255,.14)}
+.btn,.wa{box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px var(--ink)}
+.tabs{background:var(--ink);border-top:none}
+.tabs button{color:#A9ACB8!important}
+.tabs button[aria-current="true"]{color:var(--saffraan)!important}
+.tabs button.tab-plus{color:#A9ACB8!important}
+.dock{background:rgba(246,241,231,.95)}
+/* Te laat: de hele kaart krijgt een rode rand, in beide leesrichtingen gelijk. */
+.kaartje.laat{box-shadow:0 0 0 2px var(--warn),3px 3px 0 2px var(--warn)}
+.tabs button.tab-plus svg{background:var(--saffraan);stroke:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--bg)}
+.demobalk{background:var(--ink)}
+.demobalk a,.herstel button{color:var(--saffraan)}
 </style>
 
 <div class="bar">
