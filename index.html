@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F6F1E7">
+<meta name="theme-color" content="#F7F4EE">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
@@ -810,32 +810,37 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
 [dir="rtl"] .plate{direction:ltr}
 /* Kentekens, bedragen en nummers blijven leesbaar in hun eigen richting. */
 [dir="rtl"] input[type="tel"], [dir="rtl"] input[type="number"], [dir="rtl"] input[type="email"], [dir="rtl"] input[type="url"]{direction:ltr;text-align:right}
-/* ---- Stijl Majorelle: blauw van de Jardin Majorelle, saffraan als accent, zand als grond.
-   Platte kleur, dunne zwarte rand en een harde schaduw. Alles via box-shadow,
-   zodat er geen pixel van de indeling verschuift. ---- */
+/* ---- Stijl Majorelle, verfijnd: blauw van de Jardin Majorelle, saffraan alleen voor de
+   hoofdactie, zand als grond. Geen dikke randen of blokschaduwen: een haarlijn en een
+   zachte schaduw, zoals een bankapp. ---- */
 :root{
-  --bg:#F6F1E7; --ink:#14161F; --ink2:#44464F; --ink3:#5A5C66;
-  --line:#E3DBCB; --line2:#CFC5B1; --rand:#8A8270; --focus:#2F4AD0;
-  --brand:#2F4AD0; --brand-2:#1E35A8; --brand-soft:#E4E9FB;
-  --warn:#A33A24; --warn-soft:#F8E1DA; --gold:#7A4F00; --gold-soft:#FCEFCF;
+  --bg:#F7F4EE; --ink:#14161F; --ink2:#44464F; --ink3:#5A5C66;
+  --line:#E8E2D6; --line2:#D6CEBF; --rand:#8A8270; --focus:#2F4AD0;
+  --brand:#2F4AD0; --brand-2:#2439B0; --brand-soft:#EBEFFC;
+  --warn:#A33A24; --warn-soft:#F9E7E1; --gold:#7A4F00; --gold-soft:#FBF0D6;
   --saffraan:#F2B233;
-  --sh:0 0 0 2px var(--ink), 3px 3px 0 2px var(--ink);
+  --rc:16px; --rs:12px;
+  --sh:0 0 0 1px rgba(20,22,31,.06), 0 1px 2px rgba(20,22,31,.04), 0 8px 24px -16px rgba(20,22,31,.22);
 }
-.held{background:var(--brand);box-shadow:0 0 0 2px var(--ink),5px 5px 0 2px var(--ink)}
-.held::after{background:var(--saffraan);opacity:.18}
-.held-knop{background:var(--saffraan);color:var(--ink);box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px var(--ink)}
-.held .strook{background:rgba(255,255,255,.14)}
-.btn,.wa{box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px var(--ink)}
-.tabs{background:var(--ink);border-top:none}
-.tabs button{color:#A9ACB8!important}
-.tabs button[aria-current="true"]{color:var(--saffraan)!important}
-.tabs button.tab-plus{color:#A9ACB8!important}
-.dock{background:rgba(246,241,231,.95)}
-/* Te laat: de hele kaart krijgt een rode rand, in beide leesrichtingen gelijk. */
-.kaartje.laat{box-shadow:0 0 0 2px var(--warn),3px 3px 0 2px var(--warn)}
-.tabs button.tab-plus svg{background:var(--saffraan);stroke:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--bg)}
+.held{background:linear-gradient(165deg,#3653DA 0%,#2F4AD0 55%,#2741BF 100%);border-radius:20px;box-shadow:0 18px 40px -24px rgba(36,57,176,.75)}
+.held::after{display:none}
+.held-knop{background:var(--saffraan);color:var(--ink);border-radius:14px;box-shadow:0 6px 16px -8px rgba(122,79,0,.55)}
+.held .strook{background:rgba(255,255,255,.12)}
+.btn{border-radius:var(--rs)}
+.wa{border-radius:var(--rs)}
+.kaartje.laat{box-shadow:inset 0 0 0 1.5px var(--warn),var(--sh)}
+.tabs{background:rgba(255,255,255,.96);border-top:1px solid var(--line)}
+.tabs button{color:var(--ink3)!important}
+.tabs button[aria-current="true"]{color:var(--brand)!important}
+.tabs button.tab-plus{color:var(--ink3)!important}
+.tabs button.tab-plus svg{border-radius:16px;background:var(--brand);stroke:#fff;border:none;box-shadow:0 10px 22px -10px rgba(36,57,176,.8)}
+.dock{background:rgba(247,244,238,.95)}
 .demobalk{background:var(--ink)}
 .demobalk a,.herstel button{color:var(--saffraan)}
+.betaalkeuze .ico{display:grid;place-items:center;color:var(--ink2)}
+.betaalkeuze[aria-pressed="true"] .ico{color:var(--brand)}
+/* Verwijderen is geen hoofdactie: een rustige tekstlink, niet even groot als de rest. */
+#delContract{background:none;box-shadow:none;font-size:15px;font-weight:600;padding:12px 8px;text-decoration:underline;text-underline-offset:3px}
 </style>
 
 <div class="bar">
@@ -1475,7 +1480,7 @@ var TXT = {
   plakGo:"Gegevens uit deze tekst halen",
   plakPlace:"Plak hier de tekst van de kaart\u2026",
   fileWaarschuwing:"Je hebt Atlas als lokaal bestand geopend. Scannen, camera en tekstherkenning werken alleen via de website: xyousri-dot.github.io/atlas",
-  camKnop:"\ud83d\udcf7 Camera",
+  camKnop:"Camera",
   camZoek:"Houd de kaart in het kader. Bij de kant met \u00ab < \u00bb drukt de app zelf af zodra hij leesbaar is.",
   camTip:"Nog niet leesbaar. Iets dichterbij, recht van boven, geen schaduw \u2014 of neem zelf de foto.",
   camLicTip:"Rijbewijs of voorkant: houd de kaart in het kader en neem de foto.",
@@ -2182,7 +2187,7 @@ TXT.fr.plakP="Votre t\u00e9l\u00e9phone lit le texte mieux que n\u2019importe qu
 TXT.fr.plakGo="Extraire les donn\u00e9es de ce texte";
 TXT.fr.plakPlace="Collez ici le texte de la carte\u2026";
 TXT.fr.plakLeeg="Collez d\u2019abord le texte de la carte ci-dessus.";
-TXT.fr.camKnop="\ud83d\udcf7 Cam\u00e9ra";
+TXT.fr.camKnop="Cam\u00e9ra";
 TXT.fr.fileWaarschuwing="Atlas est ouvert comme fichier local. Le scan, la cam\u00e9ra et la reconnaissance de texte ne fonctionnent que via le site : xyousri-dot.github.io/atlas";
 TXT.fr.camZoek="Placez la carte dans le cadre. Pour le c\u00f4t\u00e9 avec \u00ab < \u00bb, la photo se prend seule d\u00e8s que c\u2019est lisible.";
 TXT.fr.camTip="Pas encore lisible. Un peu plus pr\u00e8s, bien \u00e0 plat, sans ombre \u2014 ou prenez la photo vous-m\u00eame.";
@@ -2268,7 +2273,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   snelDraaiId:"هذا هو الوجه الأمامي. اقلب البطاقة وصور الظهر (مع أسطر <<< في الأسفل): الاسم والرقم والتواريخ والعنوان موجودة هناك.",
   snelDraaiLic:"رخصة مغربية ← صور الظهر (السطر الذي يبدأ بـ D1MA). رخصة أجنبية ← اكتب الرقم أسفله.",
   nwLicNoL:"رقم رخصة السياقة",
-  snelKnopAchterId:"↻ صور ظهر البطاقة الوطنية", snelKnopAchterLic:"↻ صور ظهر الرخصة",
+  snelKnopAchterId:"صور ظهر البطاقة الوطنية", snelKnopAchterLic:"صور ظهر الرخصة",
   snelTip:"نصيحة: صور ظهر البطاقة الوطنية وظهر الرخصة — كل المعلومات هناك.",
   rFotos:"الصور والأضرار (ممكن لاحقا)", rSnelKlaar:"العقد جاهز", klaarKnop:"انتهى",
   nwD2H:"إضافة سائق ثان", nwD2NameL:"اسم السائق الثاني", nwD2LicL:"رقم الرخصة", nwD2IssueL:"تاريخ التسليم",
@@ -2577,7 +2582,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   plakGo:"استخراج المعطيات من هذا النص",
   plakPlace:"الصق هنا نص البطاقة…",
   plakLeeg:"الصق أولا نص البطاقة أعلاه.",
-  camKnop:"📷 الكاميرا",
+  camKnop:"الكاميرا",
   fileWaarschuwing:"أطلس مفتوح كملف محلي. المسح والكاميرا والتعرف على النص لا تعمل إلا عبر الموقع: xyousri-dot.github.io/atlas",
   camZoek:"ضع البطاقة داخل الإطار. للوجه الذي فيه « < »، تلتقط الصورة وحدها بمجرد أن تصبح مقروءة.",
   camTip:"غير مقروءة بعد. أقرب قليلا، مستوية، بدون ظل — أو التقط الصورة بنفسك.",
@@ -7700,9 +7705,9 @@ function tekenBetaalStap(){
   doos.appendChild(som);
   doos.appendChild(Object.assign(el("p","lbl"),{textContent:t.betHoe,style:"margin:16px 2px 8px"}));
   var keuzes=el("div","betaalkeuzes");
-  [["cash",t.payMethods.cash,"\ud83d\udcb5"],["card",t.payMethods.card,"\ud83d\udcb3"],["transfer",t.betVirement,"\ud83d\udcf2"],["later",t.betLater,"\u23f1"]].forEach(function(k){
+  [["cash",t.payMethods.cash,'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>'],["card",t.payMethods.card,'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>'],["transfer",t.betVirement,'<path d="M7 7h11l-3-3M17 17H6l3 3"/>'],["later",t.betLater,'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/>']].forEach(function(k){
     var b=el("button","betaalkeuze"); b.type="button"; b.dataset.v=k[0]; b.setAttribute("aria-pressed",NWBETAAL===k[0]?"true":"false");
-    b.appendChild(el("span","ico",k[2])); b.appendChild(el("span",null,k[1]));
+    var ico=el("span","ico"); ico.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+k[2]+'</svg>'; b.appendChild(ico); b.appendChild(el("span",null,k[1]));
     b.addEventListener("click",function(){ NWBETAAL=k[0]; tekenBetaalStap(); });
     keuzes.appendChild(b);
   });
@@ -10148,7 +10153,7 @@ function lookup(){
   else if(hit.released && Number(hit.cautionWithheld)>0) p.innerHTML=t.qPartial(dh(hit.cautionReturned!=null?hit.cautionReturned:hit.caution),dh(hit.cautionWithheld));
   else p.innerHTML=t.qGone(dh(hit.caution));
   a.appendChild(p);
-  if(hit.clientTel){ var cc=el("a","call","☏ "+hit.clientTel); cc.href="tel:"+hit.clientTel.replace(/\s/g,""); a.appendChild(cc); }
+  if(hit.clientTel){ var cc=el("a","call",hit.clientTel); cc.href="tel:"+hit.clientTel.replace(/\s/g,""); a.appendChild(cc); }
   out.appendChild(a);
   out.appendChild(boetePaneel(hit,d,tm));
 }
