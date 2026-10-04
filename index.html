@@ -8890,7 +8890,7 @@ function openForm(r,kind){
   $("bBack").hidden=false; $("bBack").className="btn ghost"; $("bBack").textContent=t.back;
   $("bGo").textContent = kind==="depart"?t.goDepart:t.goRetour;
   setTimeout(function(){ sizeSig(); if(keep&&keep.sig) paintSig(keep.sig); },30);
-  var st0=steps(), eerste=0; while(eerste<st0.length && st0[eerste].ok) eerste++;
+  var st0=steps(), eerste=0; while(eerste<st0.length && magDoor(st0[eerste])) eerste++;
   FSTAP=eerste; toonStap();
   if(keep) toast(t.draftBack);
 }
@@ -9009,7 +9009,9 @@ function steps(){
   var t=T(), n=draft.marks.length;
   return [
     { id:"s1", ok:n>0||draft.noDmg, state:"c1s", txt:n?n+" "+(n>1?t.points:t.point):(draft.noDmg?t.stepState.done:t.stepState.toConfirm) },
-    { id:"s2", ok:Object.keys(draft.shots).length>=4, state:"c2s", txt:Object.keys(draft.shots).length+" / 4" },
+    /* Foto's zijn optioneel: wie ze niet kan of wil maken, moet toch verder kunnen.
+       opt = telt mee als "mag door", maar de stap toont eerlijk 0 / 4. */
+    { id:"s2", ok:Object.keys(draft.shots).length>=4, opt:true, state:"c2s", txt:Object.keys(draft.shots).length+" / 4"+(Object.keys(draft.shots).length<4?" \u00b7 "+({nl:"optioneel",fr:"facultatif",ar:"\u0627\u062e\u062a\u064a\u0627\u0631\u064a"}[String(T().loc||"fr").slice(0,2)]||"facultatif"):"") },
     { id:"s3", ok:draft.km!==""&&draft.fuel!=null, state:"c3s", txt:(draft.km!==""&&draft.fuel!=null)?t.stepState.done:t.stepState.toFill },
     { id:"s4", ok:!!draft.sig, state:"c4s", txt:draft.sig?t.stepState.signed:t.stepState.toSign }
   ];
@@ -9052,7 +9054,8 @@ function toonStap(){
   window.scrollTo(0,0);
   refresh();
 }
-function stapVooruit(){ var st=steps(); if(FSTAP<formKaarten().length && st[FSTAP] && st[FSTAP].ok){ FSTAP++; toonStap(); return true; } return false; }
+function magDoor(s){ return !!(s && (s.ok || s.opt)); }
+function stapVooruit(){ var st=steps(); if(FSTAP<formKaarten().length && magDoor(st[FSTAP])){ FSTAP++; toonStap(); return true; } return false; }
 function refresh(){
   if(!draft) return;
   var t=T(), st=steps(), done=st.filter(function(s){return s.ok;}).length;
@@ -9061,15 +9064,15 @@ function refresh(){
   tekenStapKnoppen(st);
   var laatste=formKaarten().length;
   if(FSTAP<laatste){
-    $("bGo").textContent=t.fVolgende; $("bGo").disabled=!st[FSTAP].ok;
+    $("bGo").textContent=t.fVolgende; $("bGo").disabled=!magDoor(st[FSTAP]);
     $("bBack").textContent = FSTAP>0 ? t.fVorige : t.back;
     $("progTxt").textContent=t.fStapVan(FSTAP+1,laatste+1);
   } else {
-    $("bGo").textContent = mode==="depart"?t.goDepart:t.goRetour; $("bGo").disabled=done<4;
+    $("bGo").textContent = mode==="depart"?t.goDepart:t.goRetour; $("bGo").disabled=!st.every(magDoor);
     $("bBack").textContent=t.fVorige;
     $("progTxt").textContent=t.fStapVan(laatste+1,laatste+1)+" \u00b7 "+t.fOverzicht;
   }
-  $("note").textContent = done===4?(mode==="depart"?t.noteDepart:t.noteRetour):t.stillNeed+st.filter(function(s){return !s.ok;}).map(function(s){ return t.missing[s.id]; }).join(", ");
+  $("note").textContent = st.every(magDoor)?(mode==="depart"?t.noteDepart:t.noteRetour):t.stillNeed+st.filter(function(s){return !magDoor(s);}).map(function(s){ return t.missing[s.id]; }).join(", ");
 }
 async function finishHandover(){
   delete DRAFTS[rental.id+"|"+mode];
@@ -10258,7 +10261,7 @@ $("bGo").addEventListener("click",function(){
   if(view==="vDone"){ rental=null; naarKlaar("vDay"); return; }
   if(view==="vForm" && draft){
     if(FSTAP<formKaarten().length){ stapVooruit(); return; }
-    if(steps().every(function(s){ return s.ok; })) finishHandover();
+    if(steps().every(magDoor)) finishHandover();
   }
 });
 $("km").addEventListener("input",function(){ if(draft){ draft.km=this.value; updateVerdict(); refresh(); } });
