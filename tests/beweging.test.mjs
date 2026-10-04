@@ -1,13 +1,30 @@
 /* De bewegingen: spelen af als het toestel beweging toelaat, eindigen netjes,
    geen fouten in de console, en niets als "minder beweging" aan staat.
    Per beweging drie beelden (begin, midden, eind) in tests/schermen/beweging/. */
-import { test, before, after } from "node:test";
+import { test as nodeTest, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync } from "node:fs";
 import * as B from "./browser.mjs";
 
-before(B.start);
-after(B.stop);
+/* Elke bewegingstest een verse browser: bij lange reeksen met vertraagde animaties
+   viel headless Chrome soms helemaal om en nam dan alle volgende tests mee. */
+beforeEach(B.start);
+afterEach(B.stop);
+/* Eén herkansing, alleen als de browser zelf wegvalt (detached frame, gesloten
+   sessie): dat is de testomgeving, niet de app. Een mislukte controle (Assertion)
+   krijgt nooit een herkansing. Elke herkansing wordt gemeld. */
+const BROWSERFOUT = /detached|Session closed|Target closed|Connection closed|LifecycleWatcher/i;
+function test(naam, fn) {
+  return nodeTest(naam, async (t) => {
+    try { await fn(t); }
+    catch (e) {
+      if (e?.code === "ERR_ASSERTION" || !BROWSERFOUT.test(String(e?.message))) throw e;
+      console.log(`HERKANSING (browserfout, niet de app): ${naam} — ${String(e.message).slice(0, 80)}`);
+      await B.stop(); await B.start();
+      await fn(t);
+    }
+  });
+}
 const MAP = B.SCHERMEN + "beweging/";
 mkdirSync(MAP, { recursive: true });
 const wacht = (ms) => new Promise(r => setTimeout(r, ms));
@@ -171,6 +188,7 @@ for (const taal of TALEN) test(`7. Blur-in (${taal}): contract klaar komt van wa
   await page.click("#heldNieuw"); await wacht(2400);
   await page.type("#nwName", "KLANT TEST"); await page.click("#bGo"); await wacht(2400);
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(2600);
+  await page.click("#bGo"); await wacht(2600);   /* stap 3 → 4 (betaling) */
   await page.click("#bGo"); await wacht(60);
   assert.equal(await page.evaluate(() => view), "vDone");
   const anim = await page.evaluate(() => document.getAnimations().filter(a => ["blurIn", "tickpop"].includes(a.animationName)).map(a => ({ n: a.animationName, delay: a.effect.getTiming().delay, pseudo: a.effect.pseudoElement || "" })));

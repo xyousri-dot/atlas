@@ -701,6 +701,21 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 .demobalk{position:fixed;left:0;right:0;top:0;z-index:80;display:flex;justify-content:center;align-items:center;gap:12px;padding:7px 14px;background:#1F2A24;color:#fff;font-size:13px;font-weight:600;text-align:center}
 .demobalk a{color:#7FE0BA;font-weight:800;white-space:nowrap}
 body.demo .bar{z-index:41}
+/* Stap 4: betaling */
+.betaalsom{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:6px 16px}
+.betaalsom .rij{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.betaalsom .rij:last-child{border-bottom:0}
+.betaalsom .tot b{font-size:22px;color:var(--brand)}
+.betaalkeuzes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.betaalkeuze{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:86px;border-radius:18px;border:2px solid transparent;background:var(--card);box-shadow:var(--sh);font:inherit;font-size:16px;font-weight:700;color:var(--ink);cursor:pointer}
+.betaalkeuze .ico{font-size:26px;line-height:1}
+.betaalkeuze[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+/* Nieuwe auto: kort formulier */
+#cwMeer{display:none}
+#vCar.kort #cwMeer{display:flex;justify-content:center}
+#vCar.kort .two > div:first-child > .card:not(:first-child), #vCar.kort #cwSide{display:none}
+/* Voorbeeldtekst in een vak mag niet lijken op iets dat al is ingevuld */
+input::placeholder, textarea::placeholder{color:#B3BAB2;opacity:1}
 /* Controlekaart na de scan */
 #vNew.ctl-aan #nwDocWrap, #vNew.ctl-aan #nwLicWrap{display:none!important}
 #vNew.ctl-aan #nwNewWrap > .f:first-child{display:none}
@@ -736,6 +751,10 @@ html[lang="ar"] .ctl-kop b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
   .dock{background:transparent;border-top:0;backdrop-filter:none}
   .dock-in{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:22px;padding:10px 12px;box-shadow:var(--sh)}
 }
+/* Contract (PDF): het kenteken stond leeg. html2canvas tekent de plaat-opmaak van
+   het scherm niet; op het blad is het gewone tekst, links-naar-rechts. */
+#sheet .plate{display:inline-flex;direction:ltr;unicode-bidi:normal;gap:6px;border:0;padding:0;font-family:inherit;font-size:inherit;background:none}
+#sheet .plate bdi, #sheet .plate i{display:inline-block;unicode-bidi:normal}
 /* Klaar-scherm: een groen vinkje als moment van succes, zoals een betaalapp. */
 #vDone .title h1::before{content:"\2713";display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--brand);color:#fff;font-size:22px;font-weight:800;margin-inline-end:12px;vertical-align:-6px;box-shadow:0 8px 18px -8px rgba(10,85,64,.7)}
 /* ===== Auto meegeven / terugnemen: zelfde stijl als het nieuwe contract ===== */
@@ -1052,6 +1071,12 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
               </div>
             </details>
           </div>
+        </section>
+
+        <!-- Stap 4: hoe betaalt de klant? Eén keuze, geen formulier. -->
+        <section class="vstap" id="nwStap4">
+          <div class="vstap-k"><span class="vstap-nr">4</span><b id="nwS4"></b></div>
+          <div class="vstap-in"><div id="nwBetaal"></div></div>
         </section>
       </div>
       <div><p class="fine" id="nwFine" hidden></p></div>
@@ -2592,6 +2617,22 @@ zetTekst("docStraks",{ nl:function(n,d){ return n+(n>1?" papieren verlopen":" pa
                        ar:function(n,d){ return n+" وثائق للتجديد — أولها يوم "+d; } });
 zetTekst("stGrpAg",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
 zetTekst("tabNieuw",{ nl:"Contract", fr:"Contrat", ar:"عقد" });
+zetTekst("cwMeer",{ nl:"Meer details (papieren, aankoop)", fr:"Plus de d\u00e9tails (documents, achat)", ar:"تفاصيل أكثر (الوثائق، الشراء)" });
+zetTekst("nwS4",{ nl:"Betaling", fr:"Paiement", ar:"الأداء" });
+zetTekst("betTotaal",{ nl:"Totaal te ontvangen", fr:"Total \u00e0 encaisser", ar:"المجموع للقبض" });
+zetTekst("betHoe",{ nl:"Hoe betaalt de klant?", fr:"Comment le client paie-t-il ?", ar:"كيف يؤدي الزبون؟" });
+zetTekst("betVirement",{ nl:"Overschrijving", fr:"Virement", ar:"تحويل" });
+zetTekst("betLater",{ nl:"Later", fr:"Plus tard", ar:"لاحقا" });
+zetTekst("betUitlegKlaar",{ nl:"Huur en borg worden als betaald geboekt.", fr:"Location et caution sont enregistr\u00e9es comme pay\u00e9es.", ar:"يُسجَّل الكراء والضمانة كمؤدَّيين." });
+zetTekst("betUitlegVir",{ nl:"Na het contract stuur je met \u00e9\u00e9n tik het bedrag en je RIB via WhatsApp. Ontvangen? Tik dan op \u201creçu\u201d.", fr:"Apr\u00e8s le contrat, envoyez le montant et votre RIB sur WhatsApp en un geste. Re\u00e7u ? Touchez \u00ab re\u00e7u \u00bb.", ar:"بعد العقد، أرسل المبلغ ورقم حسابك عبر واتساب بلمسة. توصلت؟ المس \u00ab تم القبض \u00bb." });
+zetTekst("betUitlegGeenRib",{ nl:"Zet eerst je RIB in Instellingen om een betaalverzoek te kunnen sturen.", fr:"Ajoutez d\u2019abord votre RIB dans R\u00e9glages pour envoyer une demande de paiement.", ar:"أضف أولا رقم حسابك في الإعدادات لإرسال طلب الأداء." });
+zetTekst("betUitlegLater",{ nl:"Er wordt nog niets geboekt. Je ziet het als \u201cnog te ontvangen\u201d.", fr:"Rien n\u2019est encore enregistr\u00e9. Vous le verrez dans \u00ab reste \u00e0 encaisser \u00bb.", ar:"لا يُسجَّل شيء الآن. ستراه في \u00ab باقي للقبض \u00bb." });
+zetTekst("zaakH",{ nl:"Je zaak", fr:"Votre agence", ar:"وكالتك" });
+zetTekst("zaakP",{ nl:"Deze naam staat bovenaan elk contract. Eén keer invullen.", fr:"Ce nom figure en haut de chaque contrat. \u00c0 remplir une seule fois.", ar:"يظهر هذا الاسم في أعلى كل عقد. يُملأ مرة واحدة." });
+zetTekst("zaakOk",{ nl:"Verder", fr:"Continuer", ar:"متابعة" });
+zetTekst("zaakLeeg",{ nl:"Typ de naam van je zaak.", fr:"Tapez le nom de votre agence.", ar:"اكتب اسم وكالتك." });
+zetTekst("qrKmVan",{ nl:function(k){ return "bij vertrek "+k; }, fr:function(k){ return "au d\u00e9part "+k; }, ar:function(k){ return "عند الخروج "+k; } });
+zetTekst("qrKmLeeg",{ nl:"Typ de kilometerstand van de teller.", fr:"Tapez le kilom\u00e9trage du compteur.", ar:"اكتب عدد الكيلومترات في العداد." });
 zetTekst("demoBalk",{ nl:"Demo \u00b7 voorbeeldgegevens", fr:"D\u00e9mo \u00b7 donn\u00e9es d\u2019exemple", ar:"عرض تجريبي \u00b7 بيانات للمثال" });
 zetTekst("demoUit",{ nl:"Stoppen", fr:"Quitter", ar:"خروج" });
 zetTekst("demoOpen",{ nl:"Demo bekijken (voorbeeld)", fr:"Voir la d\u00e9mo (exemple)", ar:"مشاهدة العرض التجريبي" });
@@ -7568,10 +7609,11 @@ function klantIngevuld(){
 function toonHuurStap(){
   var t=T(), secties=document.querySelectorAll("#vNew section.vstap"), v=$("nwVoortgang");
   $("vNew").classList.toggle("nwwizard",!!NWSTAP);
-  Array.prototype.forEach.call(secties,function(sec,i){ sec.hidden = !!NWSTAP && i!==NWSTAP-1; });
+  /* stappen: één tegelijk; bij wijzigen/verlengen (NWSTAP 0) alles behalve de betaling */
+  Array.prototype.forEach.call(secties,function(sec,i){ sec.hidden = NWSTAP ? i!==NWSTAP-1 : i===3; });
   v.hidden=!NWSTAP; v.innerHTML="";
   if(NWSTAP){
-    var namen=[t.nwS1,t.nwS2,t.nwS3];
+    var namen=[t.nwS1,t.nwS2,t.nwS3,t.nwS4];
     /* beweging 3: de stap die net klaar is, krijgt een vinkje met een pop */
     var netKlaar = NWSTAP>VORIGESTAP ? NWSTAP-2 : -1;
     namen.forEach(function(x,i){
@@ -7600,10 +7642,67 @@ function huurVolgende(){
     ask(t.ctlDoorgaan,t.fVolgende).then(function(ja){ if(ja) huurNaarStap(2); });
     return;
   }
+  if(NWSTAP===3) tekenBetaalStap();
   huurNaarStap(NWSTAP+1);
+}
+/* ============ STAP 4: BETALING ============
+   Eén vraag: hoe betaalt de klant? Contant of kaart = meteen als betaald geboekt
+   (huur en borg). Overschrijving = op het klaar-scherm staat de knop om het
+   betaalverzoek met je RIB via WhatsApp te sturen. Later = niets geboekt. */
+var NWBETAAL="cash";
+function tekenBetaalStap(){
+  var t=T(), doos=$("nwBetaal"); if(!doos) return;
+  var huur=Number($("nwTotal").value)||0, borg=Number($("nwCaution").value)||0;
+  doos.innerHTML="";
+  var som=el("div","betaalsom");
+  [[t.payRent,huur],[t.payCaution,borg]].forEach(function(x){ var r=el("div","rij"); r.appendChild(el("span",null,x[0])); r.appendChild(el("b",null,dh(x[1]))); som.appendChild(r); });
+  var tot=el("div","rij tot"); tot.appendChild(el("span",null,t.betTotaal)); tot.appendChild(el("b",null,dh(huur+borg))); som.appendChild(tot);
+  doos.appendChild(som);
+  doos.appendChild(Object.assign(el("p","lbl"),{textContent:t.betHoe,style:"margin:16px 2px 8px"}));
+  var keuzes=el("div","betaalkeuzes");
+  [["cash",t.payMethods.cash,"\ud83d\udcb5"],["card",t.payMethods.card,"\ud83d\udcb3"],["transfer",t.betVirement,"\ud83d\udcf2"],["later",t.betLater,"\u23f1"]].forEach(function(k){
+    var b=el("button","betaalkeuze"); b.type="button"; b.dataset.v=k[0]; b.setAttribute("aria-pressed",NWBETAAL===k[0]?"true":"false");
+    b.appendChild(el("span","ico",k[2])); b.appendChild(el("span",null,k[1]));
+    b.addEventListener("click",function(){ NWBETAAL=k[0]; tekenBetaalStap(); });
+    keuzes.appendChild(b);
+  });
+  doos.appendChild(keuzes);
+  var uitleg={ cash:t.betUitlegKlaar, card:t.betUitlegKlaar, transfer:(AG.rib?t.betUitlegVir:t.betUitlegGeenRib), later:t.betUitlegLater }[NWBETAAL];
+  doos.appendChild(Object.assign(el("p","fine"),{textContent:uitleg,style:"margin:10px 2px 0"}));
+}
+/* Wat stap 4 boekt bij een nieuw contract */
+function betalingenVoorNieuw(huur,borg){
+  if(NWBETAAL!=="cash" && NWBETAAL!=="card") return [];
+  var uit=[], d=today();
+  if(huur>0) uit.push({ id:uid(), amount:huur, kind:"rent", method:NWBETAAL, date:d, note:"" });
+  if(borg>0) uit.push({ id:uid(), amount:borg, kind:"caution", method:NWBETAAL, date:d, note:"" });
+  return uit;
+}
+/* A. Geen contract zonder verhuurder: de naam van de zaak staat bovenaan elk
+   contract. Ontbreekt die, dan vraagt de app hem één keer, vóór het eerste contract. */
+function zaakIngevuld(){ var n=String(AG.name||"").trim(); return !!n && n!=="Atlas"; }
+function zaakVenster(daarna){
+  var t=T(), w=el("div","ask"), b=el("div");
+  b.appendChild(el("h2",null,t.zaakH));
+  b.appendChild(Object.assign(el("p","fine"),{textContent:t.zaakP,style:"margin:4px 0 12px"}));
+  function veld(id,label,waarde){ var f=el("div","f"); var l=el("label","lbl",label); l.htmlFor=id; var i=document.createElement("input"); i.type="text"; i.id=id; i.value=waarde||""; i.autocomplete="off"; f.appendChild(l); f.appendChild(i); b.appendChild(f); return i; }
+  var naam=veld("zaakNaam",t.stNameL,AG.name==="Atlas"?"":AG.name), stad=veld("zaakStad",t.stCityL,AG.city);
+  var fout=Object.assign(el("p","fine"),{style:"color:var(--warn);margin:6px 0 0"}); fout.hidden=true; b.appendChild(fout);
+  var ok=el("button","btn",t.zaakOk); ok.type="button"; ok.id="zaakOk"; ok.style.cssText="width:100%;margin-top:14px;min-height:54px";
+  var weg=el("button","btn ghost sm",t.cancel); weg.type="button"; weg.style.cssText="width:100%;margin-top:8px";
+  b.appendChild(ok); b.appendChild(weg); w.appendChild(b); document.body.appendChild(w);
+  weg.addEventListener("click",function(){ w.remove(); });
+  ok.addEventListener("click",async function(){
+    var n=naam.value.trim(); if(!n){ fout.textContent=t.zaakLeeg; fout.hidden=false; naam.focus(); return; }
+    var init=n.split(/\s+/).filter(Boolean).slice(0,2).map(function(x){ return x[0]; }).join("").toUpperCase()||"A";
+    AG=Object.assign({},AG,{ name:n, city:stad.value.trim(), init:init });
+    await S.set("settings/agency",AG); paintBrand(); w.remove(); daarna();
+  });
+  setTimeout(function(){ naam.focus(); },50);
 }
 var openNewBasis=openNew;
 openNew=function(presetClient,edit){
+  if(!DEMO && !zaakIngevuld() && CARS.length){ zaakVenster(function(){ openNew(presetClient,edit); }); return; }
   NWSTAP=0;   /* eerst uit: anders telt een oude scan als een nieuwe */
   openNewBasis(presetClient,edit);
   if(view!=="vNew") return;
@@ -7616,7 +7715,7 @@ openNew=function(presetClient,edit){
       if(vrij){ sel.value=vrij.id; recalc(); tekenAutoTegels(); }
     }
   }
-  NWSTAP = editRental ? 0 : 1;
+  NWSTAP = editRental ? 0 : 1; NWBETAAL="cash";
   tekenControle();
   toonHuurStap();
 };
@@ -7625,6 +7724,7 @@ zetHuurKnop=function(){
   zetHuurKnopBasis();
   var t=T(), b=$("bGo"), k=$("bBack"); if(!b || view!=="vNew" || !NWSTAP) return;
   if(NWSTAP<3){ b.textContent=t.fVolgende; b.disabled=false; }
+  else if(NWSTAP===3){ b.textContent=t.fVolgende; b.disabled=!$("nwClash").hidden; }
   else b.disabled=!$("nwClash").hidden;
   k.className="btn ghost"; k.textContent = NWSTAP>1 ? t.fVorige : t.cancel;
 };
@@ -7846,6 +7946,18 @@ function blurIn(node){
   node.classList.remove("blur-in"); void node.offsetWidth; node.classList.add("blur-in");
   node.addEventListener("animationend",function weg(e){ if(e.animationName==="tickpop"){ node.classList.remove("blur-in"); node.removeEventListener("animationend",weg); } });
 }
+/* E. Nieuwe auto: alleen wat nodig is om te verhuren. Papieren, aankoop en kosten
+   staan achter "Plus de détails" (en bij een bestaande auto gewoon open). */
+var openCarBasis=openCar;
+openCar=function(c){
+  openCarBasis(c);
+  var v=$("vCar"), eerste=v.querySelector(".two > div > .card");
+  var knop=$("cwMeer");
+  if(!knop && eerste){ knop=el("button","btn ghost",""); knop.type="button"; knop.id="cwMeer"; knop.style.cssText="width:100%;margin:0 0 12px";
+    knop.addEventListener("click",function(){ v.classList.remove("kort"); }); eerste.parentNode.insertBefore(knop,eerste.nextSibling); }
+  if(knop) knop.textContent=T().cwMeer;
+  v.classList.toggle("kort",!c);
+};
 /* ============ BORG OP MAAT ============
    De borg van de auto, de korting voor een vaste klant, en een lagere of hogere
    borg: één tik. Een onbekende klant met een dure auto vraagt iets anders dan een
@@ -8046,10 +8158,11 @@ function snelTerug(r){
   b.appendChild(el("h2",null,t.qrH));
   b.appendChild(Object.assign(el("p","fine"),{textContent:r.clientName+" · "+c.model,style:"margin:0 0 12px"}));
   var f=el("div","f"); var lb=el("label","lbl",t.qrKmL); lb.htmlFor="qrKm"; f.appendChild(lb);
-  var km=document.createElement("input"); km.type="number"; km.id="qrKm"; km.inputMode="numeric"; km.value=String(vanKm); km.min=String(vanKm);
+  var km=document.createElement("input"); km.type="number"; km.id="qrKm"; km.inputMode="numeric"; km.placeholder=t.qrKmVan(String(vanKm)); km.min=String(vanKm);
   f.appendChild(km); b.appendChild(f);
   var fout=Object.assign(el("p","fine"),{style:"color:var(--warn);margin:6px 0 0"}); fout.hidden=true; b.appendChild(fout);
-  var borgNu=Number(r.caution)||0;
+  /* alleen wat de klant echt als borg betaalde, gaat terug (anders klopt de kas niet) */
+  var borgNu=paidCaution(r);
   var ok=el("button","btn",borgNu>0?t.qrOk(dh(borgNu)):t.qrOkZonder); ok.type="button"; ok.style.cssText="width:100%;margin-top:14px;min-height:54px;font-size:17px";
   var schade=el("button","btn ghost",t.qrSchade); schade.type="button"; schade.style.cssText="width:100%;margin-top:8px";
   var weg=el("button","btn ghost sm",t.cancel); weg.type="button"; weg.style.cssText="width:100%;margin-top:8px";
@@ -8059,7 +8172,8 @@ function snelTerug(r){
   w.addEventListener("click",function(e){ if(e.target===w) dicht(); });
   schade.addEventListener("click",function(){ dicht(); openForm(r,"retour"); });
   ok.addEventListener("click",async function(){
-    var k=Number(km.value)||vanKm;
+    var k=Number(km.value);
+    if(!km.value){ fout.textContent=t.qrKmLeeg; fout.hidden=false; km.focus(); return; }
     if(k<vanKm){ fout.textContent=t.qrKmLaag; fout.hidden=false; km.focus(); return; }
     ok.disabled=true;
     var rec={ marks:(r.depart&&r.depart.marks)?r.depart.marks.slice():[], shots:{}, km:k, fuel:"100", sig:null, at:new Date().toISOString(), snel:true };
@@ -8069,7 +8183,7 @@ function snelTerug(r){
     await reload(); dicht(); naarKlaar("vDay");
     toast(borgNu>0?t.qrKlaar(dh(borgNu)):t.qrKlaarZonder);
   });
-  setTimeout(function(){ km.focus(); km.select(); },50);
+  setTimeout(function(){ km.focus(); },50);
 }
 function klantUitFormulier(){
   return { name:$("cvName").value.trim(), tel:$("cvTel").value.trim(), docType:$("cvDocType").value||"cin",
@@ -8380,6 +8494,8 @@ async function saveRentalEcht(){
   var huur={ code:"AT-"+String(Date.now()).slice(-5), clientId:cid, clientName:name, clientTel:tel, driver2:leesD2(), vehicleId:c.id, from:from, to:to,
     days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0,
     depart:null, retour:null, released:false, createdAt:new Date().toISOString() };
+  /* stap 4: contant of kaart is meteen betaald; overschrijving = betaalverzoek klaarzetten */
+  if(NWSTAP){ huur.payments=betalingenVoorNieuw(huur.total,huur.caution); if(NWBETAAL==="transfer") huur.betaalVerzoek=today(); }
   /* Vandaag weg: dan is dit het moment dat de sleutel over de balie gaat. Het
      vertrek wordt meteen vastgelegd met de km-stand van het scherm, een volle tank
      en geen schade — precies wat de verhuurder anders met de hand op het papier
@@ -8584,7 +8700,9 @@ async function saveCar(){
     franchise:Number($("cwFranchise").value)||0, fuelType:$("cwFuel").value||"diesel",
     insuranceUntil:$("cwIns").value||"", inspectionUntil:$("cwInsp").value||"", vignetteUntil:$("cwVig").value||"",
     purchasePrice:Number($("cwPrice").value)||0, purchaseDate:$("cwBought").value||"", loanMonthly:Number($("cwLoan").value)||0, loanMonthsLeft:Number($("cwLoanN").value)||0 };
-  await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); naarKlaar("vFleet"); toast(t.saved);
+  /* na de allereerste auto meteen naar Vandaag: daar begint het verhuren */
+  var eersteAuto=!carEdit && !CARS.length;
+  await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); naarKlaar(eersteAuto?"vDay":"vFleet"); toast(t.saved);
 }
 async function delCar(){
   if(!carEdit){ naarKlaar("vFleet"); return; }
@@ -8596,7 +8714,7 @@ async function delCar(){
 }
 
 /* ============ INSTELLINGEN ============ */
-var ATLASVER="136";
+var ATLASVER="137";
 function fillSettings(){
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
@@ -9600,8 +9718,12 @@ function nomPrenom(naam){
   var d=String(naam||"").trim().split(/\s+/).filter(Boolean);
   if(d.length<2) return { nom:d[0]||"", prenom:"" };
   /* In de strook van een identiteitskaart staat de achternaam vooraan, en zo
-     vullen alle scans het naamveld ook. */
-  return { nom:d[0], prenom:d.slice(1).join(" ") };
+     vullen alle scans het naamveld ook. Marokkaanse achternamen beginnen vaak met
+     een voorzetsel (EL FASSI, BEN ALI, AIT TALEB, OULD ...): dat hoort bij de
+     achternaam en mag niet als voornaam op het contract komen. */
+  var voor=/^(EL|AL|BEN|BENT|BNOU|BOU|ABOU|ABDEL|AIT|A\u00cfT|ID|OU|OULD|OULAD|SIDI|MOULAY|LALLA|DE|DA|DI|DU|LA|LE|VAN|VON|DOS|DEL)$/i;
+  var n=1; while(n<d.length-1 && voor.test(d[n-1])) n++;
+  return { nom:d.slice(0,n).join(" "), prenom:d.slice(n).join(" ") };
 }
 function uurVan(iso){
   if(!iso) return "";
@@ -9814,7 +9936,7 @@ function payPanel(r){
     toast(t.saved); receipt(fresh, fresh.retour?"retour":"depart");
   });
   box.appendChild(go);
-  box.appendChild(betaalVerzoek(r));
+  box.appendChild(betaalVerzoek(r,true));
   return box;
 }
 /* ============ BETALEN ZONDER TERMINAL ============
@@ -9992,8 +10114,8 @@ $("bBack").addEventListener("click",function(){
 });
 $("bGo").addEventListener("click",function(){
   if(view==="vNew"){
-    if(NWSTAP && NWSTAP<3){ huurVolgende(); return; }
-    if(NWSTAP===3 && !klantIngevuld()){ huurNaarStap(1); toast(T().nwNaamEerst); return; }
+    if(NWSTAP && NWSTAP<4){ huurVolgende(); return; }
+    if(NWSTAP===4 && !klantIngevuld()){ huurNaarStap(1); toast(T().nwNaamEerst); return; }
     saveRental(); return;
   }
   if(view==="vCar"){ saveCar(); return; }

@@ -207,3 +207,20 @@ Tests: **50/50 groen** (22 bewegingstests in FR, AR en NL op 390×844, telkens z
 - Versie: **136**.
 
 Tests: 53/53 groen, twee rondes.
+
+---
+
+## Ronde 10 — test van begin tot eind, fouten weg, werkwijze A-B-C-D (versie 137)
+
+Doorloop als nieuwe verhuurder (lege browser): eerste keer openen → auto's toevoegen → contract → betaling → auto terug → kas → contract 2 → borgen → boete → alle schermen.
+
+**Opgelost (blokkerend):**
+- **A. Naam van de zaak:** stond nergens; het contract had geen verhuurder. Nu vraagt de app hem één keer, vóór het eerste contract.
+- **B. Contract:** kenteken stond leeg; samengestelde achternamen (EL FASSI, AIT BEN ALI…) werden gesplitst. Beide opgelost (met jouw toestemming in de bevroren contractcode; de test toont precies welke 2 functies bewust veranderd zijn).
+- **C. Kas:** "Tout est en ordre — rendre X" betaalde borg terug die nooit ontvangen was (kas −1 750 DH). Nu alleen wat echt ontvangen is. Km bij terugbrengen niet meer vooraf ingevuld (verplicht in te typen).
+
+**Werkwijze, één ding per stap:** nieuw contract = 1 Qui loue → 2 Quelle voiture → 3 Combien de temps → **4 Paiement** (Espèces · Carte · Virement · Plus tard) → Contrat prêt. Het gemengde betaalblok (terminal, WhatsApp, kopiëren, formulier) is vervangen door die ene keuze; het betaalverzoek via WhatsApp is één knop.
+
+**E.** Nieuwe auto: alleen wat nodig is (documenten en aankoop achter "Plus de détails"); na de eerste auto naar Vandaag; voorbeeldtekst in vakken lichter.
+
+Scanner: ongewijzigd (147 gevallen + vingerafdruk groen). Tests: 54/54 groen, twee rondes. De bewegingstests krijgen één herkansing bij een browserfout van headless Chrome (nooit bij een mislukte controle; in de laatste twee rondes niet nodig geweest).

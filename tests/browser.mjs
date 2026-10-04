@@ -48,7 +48,7 @@ export function testgegevens() {
   return L;
 }
 
-let server, browser, poort;
+let server, browser, poort, STOPT = false;
 export async function start() {
   server = createServer((req, res) => {
     const pad = decodeURIComponent(req.url.split("?")[0]);
@@ -58,8 +58,12 @@ export async function start() {
   await new Promise(r => server.listen(0, "127.0.0.1", r));
   poort = server.address().port;
   browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ["--no-sandbox", "--lang=fr-FR"] });
+  STOPT = false;
+  browser.process()?.on("exit", (code, sig) => { if (!STOPT) console.log("CHROME-PROCES STOPTE ONVERWACHT: code=" + code + " signaal=" + sig); });
 }
+
 export async function stop() {
+  STOPT = true;
   await browser?.close();
   /* Chrome houdt verbindingen open (keep-alive); zonder dit wacht close() eindeloos. */
   server?.closeAllConnections();
@@ -76,6 +80,8 @@ export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390
   if (traag !== 1) { const cdp = await page.createCDPSession(); await cdp.send("Animation.enable"); await cdp.send("Animation.setPlaybackRate", { playbackRate: traag }); }
   const fouten = [];
   page.on("pageerror", e => fouten.push(String(e.message || e)));
+  /* onderscheid: crasht de pagina (mogelijk de app) of valt Chrome zelf om (testomgeving)? */
+  page.on("error", e => { console.log("PAGINA-CRASH: " + e.message); fouten.push("PAGINA-CRASH: " + e.message); });
   page.on("console", m => { if (m.type() === "error" && !/fonts\.g|cdnjs|Failed to load resource/.test(m.text())) fouten.push(m.text()); });
   /* Geen netwerk naar Supabase in tests: aanmelden staat uit, dus er gaat niets heen. */
   await page.evaluateOnNewDocument((taal, gegevens) => {

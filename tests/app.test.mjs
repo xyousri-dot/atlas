@@ -88,7 +88,7 @@ test("Frans: het contract is ongewijzigd t.o.v. v135", async () => {
     const { page } = await B.open({ taal: "fr" });
     const h = await page.evaluate(async () => {
       let html = ""; pdfFromSheet = async (x) => { html = x; };
-      await makeContract(RENTALS.find(x => x.code === "AT-10004"), document.createElement("button"));
+      await makeContract(RENTALS.find(x => x.code === "AT-10001"), document.createElement("button"));
       return html;
     });
     await page.close(); return h;
@@ -147,13 +147,10 @@ test("Betalen zonder terminal: RIB instellen → betaalverzoek via WhatsApp", as
   assert.equal(await page.evaluate(() => AG.extraVeld), "blijft", "opslaan gooit geen velden weg");
   await B.foto(page, "fr-instellingen-rib");
   await open();
-  const v = await page.evaluate(() => ({ tekst: document.getElementById("bzTekst")?.textContent, wa: document.getElementById("bzWa")?.href }));
+  const v = await page.evaluate(() => { const a = document.getElementById("bzWaKort"); return { wa: a?.href, tekst: a ? decodeURIComponent(a.href.split("text=")[1]) : "" }; });
   for (const w of ["AT-10003", "230 780 1234567890123456 78", "CIH", "Atlas Kenitra", "6 250 DH"])
     assert.ok(v.tekst.includes(w), "bericht mist: " + w + " in " + v.tekst);
   assert.ok(v.wa.startsWith("https://wa.me/212600000001?text="));
-  /* Ook direct onder "Le client a-t-il payé ?", zonder submenu */
-  const kort = await page.evaluate(() => document.getElementById("bzWaKort")?.href);
-  assert.equal(kort, v.wa);
   await page.evaluate(() => document.getElementById("bzWaKort").scrollIntoView({ block: "center" }));
   await B.foto(page, "fr-betaalverzoek");
   /* Na het verzoek boekt "Location reçue" als overschrijving */
@@ -253,6 +250,7 @@ test("Terug: contract maken → Photos et dommages → terug = Contrat prêt →
   await page.goBack(); await wacht();
   assert.deepEqual(await page.evaluate(() => [view, NWSTAP]), ["vNew", 2]);
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
+  await page.click("#bGo"); await wacht();   /* stap 3 → 4 (betaling) */
   await page.click("#bGo"); await wacht(800);
   assert.equal(await v(), "vDone", "na Établir le contrat");
   await page.evaluate(() => [...document.querySelectorAll("#vDone button")].find(b => /Photos et dommages/.test(b.textContent)).click()); await wacht();
@@ -312,6 +310,7 @@ test("Na de scan: controlekaart met alle velden, fouten zichtbaar, aanpassingen 
   await page.click("#bGo"); await wacht();
   assert.equal(await page.evaluate(() => NWSTAP), 2, "geen fout meer → door");
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
+  await page.click("#bGo"); await wacht();   /* stap 3 → 4 (betaling) */
   await page.click("#bGo"); await wacht(900);
   const k = await page.evaluate(() => CLIENTS.find(c => c.name === "BADAOUI ADNANE" && c.docNumber === "GI4598"));
   assert.ok(k, "aangepast nummer staat in de klantfiche");
@@ -353,6 +352,7 @@ test("Nieuw contract verwijderen: klant die ermee ontstond gaat mee, en komt mee
   await page.click("#heldNieuw"); await wacht();
   await page.type("#nwName", "NIEUWE KLANT"); await page.click("#bGo"); await wacht();
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
+  await page.click("#bGo"); await wacht();   /* stap 3 → 4 (betaling) */
   await page.click("#bGo"); await wacht(800);
   assert.ok(await page.evaluate(() => CLIENTS.some(c => c.name === "NIEUWE KLANT")));
   await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
@@ -416,6 +416,17 @@ test("Zonder ?demo: gewone app met de eigen gegevens, knop naar de demo onder Pl
   assert.equal(await page.evaluate(() => !!document.getElementById("demoBalk")), false);
   await page.evaluate(() => openMeer());
   assert.ok(await page.$("#meerDemo"), "Voir la démo onder Plus");
+  assert.deepEqual(fouten, []);
+  await page.close();
+});
+
+
+test("Contract: samengestelde achternaam blijft heel (EL AMRANI SANAE → Nom EL AMRANI, Prénom SANAE)", async () => {
+  const { page, fouten } = await B.open({ taal: "fr" });
+  const uit = await page.evaluate(() => [["EL AMRANI SANAE"], ["BADAOUI ADNANE"], ["AIT BEN ALI KARIM"], ["EL FASSI SAMIRA FATIMA"], ["MARTIN"]].map(([n]) => nomPrenom(n)));
+  assert.deepEqual(uit, [{ nom: "EL AMRANI", prenom: "SANAE" }, { nom: "BADAOUI", prenom: "ADNANE" }, { nom: "AIT BEN ALI", prenom: "KARIM" }, { nom: "EL FASSI", prenom: "SAMIRA FATIMA" }, { nom: "MARTIN", prenom: "" }]);
+  const html = await page.evaluate(async () => { let h = ""; pdfFromSheet = async x => { h = x; }; await makeContract(RENTALS.find(x => x.code === "AT-10004"), document.createElement("button")); return h; });
+  assert.ok(/Nom<\/span><b>EL AMRANI<\/b>/.test(html) && /Pr\u00e9nom<\/span><b>SANAE<\/b>/.test(html), "op het contract");
   assert.deepEqual(fouten, []);
   await page.close();
 });
