@@ -700,7 +700,8 @@ html[lang="ar"] #sheet, html[lang="ar"] #sheet h1, html[lang="ar"] #sheet h2, ht
 /* Demo-balk */
 .demobalk{position:fixed;left:0;right:0;top:0;z-index:80;display:flex;justify-content:center;align-items:center;gap:12px;padding:7px 14px;background:#1F2A24;color:#fff;font-size:13px;font-weight:600;text-align:center}
 .demobalk a{color:#7FE0BA;font-weight:800;white-space:nowrap}
-body.demo .bar{z-index:41}
+/* ">" : alleen de kop. Planningbalken heten ook .bar en kwamen anders boven de namenkolom. */
+body.demo > .bar{z-index:41}
 /* Stap 4: betaling */
 .betaalsom{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:6px 16px}
 .betaalsom .rij{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
@@ -845,7 +846,20 @@ html[lang="ar"] .strook b{font-family:"Noto Sans Arabic",Figtree,sans-serif}
    verdwijnen in plaats van afgesneden te lijken. */
 /* Geen backdrop-filter op .bar: het menu (.tabs, position:fixed) staat erin en zou dan
    aan de kop vastzitten in plaats van aan het scherm. */
-.bar{background:var(--bg);box-shadow:0 1px 0 var(--line)}
+body > .bar{background:var(--bg);box-shadow:0 1px 0 var(--line)}
+/* Demo: de JS zet de kop op top = hoogte van de demobalk, maar body heeft die ruimte al als
+   padding. Samen schoof de kop dubbel omlaag en viel hij over de titel. */
+body.demo > .bar{top:0!important}
+/* Planning: de kolom met autonamen ligt boven de balken; een verhuur die eerder begon steekt
+   er niet meer overheen. */
+.plan .hc{z-index:5}
+/* Datumvelden hebben een eigen minimumbreedte en duwden de kaart op de telefoon open. */
+.grid2 > *, .grid2 > * > *{min-width:0}
+input[type="date"]{min-width:0;max-width:100%}
+/* Breed scherm: het Plus-menu even breed als de kaarten, zwevend zoals het menu onderaan. */
+@media (min-width:760px){
+  .meerblad .in{max-width:640px;margin:0 auto 14px;border-radius:22px}
+}
 .tabs button:focus-visible{outline:2px solid var(--brand);outline-offset:-6px;border-radius:14px}
 /* Breed scherm: het menu zweeft en is precies even breed als de kaarten (680 − 2×20). */
 @media (min-width:760px){
@@ -1623,7 +1637,7 @@ var TXT = {
   exCatL:"Soort", exAmtL:"Bedrag (DH)", exDateL:"Datum", exNoteL:"Omschrijving", exAdd:"Kost toevoegen",
   exCats:{loan:"Leningtermijn",insurance:"Verzekering",vignette:"Vignette",inspection:"Keuring",maintenance:"Onderhoud",tires:"Banden",repair:"Herstelling",fine:"Boete",fuel:"Brandstof",wash:"Reiniging",other:"Overige"},
   exEmpty:"Nog geen kosten ingevoerd.",
-  cwSave:"Opslaan", cwDel:"Auto verwijderen",
+  cwSave:"Opslaan", cwDel:"Verwijderen",
   plMore:"Meer cijfers", plLess:"Minder cijfers",
   plH2:"Resultaat", plDue:"Nog te ontvangen", plRev:"Opbrengst (ontvangen)", plCost:"Kosten", plNet:"Resultaat", plDays:"Verhuurde dagen", plUtil:"Bezetting sinds aankoop",
   plBuy:"Aankoop", plLoanLeft:"Nog aan lening", plPayback:"Terugverdiend van aankoop", plNoData:"Vul aankoop en kosten in om het resultaat te zien.",
@@ -1975,7 +1989,7 @@ var TXT = {
   exCatL:"Type", exAmtL:"Montant (DH)", exDateL:"Date", exNoteL:"Description", exAdd:"Ajouter le coût",
   exCats:{loan:"Traite de crédit",insurance:"Assurance",vignette:"Vignette",inspection:"Visite technique",maintenance:"Entretien",tires:"Pneus",repair:"Réparation",fine:"Amende",fuel:"Carburant",wash:"Lavage",other:"Autre"},
   exEmpty:"Aucun coût saisi.",
-  cwSave:"Enregistrer", cwDel:"Supprimer la voiture",
+  cwSave:"Enregistrer", cwDel:"Supprimer",
   plMore:"Plus de chiffres", plLess:"Moins de chiffres",
   plH2:"Résultat", plDue:"Reste à encaisser", plRev:"Revenus (encaissés)", plCost:"Coûts", plNet:"Résultat", plDays:"Jours loués", plUtil:"Taux d'occupation depuis l'achat",
   plBuy:"Achat", plLoanLeft:"Reste à payer", plPayback:"Achat remboursé à", plNoData:"Saisissez l'achat et les coûts pour voir le résultat.",
@@ -2399,7 +2413,7 @@ TXT.ar={ loc:"ar-MA-u-nu-latn",
   exCatL:"النوع", exAmtL:"المبلغ (درهم)", exDateL:"التاريخ", exNoteL:"الوصف", exAdd:"إضافة المصروف",
   exCats:{loan:"قسط القرض",insurance:"التأمين",vignette:"الفينييت",inspection:"الفحص التقني",maintenance:"الصيانة",tires:"العجلات",repair:"الإصلاح",fine:"مخالفة",fuel:"الوقود",wash:"الغسيل",other:"أخرى"},
   exEmpty:"لا توجد مصاريف مسجلة.",
-  cwSave:"حفظ", cwDel:"حذف السيارة",
+  cwSave:"حفظ", cwDel:"حذف",
   plMore:"أرقام أكثر", plLess:"أرقام أقل",
   plH2:"النتيجة", plDue:"باقي للقبض", plRev:"المداخيل (المقبوضة)", plCost:"المصاريف", plNet:"النتيجة", plDays:"أيام الكراء", plUtil:"نسبة الاستعمال منذ الشراء",
   plBuy:"الشراء", plLoanLeft:"الباقي للأداء", plPayback:"تم استرجاع ثمن الشراء بنسبة", plNoData:"أدخل الشراء والمصاريف لرؤية النتيجة.",
