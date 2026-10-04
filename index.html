@@ -860,9 +860,52 @@ input[type="date"]{min-width:0;max-width:100%}
 @media (min-width:760px){
   .meerblad .in{max-width:640px;margin:0 auto 14px;border-radius:22px}
 }
+/* ==== Desktop (vanaf 1024px): een eigen scherm, geen opgerekte telefoon ====
+   Zijbalk met logo en menu, inhoud breed. Alleen CSS: dezelfde knoppen en id's, dus de
+   scanner en de tests merken niets. In het Arabisch staat de zijbalk rechts. */
+@media (min-width:1024px){
+  :root{--zij:248px}
+  body{padding-inline-start:var(--zij)}
+  /* logo bovenin de zijbalk */
+  body > .bar{position:fixed!important;top:0;inset-inline-start:0;width:var(--zij);z-index:61;background:transparent;box-shadow:none}
+  body.demo > .bar{top:34px!important}
+  /* .tabs zit in .bar; zonder eigen laag zou de witte zijbalk over het logo vallen */
+  .bar-in{max-width:none!important;padding:22px 20px 0;position:relative;z-index:70}
+  /* het menu wordt de zijbalk */
+  .tabs{position:fixed!important;top:0;bottom:0!important;inset-inline-start:0!important;inset-inline-end:auto!important;left:auto;right:auto;
+    width:var(--zij)!important;max-width:none;transform:none!important;border-radius:0;box-shadow:none;border:0;border-inline-end:1px solid var(--line);
+    background:#fff;display:flex!important;flex-direction:column;align-items:stretch;gap:4px;padding:96px 14px 20px!important}
+  [dir="ltr"] .tabs, .tabs{left:0!important}
+  [dir="rtl"] .tabs{left:auto!important;right:0!important}
+  body.demo .tabs{top:34px}
+  .tabs button{flex-direction:row!important;justify-content:flex-start!important;gap:12px!important;min-height:46px;padding:10px 14px!important;
+    font-size:15px;font-weight:600;border-radius:12px;text-align:start}
+  .tabs button:hover{background:var(--bg)!important}
+  .tabs button[aria-current="true"]{background:var(--brand-soft)!important}
+  .tabs button svg{width:22px;height:22px;flex:none}
+  /* "Contrat" bovenaan als hoofdknop */
+  .tabs button.tab-plus{order:0!important;background:var(--brand)!important;color:#fff!important;justify-content:center!important;margin-bottom:14px;min-height:50px}
+  .tabs button.tab-plus:hover{background:var(--brand-2)!important}
+  .tabs button.tab-plus svg{width:20px;height:20px;padding:0;margin:0;border:0;border-radius:0;background:none;box-shadow:none;stroke:#fff}
+  /* inhoud breed */
+  .wrap,.prog,.dock-in{max-width:1080px!important}
+  .wrap{padding:28px 40px 120px}
+  .dock{inset-inline-start:var(--zij)}
+  .meerblad{padding-inline-start:var(--zij)}
+  /* Vandaag: de blauwe kaart links (blijft staan), de taken rechts */
+  #dayBody{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);column-gap:28px;align-items:start}
+  #dayBody > *{grid-column:2}
+  #dayBody > .held{grid-column:1;grid-row:1 / span 40;position:sticky;top:28px;margin:0}
+  #dayBody > p.sh:first-of-type{margin-top:0}
+  /* Voitures: kaarten twee naast elkaar */
+  #flBody .jobs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  #flBody .jobs > *{margin:0}
+}
+
 .tabs button:focus-visible{outline:2px solid var(--brand);outline-offset:-6px;border-radius:14px}
-/* Breed scherm: het menu zweeft en is precies even breed als de kaarten (680 − 2×20). */
-@media (min-width:760px){
+/* Tablet: het menu zweeft en is precies even breed als de kaarten (680 − 2×20).
+   Vanaf 1024px wordt het de zijbalk (zie Desktop). */
+@media (min-width:760px) and (max-width:1023px){
   .tabs{width:640px;max-width:calc(100% - 40px);bottom:14px;border-radius:22px;border:1px solid var(--line);box-shadow:var(--sh)}
 }
 </style>
