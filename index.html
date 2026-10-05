@@ -376,7 +376,7 @@ img,canvas,video,svg,table{max-width:100%}
 .tegel{padding:10px 12px}
 .tegel .plate{border:0;padding:0;background:none;font-family:inherit;font-size:inherit;color:inherit;gap:4px}
 .tegel[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
-.tegel:disabled{opacity:.5;cursor:not-allowed}
+.tegel:disabled,.tegel.bezet{opacity:.5;cursor:not-allowed}
 /* Status van de kaartlezing op het huurscherm zelf. */
 /* Op de telefoon: de knoppen van de bon (contract, WhatsApp) boven de details. */
 @media(max-width:859px){ #vDone .two{display:flex;flex-direction:column} #vDone #rSide{order:-1;margin-bottom:14px} }
@@ -7942,7 +7942,7 @@ markKlantKlaar=function(){
 /* Auto gekozen in stap 2: meteen door naar de dagen. */
 $("nwCarTegels").addEventListener("click",function(e){
   var tg=e.target.closest(".tegel");
-  if(!tg || tg.disabled || NWSTAP!==2) return;
+  if(!tg || tg.disabled || tg.classList.contains("bezet") || NWSTAP!==2) return;
   setTimeout(function(){ if(NWSTAP===2 && $("nwClash").hidden) huurNaarStap(3); },180);
 });
 /* ============ VERWIJDEREN, MET TERUGZETTEN ============
@@ -8122,6 +8122,19 @@ function tekenBorgKnoppen(){
    Een uitklaplijst met auto's dwingt de verhuurder te lezen en te zoeken. Tegels
    laten hem zien wat er staat en wat vrij is; één tik is genoeg. Hetzelfde voor de
    duur: bijna elke verhuur is één, twee, drie of zeven dagen. */
+/* "Occupée jusqu'au 4 octobre" : tot wanneer de auto in deze periode weg is. */
+function bezetTekst(c,van,tot){
+  var morgen=plus(today(),1), eind="";
+  RENTALS.forEach(function(r){
+    if(!live(r) || r.vehicleId!==c.id || stage(r)==="done") return;
+    var e=(r.depart && !r.retour && r.to<today() && r.to<morgen) ? morgen : r.to;
+    if(overlap(van,tot,r.from,e) && e>eind) eind=e;
+  });
+  var l=String(T().loc||"fr").slice(0,2), d=eind?dShort(eind):"";
+  return ({ nl:"Bezet"+(d?" tot "+d:"")+": kies een andere auto of andere data.",
+            fr:"Occup\u00e9e"+(d?" jusqu'au "+d:"")+" : choisissez une autre voiture ou d'autres dates.",
+            ar:"\u0645\u062d\u062c\u0648\u0632\u0629"+(d?" \u062d\u062a\u0649 "+d:"")+" \u2014 \u0627\u062e\u062a\u0631 \u0633\u064a\u0627\u0631\u0629 \u0623\u062e\u0631\u0649 \u0623\u0648 \u062a\u0648\u0627\u0631\u064a\u062e \u0623\u062e\u0631\u0649." })[l]||"";
+}
 function vrijeAuto(c,van,tot){
   var morgen=plus(today(),1);
   return !RENTALS.some(function(r){
@@ -8151,7 +8164,9 @@ function tekenAutoTegels(){
   /* Vrije auto's vooraan: daar kiest hij uit. Bezette staan grijs achteraan. */
   CARS.slice().sort(function(a,b){ return (vrijeAuto(b,van,tot)?1:0)-(vrijeAuto(a,van,tot)?1:0); }).forEach(function(c){
     var vrij=vrijeAuto(c,van,tot), b=el("button","tegel");
-    b.type="button"; b.disabled=sel.disabled || (!vrij && sel.value!==c.id);
+    /* Bezet: niet uitgeschakeld maar "uit" getoond, zodat een tik kan uitleggen waarom. */
+    var bezet=!vrij && sel.value!==c.id;
+    b.type="button"; b.disabled=sel.disabled; if(bezet){ b.classList.add("bezet"); b.setAttribute("aria-disabled","true"); }
     b.setAttribute("aria-pressed", sel.value===c.id ? "true" : "false");
     var n=el("b"); n.textContent=c.model;
     /* De Arabische letter in een Marokkaanse plaat draait de volgorde om als we
@@ -8161,6 +8176,7 @@ function tekenAutoTegels(){
     b.appendChild(n); b.appendChild(o);
     b.addEventListener("click",function(){
       if(b.disabled) return;
+      if(bezet){ toast(bezetTekst(c,van,tot)); return; }
       sel.value=c.id; sel.dispatchEvent(new Event("change"));
       tekenAutoTegels();
     });
