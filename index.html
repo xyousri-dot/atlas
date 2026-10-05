@@ -853,6 +853,11 @@ body.demo > .bar{top:0!important}
 /* Planning: de kolom met autonamen ligt boven de balken; een verhuur die eerder begon steekt
    er niet meer overheen. */
 .plan .hc{z-index:5}
+.kmmelding{margin-top:10px;padding:12px 14px;border-radius:12px;font-size:14.5px;line-height:1.4;font-weight:600}
+.kmmelding.fout{background:var(--warn-soft);color:var(--warn)}
+.kmmelding.let{background:var(--gold-soft);color:var(--gold);display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.kmmelding .kmok{font:inherit;font-weight:700;padding:9px 14px;border-radius:10px;border:1px solid currentColor;background:#fff;color:inherit;cursor:pointer}
+.kmmelding .kmok.aan{background:var(--gold);color:#fff;border-color:var(--gold)}
 /* Datumvelden hebben een eigen minimumbreedte en duwden de kaart op de telefoon open. */
 .grid2 > *, .grid2 > * > *{min-width:0}
 input[type="date"]{min-width:0;max-width:100%}
@@ -8307,6 +8312,8 @@ function snelTerug(r){
     var k=Number(km.value);
     if(!km.value){ fout.textContent=t.qrKmLeeg; fout.hidden=false; km.focus(); return; }
     if(k<vanKm){ fout.textContent=t.qrKmLaag; fout.hidden=false; km.focus(); return; }
+    var oo=kmOordeel(k, vanKm, dayDiff(r.from, today())+1);
+    if(oo.hoog && km.dataset.bevestigd!==String(k)){ var tx=kmTekst()||kmTekstFr(); fout.textContent=tx.hoog(kmf(oo.dist),oo.dagen)+" "+(tx.nogmaals||""); fout.hidden=false; km.dataset.bevestigd=String(k); return; }
     ok.disabled=true;
     var rec={ marks:(r.depart&&r.depart.marks)?r.depart.marks.slice():[], shots:{}, km:k, fuel:"100", sig:null, at:new Date().toISOString(), snel:true };
     var patch={ retour:rec, released:true, releasedAt:today(), cautionReturned:borgNu, cautionWithheld:0, withholdNote:"" };
@@ -9020,7 +9027,7 @@ function steps(){
     /* Foto's zijn optioneel: wie ze niet kan of wil maken, moet toch verder kunnen.
        opt = telt mee als "mag door", maar de stap toont eerlijk 0 / 4. */
     { id:"s2", ok:Object.keys(draft.shots).length>=4, opt:true, state:"c2s", txt:Object.keys(draft.shots).length+" / 4"+(Object.keys(draft.shots).length<4?" \u00b7 "+({nl:"optioneel",fr:"facultatif",ar:"\u0627\u062e\u062a\u064a\u0627\u0631\u064a"}[String(T().loc||"fr").slice(0,2)]||"facultatif"):"") },
-    { id:"s3", ok:draft.km!==""&&draft.fuel!=null, state:"c3s", txt:(draft.km!==""&&draft.fuel!=null)?t.stepState.done:t.stepState.toFill },
+    { id:"s3", ok:draft.km!==""&&draft.fuel!=null&&kmStapOk(), state:"c3s", txt:(draft.km!==""&&draft.fuel!=null&&kmStapOk())?t.stepState.done:t.stepState.toFill },
     { id:"s4", ok:!!draft.sig, state:"c4s", txt:draft.sig?t.stepState.signed:t.stepState.toSign }
   ];
 }
@@ -9064,6 +9071,54 @@ function toonStap(){
 }
 /* "1 jour", "2 jours": enkelvoud bij 1, in elke taal. */
 function nDagen(n){ var t=T(); return n+" "+(n===1?({fr:"jour",nl:"dag",ar:"\u064a\u0648\u0645"}[String(t.loc||"fr").slice(0,2)]||t.days):t.days); }
+/* ==== Kilometerstand moet kloppen ====
+   Te laag = onmogelijk (een auto rijdt niet terug): blokkeren.
+   Meer dan 1000 km per huurdag = waarschijnlijk een cijfer te veel: eerst bevestigen. */
+var KM_PER_DAG_MAX=1000;
+function kmTekst(){ var l=String(T().loc||"fr").slice(0,2);
+  return ({
+    nl:{ laagV:function(m){ return "Lager dan de laatst bekende stand van deze auto ("+m+"). Controleer de teller."; },
+         laagR:function(m){ return "Lager dan bij vertrek ("+m+"). Een auto rijdt niet terug: controleer de teller."; },
+         hoog:function(d,n){ return "Controleer: +"+d+" in "+n+(n===1?" dag":" dagen")+". Een cijfer te veel?"; },
+         ok:"Ja, de stand klopt", nogmaals:"Tik nog eens om te bevestigen." },
+    fr:{ laagV:function(m){ return "Inf\u00e9rieur au dernier compteur connu de cette voiture ("+m+"). V\u00e9rifiez le compteur."; },
+         laagR:function(m){ return "Inf\u00e9rieur au d\u00e9part ("+m+"). Une voiture ne recule pas : v\u00e9rifiez le compteur."; },
+         hoog:function(d,n){ return "V\u00e9rifiez : +"+d+" en "+n+(n===1?" jour":" jours")+". Un chiffre en trop ?"; },
+         ok:"Oui, le compteur est correct", nogmaals:"Appuyez \u00e0 nouveau pour confirmer." },
+    ar:{ laagV:function(m){ return "\u0623\u0642\u0644 \u0645\u0646 \u0622\u062e\u0631 \u0639\u062f\u0627\u062f \u0645\u0639\u0631\u0648\u0641 \u0644\u0647\u0630\u0647 \u0627\u0644\u0633\u064a\u0627\u0631\u0629 ("+m+"). \u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0639\u062f\u0627\u062f."; },
+         laagR:function(m){ return "\u0623\u0642\u0644 \u0645\u0646 \u0639\u062f\u0627\u062f \u0627\u0644\u062e\u0631\u0648\u062c ("+m+"). \u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0639\u062f\u0627\u062f."; },
+         hoog:function(d,n){ return "\u062a\u062d\u0642\u0642: +"+d+" \u0641\u064a "+n+" \u064a\u0648\u0645. \u0647\u0644 \u0647\u0646\u0627\u0643 \u0631\u0642\u0645 \u0632\u0627\u0626\u062f\u061f"; },
+         ok:"\u0646\u0639\u0645\u060c \u0627\u0644\u0639\u062f\u0627\u062f \u0635\u062d\u064a\u062d", nogmaals:"\u0627\u0636\u063a\u0637 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0644\u062a\u0623\u0643\u064a\u062f." }
+  })[l] || null; }
+/* min = laatst bekende stand; geeft {fout} (blokkeert) of {hoog} (bevestigen) of {} */
+function kmOordeel(km, min, dagen){
+  var k=Number(km); if(km===""||km==null||isNaN(k)) return {};
+  if(min && k<min) return { fout:true, min:min };
+  if(min && k-min > KM_PER_DAG_MAX*Math.max(1,dagen)) return { hoog:true, dist:k-min, dagen:Math.max(1,dagen) };
+  return {};
+}
+function kmFormOordeel(){
+  if(!draft||!rental) return {};
+  var c=car(rental.vehicleId)||{}, min, dagen;
+  if(mode==="retour"){ min=Number(rental.depart&&rental.depart.km)||Number(c.km)||0; dagen=dayDiff(rental.from, today())+1; }
+  else {
+    /* bij een bestaande vertrekregistratie is c.km al deze stand; dan geldt het vorige maximum niet opnieuw */
+    min=Number(c.km)||0; if(rental.depart&&Number(rental.depart.km)===min) min=0; dagen=1;
+  }
+  return kmOordeel(draft.km, min, dagen);
+}
+function toonKmMelding(){
+  var wrap=document.querySelector("#km") && document.querySelector("#km").closest(".kmwrap"); if(!wrap) return;
+  var m=$("kmMelding"); if(!m){ m=el("div","kmmelding"); m.id="kmMelding"; wrap.parentNode.insertBefore(m, wrap.nextSibling); }
+  var o=kmFormOordeel(), tx=kmTekst()||kmTekstFr(); m.innerHTML=""; m.className="kmmelding";
+  if(o.fout){ m.className="kmmelding fout"; m.textContent=(mode==="retour"?tx.laagR:tx.laagV)(kmf(o.min)); }
+  else if(o.hoog){ m.className="kmmelding let"; m.appendChild(el("span",null,tx.hoog(kmf(o.dist),o.dagen)));
+    var b=el("button","kmok"+(draft.kmOk?" aan":""),(draft.kmOk?"\u2713 ":"")+tx.ok); b.type="button";
+    b.addEventListener("click",function(){ draft.kmOk=!draft.kmOk; toonKmMelding(); refresh(); }); m.appendChild(b); }
+  m.hidden=!(o.fout||o.hoog);
+}
+function kmTekstFr(){ var o=T(); return { laagV:function(m){ return "< "+m+" km"; }, laagR:function(m){ return o.qrKmLaag+" ("+m+")"; }, hoog:function(d,n){ return "+"+d+" / "+n; }, ok:"OK" }; }
+function kmStapOk(){ var o=kmFormOordeel(); return !o.fout && (!o.hoog || !!draft.kmOk); }
 function magDoor(s){ return !!(s && (s.ok || s.opt)); }
 function stapVooruit(){ var st=steps(); if(FSTAP<formKaarten().length && magDoor(st[FSTAP])){ FSTAP++; toonStap(); return true; } return false; }
 function refresh(){
@@ -9072,6 +9127,7 @@ function refresh(){
   st.forEach(function(s,i){ $(s.id).className="step"+(s.ok?" on":""); $(s.id).textContent=s.ok?"✓":String(i+1); var n=$(s.state); n.textContent=s.txt; n.className="state"+(s.ok?" ok":""); });
   $("prog").hidden=false; $("progTxt").textContent=done===4?t.progAll:done+" "+t.progDone; $("progWho").textContent=rental?rental.clientName:""; $("progBar").style.width=(done/4*100)+"%";
   tekenStapKnoppen(st);
+  toonKmMelding();
   var laatste=formKaarten().length;
   if(FSTAP<laatste){
     $("bGo").textContent=t.fVolgende; $("bGo").disabled=!magDoor(st[FSTAP]);
@@ -10274,7 +10330,7 @@ $("bGo").addEventListener("click",function(){
     if(steps().every(magDoor)) finishHandover();
   }
 });
-$("km").addEventListener("input",function(){ if(draft){ draft.km=this.value; updateVerdict(); refresh(); } });
+$("km").addEventListener("input",function(){ if(draft){ draft.km=this.value; draft.kmOk=false; updateVerdict(); refresh(); } });
 $("fuel").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b||!draft) return; Array.prototype.forEach.call(this.children,function(x){ x.setAttribute("aria-pressed","false"); }); b.setAttribute("aria-pressed","true"); draft.fuel=b.dataset.v; updateVerdict(); refresh(); });
 window.addEventListener("resize",function(){ if(view==="vForm") sizeSig(); });
 </script>
