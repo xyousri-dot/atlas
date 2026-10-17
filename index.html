@@ -3618,7 +3618,7 @@ function dagStrook(nu,aantal){
     var x=[null,y[2],y[3]];
     var b=el("button"); b.type="button";
     var getal=el("b"); if(String(y[1](y[0])).replace(/[\u2066-\u2069]/g,"").length>8) getal.className="lang";
-    if(openen) telOp(getal,y[0],y[1]); else getal.textContent=y[1](y[0]);
+    getal.textContent=y[1](y[0]);
     b.appendChild(getal); b.appendChild(el("span",null,x[1]));
     b.addEventListener("click",function(){ view=x[2]; render(); });
     w.appendChild(b);
@@ -7610,7 +7610,7 @@ function openNew(presetClient, edit){
     /* Open op een auto die in die dagen vrij is. Anders begint elke nieuwe
        verhuur met een rode melding, en dat leest als een fout van de gebruiker. */
     var f0=$("nwFrom").value, t0=$("nwTo").value;
-    var free=CARS.filter(function(c){ return !RENTALS.some(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(f0,t0,r.from,r.to); }); })[0];
+    var free=CARS.filter(function(c){ return vrijeAuto(c,f0,t0); })[0];
     if(free) sel.value=free.id;
   }
   cs.disabled=extend; sel.disabled=extend; $("nwFrom").disabled=extend;
@@ -7705,7 +7705,7 @@ function recalc(){
   $("nwCaution").value=sug||base;
   if(editRental){ $("nwCaution").value=editRental.caution; if(editRental.depart){ var od=Math.max(1,dayDiff(editRental.from,editRental.to)); $("nwTotal").value=Math.round(editRental.total/od*d); } }
   if(sug){ var n=$("nwFlagNote"); n.hidden=false; n.textContent=t.loyal(clientHistory(cl).n+1,true,false)+" · "+t.loyalSug(dh(sug),dh(base)); n.style.color="var(--brand)"; }
-  var clash = (from&&to)?RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to) && !(editRental&&r.id===editRental.id); })[0]:null;
+  var clash = (from&&to)?huurConflict(c,from,to,editRental&&editRental.id):null;
   paintClash(clash);
   $("bGo").disabled=!!clash;
   tekenPrijsRegel();
@@ -8135,15 +8135,19 @@ function bezetTekst(c,van,tot){
             fr:"Occup\u00e9e"+(d?" jusqu'au "+d:"")+" : choisissez une autre voiture ou d'autres dates.",
             ar:"\u0645\u062d\u062c\u0648\u0632\u0629"+(d?" \u062d\u062a\u0649 "+d:"")+" \u2014 \u0627\u062e\u062a\u0631 \u0633\u064a\u0627\u0631\u0629 \u0623\u062e\u0631\u0649 \u0623\u0648 \u062a\u0648\u0627\u0631\u064a\u062e \u0623\u062e\u0631\u0649." })[l]||"";
 }
-function vrijeAuto(c,van,tot){
+function huurConflict(c,van,tot,negeerId){
+  if(!c || !van || !tot || tot<=van) return null;
   var morgen=plus(today(),1);
-  return !RENTALS.some(function(r){
-    if(!live(r) || r.vehicleId!==c.id || stage(r)==="done") return false;
+  return RENTALS.find(function(r){
+    if(!live(r) || r.id===negeerId || r.vehicleId!==c.id || stage(r)==="done") return false;
     /* Weg en te laat: de auto staat nog bij de klant. Niet "vrij" noemen tot hij
        terug is (minstens tot morgen), anders verhuur je een auto die er niet is. */
     var eind = (r.depart && !r.retour && r.to<today() && r.to<morgen) ? morgen : r.to;
     return overlap(van,tot,r.from,eind);
-  });
+  })||null;
+}
+function vrijeAuto(c,van,tot){
+  return !!c && !!van && !!tot && tot>van && !huurConflict(c,van,tot);
 }
 function tekenAutoTegels(){
   var t=T(), doos=$("nwCarTegels"); if(!doos) return;
@@ -8609,13 +8613,18 @@ function leesD2(){
   if(!n) return null;
   return { name:n, licence:$("nwD2Lic").value.trim(), issue:$("nwD2Issue").value||"" };
 }
+var HUURBEWAREN=false;
 async function saveRental(){
-  NWOPEN=false; try{ return await saveRentalEcht(); } finally { if(view==="vNew") NWOPEN=true; }
+  if(HUURBEWAREN) return;
+  HUURBEWAREN=true;
+  NWOPEN=false; try{ return await saveRentalEcht(); } finally { HUURBEWAREN=false; if(view==="vNew") NWOPEN=true; }
 }
 async function saveRentalEcht(){
   var t=T(), from=$("nwFrom").value, to=$("nwTo").value;
   if(!from||!to||to<=from){ $("nwTo").focus(); return; }
   var c=car($("nwCar").value), cid=$("nwClient").value, name, tel;
+  var conflict=huurConflict(c,from,to,editRental&&editRental.id);
+  if(conflict){ paintClash(conflict); toast(t.nwClash); return; }
   if(editRental){
     var cl0=client(cid), upd=Object.assign({},editRental,{ driver2:leesD2(), vehicleId:c.id, from:from, to:to, days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0 });
     if(cl0){ upd.clientId=cl0.id; upd.clientName=cl0.name; upd.clientTel=cl0.tel||""; }
@@ -8628,7 +8637,7 @@ async function saveRentalEcht(){
   if(SNELBEZIG){ toast(t.snelWacht); var bk=$("bGo"); bk.disabled=true; await SNELBEZIG; bk.disabled=false; cid=$("nwClient").value; }
   /* Eerst kijken of de auto vrij is, pas daarna iets opslaan — anders blijft er
      een klant achter zonder verhuur. */
-  var busy=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stage(r)!=="done" && overlap(from,to,r.from,r.to); })[0];
+  var busy=huurConflict(c,from,to);
   if(busy){ paintClash(busy); toast(t.nwClash); return; }
   if(cid==="new"){
     name=$("nwName").value.trim(); if(!name){ $("nwName").focus(); return; }
