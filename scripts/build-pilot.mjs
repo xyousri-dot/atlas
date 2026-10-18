@@ -1,5 +1,5 @@
 import {mkdirSync,copyFileSync,readFileSync,writeFileSync} from 'node:fs';
-import {testEnvironment} from './test-environment.mjs';
+import {testEnvironment,testAdmin} from './test-environment.mjs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
@@ -12,5 +12,6 @@ const result=spawnSync(process.execPath,['--test',...tests],{cwd:root,stdio:'inh
 if(result.status!==0)process.exit(result.status||1);
 const out=new URL('../pilot-dist/',import.meta.url);mkdirSync(out,{recursive:true});
 writeFileSync(new URL('index.html',out),testEnvironment(readFileSync(new URL('../index.html',import.meta.url),'utf8')));
+writeFileSync(new URL('admin.html',out),testAdmin(readFileSync(new URL('../admin.html',import.meta.url),'utf8')));
 for(const file of ['manifest.webmanifest','push-sw.js','atlas-icon.svg'])copyFileSync(new URL('../'+file,import.meta.url),new URL(file,out));
-console.log('Pilot built: tests passed; only four public app files copied.');
+console.log('Pilot built: tests passed; only five public app files copied.');

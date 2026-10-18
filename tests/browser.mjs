@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { readFileSync, mkdirSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 import { ROOT } from "./atlas.mjs";
+import {testAdmin} from '../scripts/test-environment.mjs';
 
 export const CHROME = process.env.CHROME_PATH || (process.platform==='darwin'?"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome":"/usr/bin/google-chrome");
 export const SCHERMEN = new URL("./schermen/", import.meta.url).pathname;
@@ -52,6 +53,7 @@ let server, browser, poort, STOPT = false;
 export async function start() {
   server = createServer((req, res) => {
     const pad = decodeURIComponent(req.url.split("?")[0]);
+    if (pad === '/admin.html') { res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(testAdmin(readFileSync(ROOT+'admin.html','utf8')));return; }
     if (pad === "/" || pad === "/index.html") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(process.env.ATLAS_HTML || ROOT + "index.html")); return; }
     const assets={'/manifest.webmanifest':'application/manifest+json','/push-sw.js':'application/javascript','/atlas-icon.svg':'image/svg+xml'};
     if(assets[pad]){res.writeHead(200,{'content-type':assets[pad]});res.end(readFileSync(ROOT+pad.slice(1)));return;}

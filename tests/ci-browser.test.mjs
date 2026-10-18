@@ -1,7 +1,28 @@
 import {test,before,after} from 'node:test';
 import assert from 'node:assert/strict';
 import * as B from './browser.mjs';
+import {TEST_PROJECT} from '../scripts/test-environment.mjs';
 before(B.start);after(B.stop);
+test('Admin authorization, safe rendering and clearing stale data',async()=>{
+  const {page}=await B.open();
+  try{
+    await page.evaluateOnNewDocument(key=>{
+      if(!location.pathname.endsWith('/admin.html'))return;
+      localStorage.setItem(key,JSON.stringify({access_token:'FAKE-TEST-TOKEN'}));
+      window.fetch=async()=>({ok:false,status:403});
+    },`atlas-test-${TEST_PROJECT}-session`);
+    await page.goto(new URL('/admin.html',page.url()).href);
+    await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Geen beheertoegang'));
+    assert.equal(await page.$eval('#overview',e=>e.hidden),true);
+    await page.evaluate(()=>{window.fetch=async()=>({ok:true,status:200,json:async()=>({total:1,signed_in_7_days:1,accounts:[{email:'<img src=x onerror=alert(1)>',created_at:'2026-01-01',last_sign_in_at:null,verified:true,cars:5,rentals:3}]})});});
+    await page.evaluate(()=>load());
+    assert.equal(await page.$$eval('#accounts img',e=>e.length),0);
+    assert.equal(await page.$eval('#overview',e=>e.hidden),false);
+    await page.evaluate(()=>{window.fetch=async()=>({ok:false,status:401});return load();});
+    assert.equal(await page.$eval('#overview',e=>e.hidden),true);
+    assert.equal(await page.$$eval('#accounts tr',e=>e.length),0);
+  }finally{await page.close();}
+});
 for(const language of ['fr','nl','ar'])test('Pilot screens and rental form: '+language,async()=>{
   const {page,fouten}=await B.open({taal:language});
   try{

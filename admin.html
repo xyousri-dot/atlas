@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><title>Atlas · Beheer testomgeving</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f4ee;color:#19212c;font:16px system-ui,sans-serif}header{padding:18px 24px;background:#fff;border-bottom:1px solid #dedbd4;display:flex;justify-content:space-between;gap:16px}a{color:#3046d5}main{max-width:1150px;margin:auto;padding:28px 24px}h1{margin:0 0 8px;font-size:28px}p{line-height:1.5}.tag{background:#fff0c2;padding:8px 12px;border-radius:8px}.cards{display:flex;gap:16px;flex-wrap:wrap;margin:24px 0}.card{background:#fff;border:1px solid #dedbd4;border-radius:14px;padding:20px;min-width:220px;flex:1}.card b{display:block;font-size:30px;margin-bottom:4px}button{font:inherit;font-weight:600;padding:12px 18px;border:1px solid #d5d8e1;border-radius:10px;background:#fff;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.table-wrap{overflow:auto;background:#fff;border:1px solid #dedbd4;border-radius:14px}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #eee}th{font-size:13px;color:#566070}#status{padding:16px;background:#fff;border-radius:12px}small{color:#566070}[hidden]{display:none!important}
+</style>
+<header><strong>Atlas · Beheer</strong><a href="./">Terug naar Atlas</a></header>
+<main><span class="tag">TESTOMGEVING · Alleen-lezen</span><h1 style="margin-top:20px">Accounts en aanmeldingen</h1>
+<p>Jouw eigen overzicht. Geen inzage in identiteitsdocumenten, contractinhoud of wachtwoorden.</p>
+<p id="status" role="status" aria-live="polite">Toegang controleren…</p>
+<div id="overview" hidden><div class="cards"><div class="card"><b id="total">—</b>Accounts</div><div class="card"><b id="recent">—</b>Ingelogd in afgelopen 7 dagen</div></div>
+<button id="refresh" type="button">Vernieuwen</button> <small id="updated"></small>
+<p><small>Laatste aanmelding is geen bewijs dat iemand nu actief is. Maximaal 200 nieuwste accounts; aantallen bovenaan gelden voor alle accounts.</small></p>
+<div class="table-wrap"><table><thead><tr><th>Account</th><th>Aangemaakt</th><th>Laatste aanmelding</th><th>E-mail bevestigd</th><th>Auto’s</th><th>Reserveringen</th></tr></thead><tbody id="accounts"></tbody></table></div></div>
+<p id="signin" hidden><a href="./">Open Atlas en log in met je beheerdersaccount</a>. Kom daarna terug naar deze pagina.</p>
+</main><script>
+const config=__ATLAS_TEST_ADMIN_CONFIG__;
+const $=id=>document.getElementById(id);
+function clearOverview(){ $('overview').hidden=true;$('accounts').replaceChildren();$('total').textContent='—';$('recent').textContent='—'; }
+function date(value){if(!value)return 'Nog niet aangemeld';const d=new Date(value);return Number.isNaN(d.getTime())?'—':d.toLocaleString('nl-NL');}
+async function load(){
+  clearOverview();$('signin').hidden=true;$('refresh').disabled=true;
+  let session;try{session=JSON.parse(localStorage.getItem(config.sessionKey)||'null');}catch{}
+  if(!session?.access_token){$('status').textContent='Log eerst in bij Atlas. Alleen het aangewezen beheerdersaccount heeft toegang.';$('signin').hidden=false;$('refresh').disabled=false;return;}
+  const stop=new AbortController(),timer=setTimeout(()=>stop.abort(),12000);
+  try{
+    const res=await fetch(config.url+'/rest/v1/rpc/atlas_admin_accounts',{method:'POST',headers:{apikey:config.key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{}',signal:stop.signal,cache:'no-store'});
+    if(!res.ok){$('status').textContent=res.status===401?'Je sessie is verlopen. Log opnieuw in bij Atlas.':res.status===403?'Geen beheertoegang. Dit overzicht is alleen voor de aangewezen Atlas-beheerder.':'Beheer is nog niet beschikbaar. Probeer later opnieuw.';$('signin').hidden=true;if(res.status===401)$('signin').hidden=false;return;}
+    const data=await res.json();
+    $('total').textContent=String(data.total);$('recent').textContent=String(data.signed_in_7_days);
+    for(const u of data.accounts){const tr=document.createElement('tr');for(const value of [u.email,date(u.created_at),date(u.last_sign_in_at),u.verified?'Ja':'Nee',u.cars,u.rentals]){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);}$('accounts').appendChild(tr);}
+    $('overview').hidden=false;$('status').textContent=data.accounts.length?'Beheertoegang bevestigd. Dit zijn uitsluitend accounts uit de testomgeving.':'Nog geen accounts in de testomgeving.';$('updated').textContent='Bijgewerkt om '+new Date().toLocaleTimeString('nl-NL');
+  }catch{$('status').textContent='Verbinding niet gelukt. Er worden geen oude accountgegevens getoond.';}
+  finally{clearTimeout(timer);$('refresh').disabled=false;}
+}
+$('refresh').addEventListener('click',load);
+window.addEventListener('storage',e=>{if(e.key===config.sessionKey||e.key===null)load();});
+load();
+</script></html>

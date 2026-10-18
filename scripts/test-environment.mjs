@@ -24,7 +24,8 @@ export function testEnvironment(html) {
   if(start<0||end<0)throw Error('Push boundary not found');
   html=html.slice(0,start)+"async function phoneAPI(){throw Error(phoneText().pending);}\n"+html.slice(end);
   html=html.replaceAll('"atlas-ocrkey"',`"atlas-test-${TEST_PROJECT}-ocrkey"`);
-  replace('</style>', '</style><div role="status" style="padding:8px;text-align:center;background:#fff0c2;color:#332800;font-weight:700">TEST · Données fictives uniquement · Alleen testgegevens · بيانات تجريبية فقط</div>');
+  replace('</style>', '</style><div role="status" style="padding:8px;text-align:center;background:#fff0c2;color:#332800;font-weight:700">TEST · Données fictives uniquement · Alleen testgegevens · بيانات تجريبية فقط · <a href="./admin.html">Atlas beheer</a></div>');
   if(html.includes('mimpyfbitoiotxuqoymj')||html.includes('sb_publishable_ULPcv7mCZw'))throw Error('Live database reference leaked into test output');
   return html;
 }
+export function testAdmin(html){return html.replace('__ATLAS_TEST_ADMIN_CONFIG__',JSON.stringify({url:TEST_URL,key:TEST_KEY,sessionKey:`atlas-test-${TEST_PROJECT}-session`}));}

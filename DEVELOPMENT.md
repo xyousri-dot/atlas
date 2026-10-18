@@ -5,7 +5,7 @@
 - Vercel project: **atlas-phone-pilot**, team **xyousri-9529s-projects** only.
 - Git-connected deployments must be **Preview**. `main` deployments are disabled in vercel.json; the build also refuses `VERCEL_ENV=production`.
 - The stable phone-pilot alias is not automatically reassigned by preview builds.
-- Build output is an allowlist of four public files. Tests, backend code, screenshots, local notes and credentials are excluded.
+- Build output is an allowlist of five public files (including the separate admin page). Tests, backend code, screenshots, local notes and credentials are excluded.
 - No deployment token or database credentials are needed in these test jobs. They use fictitious local data, not customer accounts.
 
 ## Local checks
@@ -30,6 +30,13 @@ over. Use fictitious records only. RLS (row-level security) allows authenticated
 accounts to read/write only their own rows. SQL assertions checked own writes,
 cross-account reads/updates/inserts and rollback cleanup. Anonymous REST reads
 and writes are denied (401/42501); invalid credentials are rejected.
+
+`admin.html` is a read-only test account overview. Its public page does not grant
+access: `atlas_admin_accounts()` checks the signed-in identity against a server-only
+allowlist and requires confirmed email. Ordinary users cannot read or change that
+allowlist. The function returns account metadata and counts, never documents,
+passwords or rental contents. Last sign-in is not live activity. Provision admin
+access only in atlas-test, with explicit approval.
 
 Important limits: separate test login and refresh/persistence still need a real
 test account. Test push sending is deliberately disabled, and the cloud OCR
