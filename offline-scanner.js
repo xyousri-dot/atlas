@@ -15,6 +15,8 @@
  const aiBase=aiLees,spaceBase=ocrSpaceTekst;
  aiLees=async function(files){if(!navigator.onLine){AIFOUT='offline';return null;}if(window.ATLAS_AI_SCAN_ENABLED!==true){AIFOUT='local';return null;}return aiBase(files);};
  ocrSpaceTekst=async function(){return navigator.onLine?spaceBase.apply(this,arguments):'';};
+ const lampBase=tekenAILamp;
+ tekenAILamp=function(){if(window.ATLAS_AI_SCAN_ENABLED===true)return lampBase();const lamp=$('nwAILamp');if(!lamp)return;lamp.textContent=({fr:'Lecture locale · vérifiez les données après le scan',nl:'Lokale lezer · controleer de gegevens na het scannen',ar:'قارئ محلي · تحقق من البيانات بعد المسح'})[L];lamp.style.color='var(--brand)';lamp.onclick=null;};
  // Try the bundled text engine before the slower custom character search.
  // Only accept machine-readable lines that pass the existing check digits.
  const mrzBase=readMRZ,fastReads=new WeakMap();
