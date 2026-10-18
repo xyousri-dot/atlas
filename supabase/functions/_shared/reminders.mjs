@@ -3,8 +3,9 @@ export function localDay(now=new Date()) {
 }
 function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T12:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s;}
 export function reminderSummary(rows,day=localDay()) {
-  const counts={maintenance:0,documents:0,late:0};
+  const counts={maintenance:0,documents:0,late:0,departures:0,dossiers:0,balances:0,deposits:0};
   const days=d=>Math.round((Date.parse(d)-Date.parse(day))/86400000);
+  const clients=new Map(rows.filter(r=>r.path.startsWith('clients/')).map(r=>[r.path.slice(8),r.data||{}]));
   for(const {path,data:c} of rows){
     if(path.startsWith('vehicles/')){
       for(const t of c.maintenance||[]){
@@ -14,14 +15,30 @@ export function reminderSummary(rows,day=localDay()) {
       }
       for(const key of ['insuranceUntil','inspectionUntil','vignetteUntil'])if(validDate(c[key])&&days(c[key])<=30)counts.documents++;
     }
-    if(path.startsWith('rentals/')&&!c.cancelled&&c.depart&&!c.retour&&validDate(c.to)&&c.to<day)counts.late++;
+    if(path.startsWith('rentals/')&&!c.cancelled){
+      if(c.depart&&!c.retour&&validDate(c.to)&&c.to<day)counts.late++;
+      if(!c.depart&&!c.retour&&validDate(c.from)&&c.from<=day){
+        counts.departures++;
+        const client=clients.get(c.clientId)||{};
+        if(!client.docNumber||!client.licenceNumber)counts.dossiers++;
+      }
+      const rentPaid=(c.payments||[]).filter(p=>p.kind==='rent').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      if(validDate(c.from)&&c.from<=day&&Number(c.total||0)>rentPaid)counts.balances++;
+      const cautionPaid=(c.payments||[]).filter(p=>p.kind==='caution').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const cautionClosed=Number(c.cautionReturned||0)+Number(c.cautionHeld||0);
+      if(c.retour&&!c.released&&validDate(c.limit)&&c.limit<=day&&cautionPaid>cautionClosed)counts.deposits++;
+    }
   }
   return counts;
 }
 export function summaryPayload(counts,language='fr') {
   const total=Object.values(counts).reduce((a,n)=>a+n,0);
   if(!total)return null;
-  const body=({fr:`${total} point(s) à vérifier : entretien ${counts.maintenance}, documents ${counts.documents}, retours en retard ${counts.late}. Ouvrez Atlas.`,nl:`${total} aandachtspunt(en): onderhoud ${counts.maintenance}, documenten ${counts.documents}, te late retouren ${counts.late}. Open Atlas.`,ar:`${total} تنبيه: صيانة ${counts.maintenance}، وثائق ${counts.documents}، تأخر ${counts.late}. افتح Atlas.`})[language]||`${total} rappel(s). Ouvrez Atlas.`;
+  const body=({
+    fr:`${total} point(s) : départs ${counts.departures}, dossiers ${counts.dossiers}, paiements ${counts.balances}, cautions ${counts.deposits}, entretien ${counts.maintenance}, documents ${counts.documents}, retards ${counts.late}.`,
+    nl:`${total} punten: vertrek ${counts.departures}, dossiers ${counts.dossiers}, betalingen ${counts.balances}, borgen ${counts.deposits}, onderhoud ${counts.maintenance}, documenten ${counts.documents}, te laat ${counts.late}.`,
+    ar:`${total} تنبيه: تسليم ${counts.departures}، ملفات ${counts.dossiers}، دفعات ${counts.balances}، ضمانات ${counts.deposits}، صيانة ${counts.maintenance}، وثائق ${counts.documents}، تأخير ${counts.late}.`
+  })[language]||`${total} rappel(s). Ouvrez Atlas.`;
   return {body,tag:'atlas-daily',url:'./'};
 }
 export function validSubscription(s){

@@ -58,11 +58,18 @@ test('Eén bewuste tik registreert en plant test; fouten geven nooit valse ontva
   if(scenario==='test-fails'){assert.equal(status.textContent,a.phoneGuideText().testError);assert.equal(manage.open,true);assert.equal(on.hidden,true);}
  }
 });
-test('Achtergrondcontrole telt onderhoud, documenten en echte te late retouren zonder persoonsgegevens',()=>{
- const rows=[{path:'vehicles/c',data:{km:119500,maintenance:[{dueKm:120000},{dueKm:130000},{dueKm:1,completedAt:'2026-01-01'}],insuranceUntil:'2026-10-18',inspectionUntil:'2026-13-01'}},{path:'rentals/r',data:{clientName:'SECRET NAME',depart:{},to:'2026-10-16'}},{path:'rentals/x',data:{depart:{},retour:{},to:'2026-10-16'}}];
- const counts=reminderSummary(rows,'2026-10-17');assert.deepEqual(counts,{maintenance:1,documents:1,late:1});
+test('Achtergrondcontrole telt tijd- en geldrisico’s zonder persoonsgegevens',()=>{
+ const rows=[
+  {path:'vehicles/c',data:{km:119500,maintenance:[{dueKm:120000},{dueKm:130000},{dueKm:1,completedAt:'2026-01-01'}],insuranceUntil:'2026-10-18',inspectionUntil:'2026-13-01'}},
+  {path:'clients/ready',data:{docNumber:'AA1',licenceNumber:'L1'}},
+  {path:'rentals/late',data:{clientName:'SECRET NAME',depart:{},to:'2026-10-16',from:'2026-10-10',total:600,payments:[{kind:'rent',amount:600}]}},
+  {path:'rentals/back',data:{clientId:'ready',depart:{},retour:{},from:'2026-10-10',to:'2026-10-12',limit:'2026-10-17',caution:3000,payments:[{kind:'rent',amount:500},{kind:'caution',amount:3000}],total:500}},
+  {path:'rentals/start',data:{clientId:'missing',from:'2026-10-17',to:'2026-10-20',total:900,payments:[]}},
+  {path:'rentals/done',data:{depart:{},retour:{},released:true,from:'2026-10-10',to:'2026-10-12',limit:'2026-10-14',total:400,payments:[{kind:'rent',amount:400},{kind:'caution',amount:2000}],cautionReturned:2000}}
+ ];
+ const counts=reminderSummary(rows,'2026-10-17');assert.deepEqual(counts,{maintenance:1,documents:1,late:1,departures:1,dossiers:1,balances:1,deposits:1});
  for(const l of ['fr','nl','ar'])assert.ok(!JSON.stringify(summaryPayload(counts,l)).includes('SECRET'));
- assert.equal(summaryPayload({maintenance:0,documents:0,late:0}),null);
+ assert.equal(summaryPayload({maintenance:0,documents:0,late:0,departures:0,dossiers:0,balances:0,deposits:0}),null);
  // Use historical dates: future Morocco offset predictions differ between ICU/tzdata releases.
  // Test both the ordinary UTC+1 boundary and the Ramadan UTC+0 exception.
  assert.equal(localDay(new Date('2025-01-15T23:30:00Z')),'2025-01-16');
