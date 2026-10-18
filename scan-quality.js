@@ -6,6 +6,7 @@ function scanQualityText(){return ({
  ar:{service:'القارئ المتقدم غير متاح. قد يخطئ القارئ المحلي. قارن الاسم والأرقام والتواريخ مع الصورة قبل التأكيد.',conflict:'القراءات متعارضة. احتفظنا بالمعلومات السابقة. تحقق أن الوثيقة لنفس الشخص.',manual:'تم الاحتفاظ بتصحيحاتك. راجع بقية الحقول قبل التأكيد.',invalid:'بعض القيم غير ممكنة أو غير مؤكدة. صححها بمقارنتها بالوثيقة.',error:'لم تنجح القراءة. التقط صورة واضحة دون انعكاس تظهر فيها الزوايا الأربع. يمكنك إدخال المعلومات يدوياً.'}
  })[L];}
 function scanQualityNotice(text){
+ if(text&&text===scanQualityText().service&&(AIFOUT==='local'||AIFOUT==='offline')){if($('nwScanAI'))$('nwScanAI').hidden=true;text=({fr:'Lecture locale sur cet appareil. Comparez le nom, les numéros et les dates avec la photo avant de valider.',nl:'Lokaal gelezen op dit toestel. Vergelijk naam, nummers en datums met de foto voordat je bevestigt.',ar:'تمت القراءة على جهازك. قارن الاسم والأرقام والتواريخ مع الصورة قبل التأكيد.'})[L];}
  var stat=$('nwScanStat');if(!stat)return;
  var note=$('scanQualityNotice');if(!note){note=el('p','fine');note.id='scanQualityNotice';note.setAttribute('role','status');stat.parentNode.insertBefore(note,stat.nextSibling);}note.textContent=text;note.hidden=!text;
 }

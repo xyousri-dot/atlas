@@ -4,6 +4,7 @@ import { readFileSync, mkdirSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 import { ROOT } from "./atlas.mjs";
 import {testAdmin} from '../scripts/test-environment.mjs';
+import {dirname,resolve} from 'node:path';
 
 export const CHROME = process.env.CHROME_PATH || (process.platform==='darwin'?"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome":"/usr/bin/google-chrome");
 export const SCHERMEN = new URL("./schermen/", import.meta.url).pathname;
@@ -53,6 +54,9 @@ let server, browser, poort, STOPT = false;
 export async function start() {
   server = createServer((req, res) => {
     const pad = decodeURIComponent(req.url.split("?")[0]);
+    if(process.env.ATLAS_HTML&&(/^\/scan-assets\/[a-zA-Z0-9_.\/-]+$/.test(pad)||['/push-sw.js','/offline-cache.js','/offline-scanner.js','/offline-manifest.json'].includes(pad))&&!pad.includes('..')){
+      try{const type=pad.endsWith('.wasm')?'application/wasm':pad.endsWith('.json')?'application/json':pad.endsWith('.js')?'application/javascript':'application/octet-stream';res.writeHead(200,{'content-type':type});res.end(readFileSync(resolve(dirname(process.env.ATLAS_HTML),'.'+pad)));}catch{res.writeHead(404);res.end();}return;
+    }
     if (pad === '/admin.html') { res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(testAdmin(readFileSync(ROOT+'admin.html','utf8')));return; }
     if (pad === "/" || pad === "/index.html") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(process.env.ATLAS_HTML || ROOT + "index.html")); return; }
     if(pad==='/warranty-rules.mjs'){res.writeHead(200,{'content-type':'application/javascript'});res.end(readFileSync(ROOT+'supabase/functions/_shared/warranty.mjs'));return;}
