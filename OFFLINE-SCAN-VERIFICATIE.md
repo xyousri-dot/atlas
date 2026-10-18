@@ -23,6 +23,7 @@
 - Ook de volledige fictieve scanhandeling (niet alleen tekstherkenning) is zonder internet doorlopen: naam, nummer en geboortedatum correct, menselijke bevestiging blijft uit. Circa 1,6 seconde op deze laptop.
 - Eerste online installatie ontdekte een beveiligingsredirect: publieke bundelbestanden gebruiken nu de bestaande aanmelding van dezelfde site. Beveiliging niet uitgezet. Dit is als nagebootste previewbeveiliging toegevoegd aan de browsertest.
 - De Linux-proef ontdekte I/1-verwarring in een Frans paspoortnummer. Gerichte correctie gebruikt uitsluitend het door France Titres beschreven Franse nummerformaat en behoudt controlecijfers en menselijke controle. Deze regel geldt niet voor andere landen.
+- Die proef leest ook een controlecijfer soms fout. Er worden geen controlecijfers berekend ter vervanging van de foto. Als de herlezing niet lukt en de oude lezer vervolgens een nummer met een ongeldig Frans formaat teruggeeft, blijft het nummer leeg voor handmatige invoer. Acceptatie: correct lezen óf zichtbaar weigeren, nooit een aangetoond tegenstrijdig nummer invullen. Dit is geen bewijs van perfecte herkenning op Linux.
 - Pushbestemmingen, contractschermen, registratie en garantiedossier blijven slagen in de browsertests.
 
 ## Open punten

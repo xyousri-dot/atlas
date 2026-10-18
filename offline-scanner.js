@@ -19,7 +19,7 @@
  tekenAILamp=function(){if(window.ATLAS_AI_SCAN_ENABLED===true)return lampBase();const lamp=$('nwAILamp');if(!lamp)return;lamp.textContent=({fr:'Lecture locale · vérifiez les données après le scan',nl:'Lokale lezer · controleer de gegevens na het scannen',ar:'قارئ محلي · تحقق من البيانات بعد المسح'})[L];lamp.style.color='var(--brand)';lamp.onclick=null;};
  // Try the bundled text engine before the slower custom character search.
  // Only accept machine-readable lines that pass the existing check digits.
- const mrzBase=readMRZ,fastReads=new WeakMap();
+ const mrzBase=readMRZ,fastReads=new WeakMap(),frenchIssuers=new WeakSet();
  window.atlasLocalMRZ=function(text){
   const rows=mrzRegelsUit(text);
   // France Titres: French passport numbers have 2 digits, 2 letters, 5 digits.
@@ -38,7 +38,7 @@
  readMRZ=async function(blob,opts){
   let hit=null;try{
    if(!fastReads.has(blob))fastReads.set(blob,(async()=>{const img=await blobImg(blob);const canvases=kaartVoorOcr(img).slice(0,2);for(const canvas of canvases){
-    const text=await tesseractTekst(canvas,()=>{});let read=atlasLocalMRZ(text);if(read)return {...read,docShaky:true,altShaky:true};
+    const text=await tesseractTekst(canvas,()=>{});if(mrzRegelsUit(text).some(r=>r.startsWith('P<FRA')))frenchIssuers.add(blob);let read=atlasLocalMRZ(text);if(read)return {...read,docShaky:true,altShaky:true};
     // A second view is read, not a calculated/replaced check digit. Enlarge the
     // document footer so small check digits and repeated < get another chance.
     const footer=document.createElement('canvas');footer.width=canvas.width*2;footer.height=Math.round(canvas.height*.9);footer.getContext('2d').drawImage(canvas,0,canvas.height*.55,canvas.width,canvas.height*.45,0,0,footer.width,footer.height);
@@ -46,7 +46,11 @@
    }return null;})());
    hit=await fastReads.get(blob);
   }catch{}
-  return hit||mrzBase(blob,opts);
+  hit=hit||await mrzBase(blob,opts);
+  // A checksum can pass by coincidence. Do not let the old fallback silently
+  // restore a number that contradicts a known issuing-country format.
+  if(hit?.kind==='passport'&&frenchIssuers.has(blob)&&!/^\d{2}[A-Z]{2}\d{5}$/.test(hit.docNumber||''))return {...hit,docNumber:'',altNumber:'',docRaw:'',docShaky:true,noNumber:true};
+  return hit;
  };
  window.atlasOfflineRequest=async function(type){
   if(!navigator.serviceWorker||!window.isSecureContext)throw Error('secure-site-required');
