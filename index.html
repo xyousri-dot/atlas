@@ -8985,8 +8985,8 @@ function phoneGuideText(){return ({
   nl:{start:'Mijn meldingen aanzetten',ready:'Zet meldingen aan en geef toestemming. Een test wordt automatisch ingepland.',install:'Op iPhone: open Atlas in Safari → Delen → Zet op beginscherm → Voeg toe. Open daarna het Atlas-pictogram en kom hier terug. iOS 16.4 of nieuwer vereist.',installButton:'Bekijk iPhone-stappen',error:'Activeren niet afgerond. Controleer je verbinding en probeer opnieuw. Ontvangst is nog niet bevestigd.',testError:'Apparaat aangemeld, maar de test is niet ingepland. Probeer « Test versturen ».',checking:'Bezig met activeren…',manage:'Dit apparaat beheren'},
   ar:{start:'تفعيل تنبيهاتي',ready:'فعّل التنبيهات واسمح بالإشعارات. ستتم برمجة اختبار تلقائياً.',install:'على iPhone: افتح Atlas في Safari ← مشاركة ← إضافة إلى الشاشة الرئيسية. افتح أيقونة Atlas ثم عد إلى هنا. يلزم iOS 16.4 أو أحدث.',installButton:'خطوات iPhone',error:'لم يكتمل التفعيل. تحقق من الاتصال وحاول مجدداً. الاستلام غير مؤكد بعد.',testError:'تم تسجيل الجهاز لكن الاختبار لم يُبرمج. أعد المحاولة بزر الاختبار.',checking:'جارٍ التفعيل…',manage:'إدارة هذا الجهاز'}
 })[L];}
-function phoneBound(promise){
-  return new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(Error('worker-timeout'));},8000);Promise.resolve(promise).then(function(value){clearTimeout(timer);resolve(value);},function(error){clearTimeout(timer);reject(error);});});
+function phoneBound(promise,timeout){
+  return new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(Error('worker-timeout'));},timeout||8000);Promise.resolve(promise).then(function(value){clearTimeout(timer);resolve(value);},function(error){clearTimeout(timer);reject(error);});});
 }
 async function phoneDiagnostic(local){
   var reg=await phoneBound(navigator.serviceWorker.register('./push-sw.js'));await phoneBound(reg.update());
@@ -9015,14 +9015,14 @@ function phonePanel(){
   on.addEventListener('click',async function(){if(on.disabled)return;var state=phoneStartState();if(state!=='ready'){status.textContent=state==='install'?guide.install:tx[state]||guide.error;return;}on.disabled=true;status.textContent=guide.checking;try{
     /* Keep the system permission request directly inside the deliberate tap,
        before network awaits: iPhone requires a user gesture. */
-    var permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(permission!=='granted'){status.textContent=tx.denied;return;}
+    var permission=Notification.permission==='granted'?'granted':await phoneBound(Notification.requestPermission(),30000);if(permission!=='granted'){status.textContent=tx.denied;return;}
     var config=await phoneAPI('config');if(!config.publicKey)throw new Error(tx.pending);
-    await navigator.serviceWorker.register('./push-sw.js');var reg=await navigator.serviceWorker.ready;
+    await phoneBound(navigator.serviceWorker.register('./push-sw.js'));var reg=await phoneBound(navigator.serviceWorker.ready);
     var key=Uint8Array.from(atob(config.publicKey.replace(/-/g,'+').replace(/_/g,'/')),function(c){return c.charCodeAt(0);});
-    var sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+    var sub=await phoneBound(reg.pushManager.getSubscription())||await phoneBound(reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key}),30000);
     await phoneAPI('subscribe',{subscription:sub.toJSON(),language:L});status.textContent=tx.active;test.hidden=false;off.hidden=false;on.hidden=true;manage.hidden=false;
     try{await phoneAPI('test',{endpoint:sub.endpoint});status.textContent=tx.sent;}catch(e){status.textContent=guide.testError;manage.open=true;}
-  }catch(e){status.textContent=guide.error;}finally{on.disabled=false;}});
+  }catch(e){status.textContent=e.message==='worker-timeout'&&Notification.permission==='default'?({fr:'La demande d’autorisation attend une réponse du navigateur. Sur iPhone, ouvrez Atlas depuis son icône sur l’écran d’accueil. Sur ordinateur, ouvrez Atlas dans Safari ou Chrome et autorisez les notifications.',nl:'De browser wacht nog op toestemming. Open Atlas op iPhone via het pictogram op je beginscherm. Open Atlas op de computer in Safari of Chrome en sta meldingen toe.',ar:'المتصفح ينتظر الإذن. على iPhone افتح Atlas من أيقونة الشاشة الرئيسية. على الحاسوب افتحه في Safari أو Chrome واسمح بالإشعارات.'})[L]:guide.error;}finally{on.disabled=false;}});
   test.addEventListener('click',async function(){test.disabled=true;try{var reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(!sub)throw Error();await phoneAPI('test',{endpoint:sub.endpoint});status.textContent=tx.sent;}catch(e){status.textContent=tx.pending;}finally{test.disabled=false;}});
   off.addEventListener('click',async function(){off.disabled=true;try{var reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){await phoneAPI('unsubscribe',{endpoint:sub.endpoint});await sub.unsubscribe();}status.textContent=tx.removed;on.hidden=false;off.hidden=true;test.hidden=true;manage.hidden=true;manage.open=false;}catch(e){status.textContent=guide.error;}finally{off.disabled=false;}});
   if(location.protocol!=='file:'&&sbKlaar()&&navigator.serviceWorker){(async function(){try{var reg=await navigator.serviceWorker.getRegistration(),sub=reg&&await reg.pushManager.getSubscription();if(!sub)return;var result=await phoneAPI('status',{endpoint:sub.endpoint});if(result.registered){status.textContent=tx.active;on.hidden=true;off.hidden=false;test.hidden=false;manage.hidden=false;}}catch(e){}})();}
