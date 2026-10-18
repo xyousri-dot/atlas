@@ -37,7 +37,13 @@
  };
  readMRZ=async function(blob,opts){
   let hit=null;try{
-   if(!fastReads.has(blob))fastReads.set(blob,(async()=>{const img=await blobImg(blob);const canvases=kaartVoorOcr(img).slice(0,2);for(const canvas of canvases){const text=await tesseractTekst(canvas,()=>{});const read=atlasLocalMRZ(text);if(read)return {...read,docShaky:true,altShaky:true};}return null;})());
+   if(!fastReads.has(blob))fastReads.set(blob,(async()=>{const img=await blobImg(blob);const canvases=kaartVoorOcr(img).slice(0,2);for(const canvas of canvases){
+    const text=await tesseractTekst(canvas,()=>{});let read=atlasLocalMRZ(text);if(read)return {...read,docShaky:true,altShaky:true};
+    // A second view is read, not a calculated/replaced check digit. Enlarge the
+    // document footer so small check digits and repeated < get another chance.
+    const footer=document.createElement('canvas');footer.width=canvas.width*2;footer.height=Math.round(canvas.height*.9);footer.getContext('2d').drawImage(canvas,0,canvas.height*.55,canvas.width,canvas.height*.45,0,0,footer.width,footer.height);
+    const retry=await ocrLees(contrastGrijs(footer),()=>{},'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<');read=atlasLocalMRZ(retry);if(read)return {...read,docShaky:true,altShaky:true};
+   }return null;})());
    hit=await fastReads.get(blob);
   }catch{}
   return hit||mrzBase(blob,opts);
