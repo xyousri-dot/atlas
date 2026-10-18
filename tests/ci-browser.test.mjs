@@ -3,6 +3,21 @@ import assert from 'node:assert/strict';
 import * as B from './browser.mjs';
 import {TEST_PROJECT} from '../scripts/test-environment.mjs';
 before(B.start);after(B.stop);
+test('Account buttons explain missing fields without sending credentials',async()=>{
+  const {page}=await B.open({gegevens:{}});
+  try{
+    await page.evaluate(()=>{view='vSet';render();});
+    await page.click('#stCloudNieuw');
+    assert.match(await page.$eval('#stCloudStat',e=>e.textContent),/adresse e-mail/);
+    await page.type('#stCloudMail','test@example.invalid');
+    for(const button of ['stCloudNieuw','stCloudIn']){
+      await page.click('#'+button);
+      assert.match(await page.$eval('#stCloudStat',e=>e.textContent),/mot de passe/);
+      assert.equal(await page.evaluate(()=>document.activeElement.id),'stCloudWw');
+      assert.equal(await page.$eval('#'+button,e=>e.disabled),false);
+    }
+  }finally{await page.close();}
+});
 test('Admin authorization, safe rendering and clearing stale data',async()=>{
   const {page}=await B.open();
   try{

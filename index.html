@@ -10058,10 +10058,17 @@ if($("stCloudSave")) $("stCloudSave").addEventListener("click",async function(){
   sbBewaar(); SBSTAT=sbKlaar()?"aan":"uit"; tekenCloud(); toast(T().saved);
   if(sbKlaar()) await sbRond();
 });
+function cloudFormComplete(mail,ww){
+  if(mail && ww)return true;
+  var target=mail?$("stCloudWw"):$("stCloudMail"), status=$("stCloudStat");
+  status.setAttribute("role","alert");
+  status.textContent=({fr:mail?"Saisissez à nouveau votre mot de passe, puis cliquez sur « Créer un compte » pour vous inscrire, ou « Se connecter » si votre compte existe déjà.":"Saisissez votre adresse e-mail.",nl:mail?"Vul je wachtwoord opnieuw in. Kies ‘Account maken’ voor een nieuw account of ‘Aanmelden’ als je al een account hebt.":"Vul je e-mailadres in.",ar:mail?"أدخل كلمة المرور مجدداً، ثم اختر إنشاء حساب جديد أو تسجيل الدخول لحساب موجود.":"أدخل بريدك الإلكتروني."})[L];
+  status.style.color="var(--warn)";target.focus();return false;
+}
 if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
   var t=T(), knop=this, oud=knop.textContent;
   var mail=$("stCloudMail").value.trim(), ww=$("stCloudWw").value;
-  if(!mail || !ww) return;
+  if(!cloudFormComplete(mail,ww)) return;
   knop.disabled=true; knop.textContent=t.stCloudBezig;
   var uit=await sbAanmelden(mail,ww);
   knop.disabled=false; knop.textContent=oud;
@@ -10073,7 +10080,7 @@ if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
 if($("stCloudNieuw")) $("stCloudNieuw").addEventListener("click",async function(){
   var t=T(), knop=this, oud=knop.textContent;
   var mail=$("stCloudMail").value.trim(), ww=$("stCloudWw").value;
-  if(!mail || !ww) return;
+  if(!cloudFormComplete(mail,ww)) return;
   knop.disabled=true; knop.textContent=t.stCloudBezig;
   var uit=await sbNieuwAccount(mail,ww);
   knop.disabled=false; knop.textContent=oud; $("stCloudWw").value="";
