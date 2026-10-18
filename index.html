@@ -8996,12 +8996,12 @@ async function openNotificationTarget(){
       var close=el('button','btn ghost',tx.close);close.onclick=function(){panel.remove();history.replaceState(null,'',location.pathname+location.search);};panel.appendChild(close);
       if(!Array.isArray(result.items))throw Error('response');
       if(!result.items.length)panel.appendChild(el('p',null,tx.empty));
-      result.items.forEach(function(item){var docs={insuranceUntil:T().cwInsL,inspectionUntil:T().cwInspL,vignetteUntil:T().cwVigL};var b=el('button','btn ghost',(tx[item.kind]||item.kind)+' · '+item.label+(item.doc?' · '+(docs[item.doc]||''):''));b.style.cssText='display:block;width:100%;margin-top:12px';b.onclick=function(){panel.remove();location.hash=item.url.split('#')[1];};panel.appendChild(b);});document.body.appendChild(panel);return;
+      result.items.forEach(function(item){var docs={insuranceUntil:T().cwInsL,inspectionUntil:T().cwInspL,vignetteUntil:T().cwVigL};var title=item.kind==='warranties'?({fr:'Garantie',nl:'Garantie',ar:'الضمان'})[L]:(tx[item.kind]||item.kind);var b=el('button','btn ghost',title+' · '+item.label+(item.doc?' · '+(docs[item.doc]||''):''));b.style.cssText='display:block;width:100%;margin-top:12px';b.onclick=function(){panel.remove();location.hash=item.url.split('#')[1];};panel.appendChild(b);});document.body.appendChild(panel);return;
     }
     var item=(type==='vehicle'?CARS:type==='rental'?RENTALS:[]).find(function(x){return x.id===id;});
     if(!item||item.cancelled){notificationProblem(tx.missing,false);return;}
     if(type==='vehicle'){
-      openCar(item);var docFields={insuranceUntil:'cwIns',inspectionUntil:'cwInsp',vignetteUntil:'cwVig'};var focus=section==='documents'?$(docFields[p.get('doc')]||'cwIns'):$('notificationMaintenance');
+      openCar(item);var docFields={insuranceUntil:'cwIns',inspectionUntil:'cwInsp',vignetteUntil:'cwVig'};var focus=section==='documents'?$(docFields[p.get('doc')]||'cwIns'):section==='warranty'?($('warranty-'+p.get('wid'))||$('notificationWarranty')):$('notificationMaintenance');
       if(focus){focus.scrollIntoView({block:'center'});focus.setAttribute('tabindex','-1');focus.focus();}
     }else if(section==='balances'||section==='deposits'){receipt(item,item.retour?'retour':'depart');$('rTitle').textContent=tx[section];}
     else if(section==='dossiers')openNew(null,item);
@@ -9066,6 +9066,7 @@ function mountPhoneSettings(){
 function phonePanel(){
   var tx=phoneText(),root=el('div','card');root.id='phoneSettings';root.appendChild(el('h2','ch',tx.title));root.appendChild(el('p','fine',tx.help));var status=el('p','fine',tx.pending);status.setAttribute('aria-live','polite');root.appendChild(status);
   var guide=phoneGuideText(),state=phoneStartState();status.textContent=state==='install'?guide.install:state==='ready'?guide.ready:tx[state]||guide.error;
+  root.appendChild(el('p','fine',({fr:'Aussi : garanties bientôt à échéance et réclamations ouvertes.',nl:'Ook: garanties die binnenkort verlopen en open garantieclaims.',ar:'أيضاً: الضمانات التي تقترب من نهايتها والمطالبات المفتوحة.'})[L]));
   var on=el('button','btn',state==='install'?guide.installButton:guide.start),test=el('button','btn ghost',tx.test),off=el('button','btn ghost',tx.off),manage=el('details'),manageTitle=el('summary',null,guide.manage);on.type='button';root.appendChild(on);manage.appendChild(manageTitle);[test,off].forEach(function(b){b.type='button';manage.appendChild(b);});root.appendChild(manage);test.hidden=true;off.hidden=true;manage.hidden=true;
   var dx=phoneDiagnosticText(),diagnostic=el('button','btn ghost',dx.button),readReceipt=el('button','btn ghost',dx.read),health=el('p','fine');health.setAttribute('aria-live','polite');[diagnostic,readReceipt].forEach(function(b){b.type='button';manage.appendChild(b);b.addEventListener('click',async function(){if(b.disabled)return;b.disabled=true;health.textContent=guide.checking;try{var result=await phoneDiagnostic(b===diagnostic);health.textContent=(b===diagnostic?dx.local+result.local+'. ':'')+(result.receipt?dx.receipt+result.receipt.receivedAt+' · '+result.receipt.state:dx.none)+' '+dx.note;}catch(e){health.textContent=dx.error+String(e.message||'Error');}finally{b.disabled=false;}});});manage.appendChild(health);
   on.addEventListener('click',async function(){if(on.disabled)return;var state=phoneStartState();if(state!=='ready'){status.textContent=state==='install'?guide.install:tx[state]||guide.error;return;}on.disabled=true;status.textContent=guide.checking;try{
@@ -9153,6 +9154,7 @@ function paintCarSide(){
   if(pl.due>0){ var dl=el("div","row"); dl.style.cssText="margin-top:12px;border-top:1px solid rgba(255,255,255,.18);padding-top:10px"; dl.appendChild(el("span","k",t.plDue)); dl.appendChild(el("span","v",dh(pl.due))); h.appendChild(dl); }
   s.appendChild(h);
   s.appendChild(maintenancePanel(c));
+  if(typeof warrantyPanel==='function')s.appendChild(warrantyPanel(c));
   var more=el("button","link",CARMORE?t.plLess:t.plMore); more.type="button"; more.style.cssText="margin-top:10px";
   more.addEventListener("click",function(){ CARMORE=!CARMORE; paintCarSide(); });
   s.appendChild(more);
@@ -10792,3 +10794,5 @@ $("km").addEventListener("input",function(){ if(draft){ draft.km=this.value; dra
 $("fuel").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b||!draft) return; Array.prototype.forEach.call(this.children,function(x){ x.setAttribute("aria-pressed","false"); }); b.setAttribute("aria-pressed","true"); draft.fuel=b.dataset.v; updateVerdict(); refresh(); });
 window.addEventListener("resize",function(){ if(view==="vForm") sizeSig(); });
 </script>
+<script type="module" src="./vehicle-warranties.js"></script>
+<script src="./scan-quality.js"></script>

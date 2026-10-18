@@ -71,6 +71,27 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Battery warranty: invoice, correction, defect, claim and resolution survive reload without duplicate cost',async()=>{
+  const {page,fouten}=await B.open();
+  try{
+    await page.waitForFunction(()=>typeof warrantyPanel==='function');await page.evaluate(()=>openCar(car('c1')));
+    await page.click('#warrantyAdd summary');
+    for(const [label,value] of [['Pièce ou réparation','Batterie TEST'],['Fournisseur / garage','Garage TEST'],['Prix payé (DH, facultatif)','950'],['Référence de facture','FACT-TEST-1']])await page.type('#warrantyAdd input[aria-label="'+label+'"]',value);
+    await page.evaluate(()=>{document.querySelector('#warrantyAdd input[aria-label="Acheté ou remplacé le"]').value=plus(today(),-90);document.querySelector('#warrantyAdd input[aria-label="Garantie jusqu’au"]').value=plus(today(),30);const transfer=new DataTransfer();transfer.items.add(new File(['%PDF-1.4\nTEST ONLY'],'facture-test.pdf',{type:'application/pdf'}));document.querySelector('#warrantyAdd input[type=file]').files=transfer.files;});
+    await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').warranties?.length===1);
+    let saved=await page.evaluate(()=>car('c1').warranties[0]);assert.equal(saved.amount,950);assert.equal(saved.invoice.name,'facture-test.pdf');assert.match(saved.invoice.data,/^data:application\/pdf;base64,/);
+    assert.equal(await page.evaluate(()=>EXP.length),1);
+    await page.click('#notificationWarranty > .card button.link');
+    await page.$eval('#warrantyAdd input[aria-label="Fournisseur / garage"]',e=>e.value='Garage CORRIGÉ');await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').warranties[0].supplier==='Garage CORRIGÉ');
+    assert.equal(await page.evaluate(()=>car('c1').warranties.length),1);assert.equal(await page.evaluate(()=>car('c1').warranties[0].invoice.name),'facture-test.pdf');
+    await page.click('#notificationWarranty > .card details summary');
+    await page.evaluate(()=>{document.querySelector('#notificationWarranty input[aria-label="Date réelle de la panne"]').value=today();document.querySelector('#notificationWarranty input[aria-label="Kilométrage à la panne"]').value='40100';});
+    await page.type('#notificationWarranty input[aria-label="Panne constatée"]','Ne démarre plus');await page.click('#notificationWarranty > .card details button');
+    await page.waitForFunction(()=>car('c1').warranties[0].claim?.status==='open');
+    await page.click('#notificationWarranty > .card details summary');await page.type('#notificationWarranty input[aria-label="Résultat : remplacé, remboursé ou refusé"]','Remplacée sous garantie');await page.click('#notificationWarranty > .card details button');await page.waitForFunction(()=>car('c1').warranties[0].claim.status==='closed');
+    await page.evaluate(async()=>{await reload();openCar(car('c1'));});assert.match(await page.$eval('#notificationWarranty',e=>e.textContent),/Remplacée sous garantie/);assert.equal(await page.evaluate(()=>EXP.length),1);assert.deepEqual(fouten,[]);
+  }finally{await page.close();}
+});
 test('Account buttons explain missing fields without sending credentials',async()=>{
   const {page}=await B.open({gegevens:{}});
   try{

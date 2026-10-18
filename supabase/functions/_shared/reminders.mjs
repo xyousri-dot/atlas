@@ -1,13 +1,15 @@
+import {warrantyStatus} from './warranty.mjs';
 export function localDay(now=new Date()) {
   return new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Casablanca',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
 }
 function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T12:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s;}
 export function reminderSummary(rows,day=localDay()) {
-  const counts={maintenance:0,documents:0,late:0,departures:0,dossiers:0,balances:0,deposits:0};
+  const counts={maintenance:0,documents:0,late:0,departures:0,dossiers:0,balances:0,deposits:0,warranties:0};
   const days=d=>Math.round((Date.parse(d)-Date.parse(day))/86400000);
   const clients=new Map(rows.filter(r=>r.path.startsWith('clients/')).map(r=>[r.path.slice(8),r.data||{}]));
   for(const {path,data:c} of rows){
     if(path.startsWith('vehicles/')){
+      counts.warranties+=(c.warranties||[]).filter(w=>['soon','claim'].includes(warrantyStatus(c,w,day))).length;
       for(const t of c.maintenance||[]){
         if(t.completedAt)continue;
         const kmKnown=c.km!==null&&c.km!==''&&Number.isFinite(Number(c.km));
@@ -42,6 +44,8 @@ export function reminderItems(rows,day=localDay()) {
       const url='./#atlas='+ (vehicle?'vehicle':'rental')+'&id='+encodeURIComponent(id)+'&section='+section;
       if(kind==='documents'){
         for(const doc of ['insuranceUntil','inspectionUntil','vignetteUntil'])if(validDate(row.data[doc])&&(Date.parse(row.data[doc])-Date.parse(day))/86400000<=30)items.push({kind,id,doc,label:row.data.model||id,url:url+'&doc='+doc});
+      }else if(kind==='warranties'){
+        for(const w of row.data.warranties||[])if(['soon','claim'].includes(warrantyStatus(row.data,w,day)))items.push({kind,id,label:(row.data.model||id)+' · '+w.label,url:'./#atlas=vehicle&id='+encodeURIComponent(id)+'&section=warranty&wid='+encodeURIComponent(w.id)});
       }else items.push({kind,id,label:vehicle?(row.data.model||id):(row.data.code||id),url});
     }
   }
@@ -51,9 +55,9 @@ export function summaryPayload(counts,language='fr',items=[]) {
   const total=Object.values(counts).reduce((a,n)=>a+n,0);
   if(!total)return null;
   const body=({
-    fr:`${total} point(s) : départs ${counts.departures}, dossiers ${counts.dossiers}, paiements ${counts.balances}, cautions ${counts.deposits}, entretien ${counts.maintenance}, documents ${counts.documents}, retards ${counts.late}.`,
-    nl:`${total} punten: vertrek ${counts.departures}, dossiers ${counts.dossiers}, betalingen ${counts.balances}, borgen ${counts.deposits}, onderhoud ${counts.maintenance}, documenten ${counts.documents}, te laat ${counts.late}.`,
-    ar:`${total} تنبيه: تسليم ${counts.departures}، ملفات ${counts.dossiers}، دفعات ${counts.balances}، ضمانات ${counts.deposits}، صيانة ${counts.maintenance}، وثائق ${counts.documents}، تأخير ${counts.late}.`
+    fr:`${total} point(s) : garanties ${counts.warranties||0}, départs ${counts.departures}, dossiers ${counts.dossiers}, paiements ${counts.balances}, cautions ${counts.deposits}, entretien ${counts.maintenance}, documents ${counts.documents}, retards ${counts.late}.`,
+    nl:`${total} punten: garantie ${counts.warranties||0}, vertrek ${counts.departures}, dossiers ${counts.dossiers}, betalingen ${counts.balances}, borgen ${counts.deposits}, onderhoud ${counts.maintenance}, documenten ${counts.documents}, te laat ${counts.late}.`,
+    ar:`${total} تنبيه: ضمان ${counts.warranties||0}، تسليم ${counts.departures}، ملفات ${counts.dossiers}، دفعات ${counts.balances}، ضمانات ${counts.deposits}، صيانة ${counts.maintenance}، وثائق ${counts.documents}، تأخير ${counts.late}.`
   })[language]||`${total} rappel(s). Ouvrez Atlas.`;
   return {body,tag:'atlas-daily',url:items.length===1?items[0].url:'./#atlas=alerts'};
 }

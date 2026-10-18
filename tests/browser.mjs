@@ -55,6 +55,9 @@ export async function start() {
     const pad = decodeURIComponent(req.url.split("?")[0]);
     if (pad === '/admin.html') { res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(testAdmin(readFileSync(ROOT+'admin.html','utf8')));return; }
     if (pad === "/" || pad === "/index.html") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(process.env.ATLAS_HTML || ROOT + "index.html")); return; }
+    if(pad==='/warranty-rules.mjs'){res.writeHead(200,{'content-type':'application/javascript'});res.end(readFileSync(ROOT+'supabase/functions/_shared/warranty.mjs'));return;}
+    if(pad==='/vehicle-warranties.js'){res.writeHead(200,{'content-type':'application/javascript'});res.end(readFileSync(ROOT+'vehicle-warranties.js'));return;}
+    if(pad==='/scan-quality.js'){res.writeHead(200,{'content-type':'application/javascript'});res.end(readFileSync(ROOT+'scan-quality.js'));return;}
     const assets={'/manifest.webmanifest':'application/manifest+json','/push-sw.js':'application/javascript','/atlas-icon.svg':'image/svg+xml'};
     if(assets[pad]){res.writeHead(200,{'content-type':assets[pad]});res.end(readFileSync(ROOT+pad.slice(1)));return;}
     res.writeHead(404); res.end();

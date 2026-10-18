@@ -106,7 +106,7 @@ test('Achtergrondcontrole telt tijd- en geldrisico’s zonder persoonsgegevens',
   {path:'rentals/start',data:{clientId:'missing',from:'2026-10-17',to:'2026-10-20',total:900,payments:[]}},
   {path:'rentals/done',data:{depart:{},retour:{},released:true,from:'2026-10-10',to:'2026-10-12',limit:'2026-10-14',total:400,payments:[{kind:'rent',amount:400},{kind:'caution',amount:2000}],cautionReturned:2000}}
  ];
- const counts=reminderSummary(rows,'2026-10-17');assert.deepEqual(counts,{maintenance:1,documents:1,late:1,departures:1,dossiers:1,balances:1,deposits:1});
+ const counts=reminderSummary(rows,'2026-10-17');assert.deepEqual(counts,{maintenance:1,documents:1,late:1,departures:1,dossiers:1,balances:1,deposits:1,warranties:0});
  for(const l of ['fr','nl','ar'])assert.ok(!JSON.stringify(summaryPayload(counts,l)).includes('SECRET'));
  assert.equal(summaryPayload({maintenance:0,documents:0,late:0,departures:0,dossiers:0,balances:0,deposits:0}),null);
  // Use historical dates: future Morocco offset predictions differ between ICU/tzdata releases.
