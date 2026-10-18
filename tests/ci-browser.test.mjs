@@ -5,13 +5,14 @@ import {TEST_PROJECT} from '../scripts/test-environment.mjs';
 import {readFileSync} from 'node:fs';
 const appSource=readFileSync(process.env.ATLAS_HTML||new URL('../index.html',import.meta.url),'utf8');
 const sessionKey=appSource.match(/SBSKEY="([^"]+)"/)?.[1];
-async function notificationPage(language='fr',pad='/'){
+async function notificationPage(language='fr',pad='/',scanMock=null){
   const data=B.testgegevens();data['vehicles/c1'].maintenance=[{id:'m1',label:'Courroie test',dueKm:120000}];data['rentals/cancelled']={...data['rentals/r1'],cancelled:true};
   return B.open({taal:language,gegevens:data,pad,beforeNavigate:async page=>{
     await page.evaluateOnNewDocument(key=>{localStorage.setItem(key,JSON.stringify({access_token:'FAKE-TEST-TOKEN',user:{id:'test-owner'}}));},sessionKey);
     await page.setRequestInterception(true);
     page.on('request',req=>{
       if(req.url().includes('.supabase.co/')){
+        if(req.url().includes('/functions/v1/atlas-scan')&&scanMock){if(req.method()==='POST')scanMock.calls++;return req.respond({status:req.method()==='OPTIONS'?200:scanMock.status,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(scanMock.body)});}
         const json=req.url().includes('/rest/v1/atlas')?Object.entries(data).map(([path,value])=>({path,data:value})):req.url().includes('/functions/v1/atlas-push')?{items:[{kind:'documents',label:'Dacia Logan',doc:'inspectionUntil',url:'./#atlas=vehicle&id=c1&section=documents&doc=inspectionUntil'}]}:{};
         return req.respond({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(json)});
       }return req.continue();
@@ -71,6 +72,20 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Paid scan first; one attempt; outage falls back to local; correction and human review preserved',{skip:!process.env.ATLAS_HTML},async()=>{
+ const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:'id_voor',achternaam:'TEST',voornamen:'SAMIRA',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]}]}};
+ const {page}=await notificationPage('fr','/',mock);
+ try{
+  await page.waitForFunction(()=>window.ATLAS_AI_SCAN_ENABLED===true);
+  await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';window.localReads=0;soortVanFoto=async()=>{localReads++;return {soort:'cin',zijde:'achter'};};verwerkKeuze=async()=>{$('cvName').value='LOCAL TEST';$('cvDocNo').value='AB123456';};});
+  await page.evaluate(()=>snelScan([new File(['test'],'fictive.png',{type:'image/png'})],'auto'));
+  assert.equal(mock.calls,1);assert.equal(await page.evaluate(()=>localReads),0);assert.equal(await page.evaluate(()=>SNELKLANT.name),'TEST SAMIRA');assert.equal(await page.evaluate(()=>scanBevestigd()),false);
+  await page.evaluate(()=>ctlZet('name','CORRECT TEST'));
+  mock.status=503;mock.body={error:'unavailable'};
+  await page.evaluate(()=>snelScan([new File(['test'],'fictive.png',{type:'image/png'})],'auto'));
+  assert.equal(mock.calls,2);assert.equal(await page.evaluate(()=>localReads),1);assert.equal(await page.evaluate(()=>SNELKLANT.name),'CORRECT TEST');assert.equal(await page.evaluate(()=>scanBevestigd()),false);
+ }finally{await page.close();}
+});
 test('Battery warranty: invoice, correction, defect, claim and resolution survive reload without duplicate cost',async()=>{
   const {page,fouten}=await B.open();
   try{
