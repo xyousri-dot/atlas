@@ -63,7 +63,10 @@ test('Achtergrondcontrole telt onderhoud, documenten en echte te late retouren z
  const counts=reminderSummary(rows,'2026-10-17');assert.deepEqual(counts,{maintenance:1,documents:1,late:1});
  for(const l of ['fr','nl','ar'])assert.ok(!JSON.stringify(summaryPayload(counts,l)).includes('SECRET'));
  assert.equal(summaryPayload({maintenance:0,documents:0,late:0}),null);
- assert.equal(localDay(new Date('2026-10-17T23:30:00Z')),'2026-10-18');
+ // Use historical dates: future Morocco offset predictions differ between ICU/tzdata releases.
+ // Test both the ordinary UTC+1 boundary and the Ramadan UTC+0 exception.
+ assert.equal(localDay(new Date('2025-01-15T23:30:00Z')),'2025-01-16');
+ assert.equal(localDay(new Date('2025-03-15T23:30:00Z')),'2025-03-15');
 });
 test('Pushabonnementen accepteren geen willekeurige servers of ongeldige sleutels',()=>{
  const s={endpoint:'https://fcm.googleapis.com/fcm/send/test',keys:{p256dh:'a'.repeat(87),auth:'a'.repeat(22)}};
