@@ -20,6 +20,9 @@
 - 16 browsertests geslaagd, inclusief downloaden, netwerk uit, volledig herladen, echte lokale tekstherkenning, fictief paspoort en detectie van ontbrekend cachebestand.
 - Fictief paspoort: naam, documentnummer, geboorte- en vervaldatum gelijk aan verwachte gegevens. Circa 1,3–1,4 seconde op deze laptop; geen representatieve iPhone- of vlootbenchmark.
 - Gesimuleerde netwerkuitval: geen AI- of externe OCR-oproep vanuit de offline routes.
+- Ook de volledige fictieve scanhandeling (niet alleen tekstherkenning) is zonder internet doorlopen: naam, nummer en geboortedatum correct, menselijke bevestiging blijft uit. Circa 1,6 seconde op deze laptop.
+- Eerste online installatie ontdekte een beveiligingsredirect: publieke bundelbestanden gebruiken nu de bestaande aanmelding van dezelfde site. Beveiliging niet uitgezet. Dit is als nagebootste previewbeveiliging toegevoegd aan de browsertest.
+- De Linux-proef ontdekte I/1-verwarring in een Frans paspoortnummer. Gerichte correctie gebruikt uitsluitend het door France Titres beschreven Franse nummerformaat en behoudt controlecijfers en menselijke controle. Deze regel geldt niet voor andere landen.
 - Pushbestemmingen, contractschermen, registratie en garantiedossier blijven slagen in de browsertests.
 
 ## Open punten

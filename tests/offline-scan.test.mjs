@@ -22,9 +22,11 @@ test('Prepared test scanner survives network loss and reload, performs real OCR 
   const confusion=await page.evaluate(t=>{const rows=[...t.mrz];rows[1]='I8ABI2345'+rows[1].slice(9);return atlasLocalMRZ(rows.join('\n'));},truth);assert.equal(confusion?.docNumber,truth.docNumber);
   const identity=await page.evaluate(async truth=>{
    const c=document.createElement('canvas');c.width=1400;c.height=750;const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,c.width,c.height);x.fillStyle='black';x.font='28px Arial';x.fillText('SPECIMEN TEST — FICTION — PASSPORT',60,80);x.font='44px monospace';truth.mrz.forEach((line,i)=>x.fillText(line,60,550+70*i));
-   const blob=await new Promise(r=>c.toBlob(r,'image/png'));const start=performance.now();const hit=await readMRZ(blob,{budget:3000});return {hit,ms:Math.round(performance.now()-start)};
+   const blob=await new Promise(r=>c.toBlob(r,'image/png'));const start=performance.now();const hit=await readMRZ(blob,{budget:3000});window.offlineFictiveFile=new File([blob],'SPECIMEN-TEST.png',{type:'image/png'});return {hit,ms:Math.round(performance.now()-start)};
   },truth);
   assert.equal(identity.hit?.docNumber,truth.docNumber);assert.equal(identity.hit?.birthDate,truth.birth);assert.equal(identity.hit?.expiry,truth.docExpiry);assert.equal(identity.hit?.fullName,truth.name);console.log('Offline fictive passport ms:',identity.ms);
+  const fullFlow=await page.evaluate(async()=>{openNew();const started=performance.now();await snelScan([offlineFictiveFile],'auto');return {name:SNELKLANT?.name,number:SNELKLANT?.docNumber,birth:SNELKLANT?.birth,reviewed:scanBevestigd(),ms:Math.round(performance.now()-started),mode:AIFOUT};});
+  assert.equal(fullFlow.name,truth.name);assert.equal(fullFlow.number,truth.docNumber);assert.equal(fullFlow.birth,truth.birth);assert.equal(fullFlow.reviewed,false);assert.equal(fullFlow.mode,'offline');console.log('Offline whole fictive scan flow ms:',fullFlow.ms);
   const status=await page.evaluate(()=>atlasOfflineRequest('atlas-offline-status'));assert.equal(status.ready,true);
   const suppressed=await page.evaluate(async()=>({ai:await aiLees([{}]),external:await ocrSpaceTekst(null)}));assert.equal(suppressed.ai,null);assert.equal(suppressed.external,'');
   await page.evaluate(()=>openNew());await page.screenshot({path:B.SCHERMEN+'offline-scan-ready.png'});
