@@ -2,9 +2,10 @@ import {test,before,after} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as B from './browser.mjs';
+process.env.ATLAS_SIMULATE_PREVIEW_AUTH='1';
 before(B.start);after(B.stop);
 test('Prepared test scanner survives network loss and reload, performs real OCR and never caches private routes',{skip:!process.env.ATLAS_HTML,timeout:180000},async()=>{
- const {page}=await B.open({beforeNavigate:async p=>{await p.setRequestInterception(true);p.on('request',r=>new URL(r.url()).hostname==='127.0.0.1'||r.url().startsWith('data:')||r.url().startsWith('blob:')?r.continue():r.abort());}});
+ const {page}=await B.open({beforeNavigate:async p=>{await p.setCookie({name:'atlas-preview-fixture',value:'1',domain:'127.0.0.1',path:'/'});await p.setRequestInterception(true);p.on('request',r=>new URL(r.url()).hostname==='127.0.0.1'||r.url().startsWith('data:')||r.url().startsWith('blob:')?r.continue():r.abort());}});
  try{
   await page.waitForFunction(()=>typeof atlasOfflineRequest==='function');
   await page.evaluate(()=>openNew());await page.click('#offlineScanPrepare');
@@ -18,6 +19,7 @@ test('Prepared test scanner survives network loss and reload, performs real OCR 
   const result=await page.evaluate(async()=>{const c=document.createElement('canvas');c.width=1100;c.height=200;const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,c.width,c.height);x.fillStyle='black';x.font='48px Arial';x.fillText('ATLAS TEST 123456',40,100);const start=performance.now();const text=await tesseractTekst(c,()=>{});return {text,ms:Math.round(performance.now()-start)};});
   assert.match(result.text,/ATLAS TEST 123456/);console.log('Offline OCR cold start ms:',result.ms);
   const truth=JSON.parse(readFileSync(new URL('./scanbank/waarheid.json',import.meta.url)))['pas-fra'];
+  const confusion=await page.evaluate(t=>{const rows=[...t.mrz];rows[1]='I8ABI2345'+rows[1].slice(9);return atlasLocalMRZ(rows.join('\n'));},truth);assert.equal(confusion?.docNumber,truth.docNumber);
   const identity=await page.evaluate(async truth=>{
    const c=document.createElement('canvas');c.width=1400;c.height=750;const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,c.width,c.height);x.fillStyle='black';x.font='28px Arial';x.fillText('SPECIMEN TEST — FICTION — PASSPORT',60,80);x.font='44px monospace';truth.mrz.forEach((line,i)=>x.fillText(line,60,550+70*i));
    const blob=await new Promise(r=>c.toBlob(r,'image/png'));const start=performance.now();const hit=await readMRZ(blob,{budget:3000});return {hit,ms:Math.round(performance.now()-start)};

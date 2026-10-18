@@ -20,9 +20,24 @@
  // Try the bundled text engine before the slower custom character search.
  // Only accept machine-readable lines that pass the existing check digits.
  const mrzBase=readMRZ,fastReads=new WeakMap();
+ window.atlasLocalMRZ=function(text){
+  const rows=mrzRegelsUit(text);
+  // France Titres: French passport numbers have 2 digits, 2 letters, 5 digits.
+  // https://www.plus.transformation.gouv.fr/experiences/4124633_passeport
+  // Scope by ISSUING country, not the holder's nationality. Keep checksum checks
+  // and the review flag; never apply a French format to other countries.
+  for(let i=0;i<rows.length-1;i++)if(rows[i].startsWith('P<FRA')&&rows[i].length===44&&rows[i+1].length===44){
+   const chars=rows[i+1].slice(0,9).split('');
+   for(const p of [0,1,4,5,6,7,8])chars[p]=chars[p]==='I'?'1':chars[p]==='O'?'0':chars[p];
+   for(const p of [2,3])chars[p]=chars[p]==='1'?'I':chars[p]==='0'?'O':chars[p];
+   const number=chars.join('');if(!/^\d{2}[A-Z]{2}\d{5}$/.test(number))return null;
+   rows[i+1]=number+rows[i+1].slice(9);return parseMRZ(rows.slice(i,i+2).join('\n'));
+  }
+  return plakMRZ(text);
+ };
  readMRZ=async function(blob,opts){
   let hit=null;try{
-   if(!fastReads.has(blob))fastReads.set(blob,(async()=>{const img=await blobImg(blob);const canvases=kaartVoorOcr(img).slice(0,2);for(const canvas of canvases){const text=await tesseractTekst(canvas,()=>{});const read=plakMRZ(text);if(read)return {...read,docShaky:true,altShaky:true};}return null;})());
+   if(!fastReads.has(blob))fastReads.set(blob,(async()=>{const img=await blobImg(blob);const canvases=kaartVoorOcr(img).slice(0,2);for(const canvas of canvases){const text=await tesseractTekst(canvas,()=>{});const read=atlasLocalMRZ(text);if(read)return {...read,docShaky:true,altShaky:true};}return null;})());
    hit=await fastReads.get(blob);
   }catch{}
   return hit||mrzBase(blob,opts);

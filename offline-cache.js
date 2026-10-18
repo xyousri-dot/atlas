@@ -2,7 +2,7 @@
    customer documents, subscriptions, authentication responses or arbitrary URLs. */
 const OFFLINE_CACHE='atlas-test-scan-v1';
 let offlineListPromise;
-function offlineList(){return offlineListPromise||(offlineListPromise=fetch(new URL('./offline-manifest.json',self.registration.scope),{cache:'no-store',credentials:'omit'}).then(r=>{if(!r.ok)throw Error('manifest');return r.json();}).then(x=>x.files));}
+function offlineList(){return offlineListPromise||(offlineListPromise=fetch(new URL('./offline-manifest.json',self.registration.scope),{cache:'no-store',credentials:'same-origin'}).then(r=>{if(!r.ok)throw Error('manifest');return r.json();}).then(x=>x.files).catch(e=>{offlineListPromise=null;throw e;}));}
 function safeOfflinePath(path){return /^\.\/(?:index\.html|offline-scanner\.js|offline-cache\.js|offline-manifest\.json|scan-quality\.js|vehicle-warranties\.js|warranty-rules\.mjs|manifest\.webmanifest|atlas-icon\.svg|scan-assets\/[a-zA-Z0-9_./-]+)$/.test(path)&&!path.includes('..');}
 self.addEventListener('message',event=>{
  if(!['atlas-offline-prepare','atlas-offline-status'].includes(event.data?.type)||!event.ports?.[0])return;
@@ -10,7 +10,7 @@ self.addEventListener('message',event=>{
   const cache=await caches.open(OFFLINE_CACHE);
   if(event.data.type==='atlas-offline-prepare'){
    const files=await offlineList();if(!Array.isArray(files)||!files.length||files.some(p=>!safeOfflinePath(p)))throw Error('allowlist');
-   for(const path of files){const url=new URL(path,self.registration.scope);const r=await fetch(url,{cache:'reload',credentials:'omit'});if(!r.ok||r.type==='opaque'||r.redirected)throw Error('download');await cache.put(url,r);}
+   for(const path of files){const url=new URL(path,self.registration.scope);const r=await fetch(url,{cache:'reload',credentials:'same-origin',redirect:'error'});if(!r.ok||r.type==='opaque'||r.redirected)throw Error('download');await cache.put(url,r);}
    // Mark readiness only after every required file is stored.
    await cache.put(new URL('./offline-ready',self.registration.scope),new Response(JSON.stringify(files)));
    // Old scanner bundles contain public assets only. Remove them only after a
