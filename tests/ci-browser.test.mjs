@@ -53,6 +53,7 @@ test('Notification errors stay visible; retry, deletion, cancelled rental and lo
 });
 test('Closed app restores destination saved by background worker, even when launched at home',async()=>{
   let {page}=await notificationPage();
+  await page.waitForFunction(()=>NOTIFICATION_READY&&!NOTIFICATION_RECOVERING,{timeout:12000});
   await page.evaluate(async()=>{
     await navigator.serviceWorker.register('./push-sw.js');await navigator.serviceWorker.ready;
     await new Promise((resolve,reject)=>{
