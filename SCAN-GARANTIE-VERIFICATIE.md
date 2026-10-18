@@ -12,8 +12,10 @@
 - Lokale build: 66 tests geslaagd, waaronder 147 bestaande scannergevallen.
 - Browsertests: 14 geslaagd, inclusief opslaan, corrigeren, factuur behouden, defect, afhandeling en herladen zonder dubbele kosten.
 - Testgegevens zijn fictief; geen echt identiteitsbewijs naar een scandienst verstuurd.
+- Previewcommit 819a5c4: Vercel gereed en GitHub-tests geslaagd. Alleen atlas-test/atlas-push bijgewerkt.
+- Online fictieve batterijgarantie opgeslagen, na herladen behouden; server retourneert exact één garantieherinnering met koppeling naar het juiste voertuig en garantiedossier. Koppeling opent vCar en het dossier bestaat.
 
 ## Niet voltooid / geen garantieclaim
 - De testfunctie atlas-scan retourneert HTTP 404 (functie ontbreekt). Een afzonderlijk geconfigureerde testscandienst is nodig voordat verbeterde herkenning in echte foto's kan worden aangetoond.
-- Nieuwe garantiewaarschuwingen hebben lokale tests; fysieke telefoonontvangst van deze nieuwe categorie moet na testpublicatie nog worden bevestigd. Eerdere algemene pushontvangst is door de gebruiker bevestigd.
+- Nieuwe garantiewaarschuwingen hebben lokale en online servertests; fysieke telefoonontvangst van deze nieuwe categorie moet nog worden bevestigd. Eerdere algemene pushontvangst is door de gebruiker bevestigd.
 - Productiesite en klantendatabase niet wijzigen voor deze opdracht.
