@@ -91,7 +91,10 @@ Deno.serve(async(req:Request)=>{
       const results=[];
       for(const device of devices){
         if(!validSubscription(device.subscription))continue;
-        for(const [i,message] of examples.entries())results.push(await send(device,{body:message,tag:'atlas-linked-example-'+i,url:urls[i]},'linked-example:'+localDay()+':'+i));
+        for(const [i,message] of examples.entries()){
+          if(body.startup===true&&i!==2)continue;
+          results.push(await send(device,{body:(body.startup===true?'TEST OUVERTURE · ':'')+message,tag:'atlas-linked-example-'+i,url:urls[i]},(body.startup===true?'startup-example:':'linked-example:')+localDay()+':'+i));
+        }
       }
       return reply({accepted:results.filter(x=>x==='accepted').length,failed:results.filter(x=>x==='failed').length,duplicate:results.filter(x=>x==='duplicate').length});
     }
