@@ -18,11 +18,12 @@ export function testEnvironment(html) {
     'function sbBasis(){ return SBSTANDAARD.url; }');
   replace('SB={ url:$("stCloudUrl").value.trim(), key:$("stCloudKey").value.trim() };',
     'SB={ url:SBSTANDAARD.url, key:SBSTANDAARD.key };');
-  // Push is deliberately unavailable until its separate test service is provisioned.
-  // Never reuse the live pilot gateway token, subscriptions or sending credentials.
-  const start=html.indexOf('async function phoneAPI('), end=html.indexOf('function phoneStartState()',start);
-  if(start<0||end<0)throw Error('Push boundary not found');
-  html=html.slice(0,start)+"async function phoneAPI(){throw Error(phoneText().pending);}\n"+html.slice(end);
+  // The preview has its own push tables, function and signing keys. Keep every
+  // browser call pinned to atlas-test; never reuse live devices or credentials.
+  replace("var gateway='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbXB5ZmJpdG9pb3R4dXFveW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNzA5OTksImV4cCI6MjEwNTc0Njk5OX0.bK17fj4W4BKESuvxdEAKCtCELprFIvUBbPl-LVhyl2o';",
+    `var gateway=${JSON.stringify(TEST_KEY)};`);
+  replace("if(!sbKlaar()||sbBasis()!=='https://mimpyfbitoiotxuqoymj.supabase.co')throw Error(phoneText().login);",
+    `if(!sbKlaar()||sbBasis()!==${JSON.stringify(TEST_URL)})throw Error(phoneText().login);`);
   html=html.replaceAll('"atlas-ocrkey"',`"atlas-test-${TEST_PROJECT}-ocrkey"`);
   replace('</style>', '</style><div role="status" style="padding:8px;text-align:center;background:#fff0c2;color:#332800;font-weight:700">TEST · Données fictives uniquement · Alleen testgegevens · بيانات تجريبية فقط · <a href="./admin.html">Atlas beheer</a></div>');
   if(html.includes('mimpyfbitoiotxuqoymj')||html.includes('sb_publishable_ULPcv7mCZw'))throw Error('Live database reference leaked into test output');

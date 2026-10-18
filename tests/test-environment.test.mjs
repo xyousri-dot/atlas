@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {testEnvironment,TEST_URL,TEST_PROJECT} from '../scripts/test-environment.mjs';
+import {testEnvironment,TEST_URL,TEST_PROJECT,TEST_KEY} from '../scripts/test-environment.mjs';
 import {scriptUit,statements} from './atlas.mjs';
 const source=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const output=testEnvironment(source);
@@ -10,7 +10,7 @@ test('preview contains only separate test database, no live gateway',()=>{
   assert.ok(output.includes(TEST_URL));
   assert.ok(!output.includes('mimpyfbitoiotxuqoymj'));
   assert.ok(!output.includes('sb_publishable_ULPcv7mCZw'));
-  assert.ok(!output.includes('var gateway='));
+  assert.ok(output.includes(`var gateway=${JSON.stringify(TEST_KEY)}`));
   assert.ok(output.includes('TEST · Données fictives'));
   statements(scriptUit(output)); // entire generated script must parse
 });
