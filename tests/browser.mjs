@@ -77,7 +77,7 @@ export async function stop() {
 /* Opent de app in een telefoonvenster. Geeft pagina + lijst met JS-fouten. */
 /* beweging: standaard uit (prefers-reduced-motion), zodat de gewone tests niet
    halverwege een animatie meten. De bewegingstests zetten hem aan. */
-export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390, hoog = 844, beweging = false, traag = 1, pad = "/" } = {}) {
+export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390, hoog = 844, beweging = false, traag = 1, pad = "/", beforeNavigate } = {}) {
   const page = await browser.newPage();
   await page.setViewport({ width: breed, height: hoog, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: beweging ? "no-preference" : "reduce" }]);
@@ -90,10 +90,13 @@ export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390
   /* Geen netwerk naar Supabase in tests: aanmelden staat uit, dus er gaat niets heen. */
   const storageKey = readFileSync(process.env.ATLAS_HTML || ROOT + 'index.html','utf8').match(/var LKEY2="([^"]+)";/)?.[1];
   if(!storageKey)throw Error('Missing local storage namespace');
-  await page.evaluateOnNewDocument((taal, gegevens, storageKey) => {
+  const sessionKey=readFileSync(process.env.ATLAS_HTML || ROOT + 'index.html','utf8').match(/SBSKEY="([^"]+)"/)?.[1];
+  await page.evaluateOnNewDocument((taal, gegevens, storageKey, sessionKey) => {
     localStorage.setItem("atlas-lang", taal);
     localStorage.setItem(storageKey, JSON.stringify(gegevens));
-  }, taal, gegevens, storageKey);
+    if(sessionKey)localStorage.removeItem(sessionKey);
+  }, taal, gegevens, storageKey,sessionKey);
+  if(beforeNavigate)await beforeNavigate(page);
   await page.goto(`http://127.0.0.1:${poort}${pad}`, { waitUntil: "networkidle2", timeout: 30000 });
   await page.waitForFunction(() => document.getElementById("dayBody")?.children.length > 0, { timeout: 10000 });
   return { page, fouten };

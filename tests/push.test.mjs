@@ -14,7 +14,7 @@ test('Waarschuwingen linken naar eigen auto of contract en samenvatting naar tak
 });
 test('Meldingslink wacht op aanmelden, weigert ander account en opent juiste actuele kaart',async()=>{
  const a=zandbak(scriptUit(leesHtml()));a.URLSearchParams=URLSearchParams;a.location={hash:'#atlas=vehicle&id=c1&section=documents'};a.NOTIFICATION_BUSY=false;a.NOTIFICATION_READY=true;
- const calls=[];a.toast=x=>calls.push('notice');a.naarAanmelden=()=>calls.push('login');a.sbKlaar=()=>false;
+ const calls=[];a.toast=x=>calls.push('notice');a.notificationProblem=()=>calls.push('notice');a.naarAanmelden=()=>calls.push('login');a.sbKlaar=()=>false;
  await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
  calls.length=0;a.sbKlaar=()=>true;a.SBSES={user:{id:'owner1'}};a.location.hash+='&owner=other';await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
  calls.length=0;a.location.hash='#atlas=vehicle&id=c1&section=documents';a.sbHaal=async()=>{calls.push('cloud');return true;};a.reload=async()=>{};a.CARS=[{id:'c1'}];a.$=id=>id==='cwIns'?{scrollIntoView(){calls.push('documents');},setAttribute(){},focus(){}}:null;a.openCar=x=>calls.push(x.id);
@@ -28,6 +28,19 @@ test('Een meldingslink opent pas nadat het opstartscherm klaar is',async()=>{
  let reads=0;a.sbKlaar=()=>true;a.sbHaal=async()=>{reads++;return true;};
  await a.openNotificationTarget();assert.equal(reads,0);
  const source=leesHtml();assert.ok(source.includes('notificationBootBase();NOTIFICATION_READY=true;openNotificationTarget();recoverNotificationTarget()'));
+});
+test('Telefoonwaarschuwing gebruikt dezelfde huursaldi en borginhouding als afrekening',()=>{
+ const rental={from:'2026-10-10',to:'2026-10-12',total:500,depart:{},retour:{},limit:'2026-10-17',payments:[{kind:'rent',amount:400},{kind:'refund',amount:-100},{kind:'caution',amount:1000}],cautionAppliedRent:200,cautionReturned:800,cautionWithheld:200};
+ assert.equal(reminderSummary([{path:'rentals/r',data:rental}],'2026-10-18').balances,0);
+ assert.equal(reminderSummary([{path:'rentals/r',data:rental}],'2026-10-18').deposits,0);
+ const unpaid={...rental,cautionAppliedRent:0,cautionReturned:700};
+ const counts=reminderSummary([{path:'rentals/r',data:unpaid}],'2026-10-18');assert.equal(counts.balances,1);assert.equal(counts.deposits,1);
+});
+test('Tweede melding tijdens laden krijgt voorrang; accountwissel opent geen oud dossier',async()=>{
+ const a=zandbak(scriptUit(leesHtml()));a.URLSearchParams=URLSearchParams;a.NOTIFICATION_READY=true;a.NOTIFICATION_BUSY=false;a.SBSES={user:{id:'a'}};a.sbKlaar=()=>true;a.location={hash:'#atlas=vehicle&id=first'};a.$=()=>null;a.CARS=[{id:'first'},{id:'last'}];a.reload=async()=>{};
+ let release;const opened=[];let count=0;a.sbHaal=()=>++count===1?new Promise(r=>{release=r;}):Promise.resolve(true);a.openCar=c=>opened.push(c.id);
+ const first=a.openNotificationTarget();a.location.hash='#atlas=vehicle&id=last';release(true);await first;await new Promise(r=>setTimeout(r,0));assert.deepEqual(opened,['last']);
+ opened.length=0;a.sbHaal=async()=>{a.SBSES={user:{id:'b'}};return true;};let login=0;a.naarAanmelden=()=>login++;a.toast=()=>{};await a.openNotificationTarget();assert.equal(login,1);assert.deepEqual(opened,[]);
 });
 import {leesHtml,scriptUit,zandbak} from './atlas.mjs';
 test('Instellingenrefresh bewaart lopende diagnose, account- of taalwissel vervangt paneel',()=>{

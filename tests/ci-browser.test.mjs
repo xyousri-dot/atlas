@@ -2,6 +2,73 @@ import {test,before,after} from 'node:test';
 import assert from 'node:assert/strict';
 import * as B from './browser.mjs';
 import {TEST_PROJECT} from '../scripts/test-environment.mjs';
+import {readFileSync} from 'node:fs';
+const appSource=readFileSync(process.env.ATLAS_HTML||new URL('../index.html',import.meta.url),'utf8');
+const sessionKey=appSource.match(/SBSKEY="([^"]+)"/)?.[1];
+async function notificationPage(language='fr',pad='/'){
+  const data=B.testgegevens();data['vehicles/c1'].maintenance=[{id:'m1',label:'Courroie test',dueKm:120000}];data['rentals/cancelled']={...data['rentals/r1'],cancelled:true};
+  return B.open({taal:language,gegevens:data,pad,beforeNavigate:async page=>{
+    await page.evaluateOnNewDocument(key=>{localStorage.setItem(key,JSON.stringify({access_token:'FAKE-TEST-TOKEN',user:{id:'test-owner'}}));},sessionKey);
+    await page.setRequestInterception(true);
+    page.on('request',req=>{
+      if(req.url().includes('.supabase.co/')){
+        const json=req.url().includes('/rest/v1/atlas')?Object.entries(data).map(([path,value])=>({path,data:value})):req.url().includes('/functions/v1/atlas-push')?{items:[{kind:'documents',label:'Dacia Logan',doc:'inspectionUntil',url:'./#atlas=vehicle&id=c1&section=documents&doc=inspectionUntil'}]}:{};
+        return req.respond({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(json)});
+      }return req.continue();
+    });
+  }});
+}
+for(const language of ['fr','nl','ar'])test('Notification destinations and cold startup: '+language,async()=>{
+  const {page,fouten}=await notificationPage(language,'/#atlas=vehicle&id=c1&section=documents&doc=inspectionUntil&owner=test-owner');
+  try{
+    await page.waitForFunction(()=>view==='vCar');
+    assert.equal(await page.$eval('#cwModel',e=>e.value),'Dacia Logan');
+    assert.equal(await page.evaluate(()=>document.activeElement.closest('input')?.id||document.activeElement.id),'cwInsp');
+    for(const [section,id,screen] of [['maintenance','c1','vCar'],['departures','r2','vCard'],['late','r3','vCard'],['dossiers','r2','vNew'],['balances','r3','vDone'],['deposits','r4','vDone']]){
+      await page.evaluate(async({section,id})=>{location.hash='atlas='+(id==='c1'?'vehicle':'rental')+'&id='+id+'&section='+section;await openNotificationTarget();},{section,id});
+      await page.waitForFunction(v=>view===v,{timeout:5000},screen);
+    }
+    await page.evaluate(()=>{location.hash='atlas=alerts';});await page.waitForSelector('#notificationAlerts button:nth-of-type(2)');
+    await page.click('#notificationAlerts button:nth-of-type(2)');await page.waitForFunction(()=>view==='vCar');
+    assert.equal(await page.evaluate(()=>document.activeElement.closest('input')?.id||document.activeElement.id),'cwInsp');
+    assert.deepEqual(fouten,[]);
+  }finally{await page.close();}
+});
+test('Notification errors stay visible; retry, deletion, cancelled rental and login',async()=>{
+  const {page,fouten}=await notificationPage();
+  try{
+    await page.evaluate(()=>{window.notificationOriginalRead=sbHaal;sbHaal=async()=>false;location.hash='atlas=vehicle&id=c1&section=documents';});
+    await page.waitForSelector('#notificationProblem');assert.equal(await page.$$eval('#notificationProblem button',x=>x.length),2);
+    await page.evaluate(()=>{sbHaal=window.notificationOriginalRead;});await page.click('#notificationProblem button');await page.waitForFunction(()=>view==='vCar');
+    assert.equal(await page.$('#notificationProblem'),null);
+    for(const hash of ['atlas=vehicle&id=deleted','atlas=rental&id=cancelled']){
+      await page.evaluate(hash=>{location.hash=hash;},hash);await page.waitForSelector('#notificationProblem');assert.match(await page.$eval('#notificationProblem',e=>e.textContent),/supprimé/);
+    }
+    await page.evaluate(()=>{sbAfmelden();location.hash='atlas=rental&id=r3&section=balances';});await page.waitForFunction(()=>view==='vSet');
+    assert.ok(await page.evaluate(()=>location.hash.includes('id=r3')));
+    await page.evaluate(()=>{SBSES={access_token:'FAKE-TEST-TOKEN',user:{id:'test-owner'}};naAanmelden();});await page.waitForFunction(()=>view==='vDone');
+    await page.evaluate(()=>{location.hash='atlas=vehicle&id=c1&owner=someone-else';});await page.waitForFunction(()=>view==='vSet');
+    assert.deepEqual(fouten,[]);
+  }finally{await page.close();}
+});
+test('Closed app restores destination saved by background worker, even when launched at home',async()=>{
+  let {page}=await notificationPage();
+  await page.evaluate(async()=>{
+    await navigator.serviceWorker.register('./push-sw.js');await navigator.serviceWorker.ready;
+    await new Promise((resolve,reject)=>{
+      const request=indexedDB.open('atlas-push-routing',1);request.onupgradeneeded=()=>request.result.createObjectStore('targets');request.onerror=()=>reject(request.error);
+      request.onsuccess=()=>{const db=request.result,tx=db.transaction('targets','readwrite');tx.objectStore('targets').put({url:location.origin+'/#atlas=vehicle&id=c1&section=documents&doc=vignetteUntil&owner=test-owner',at:Date.now()},'pending');tx.oncomplete=()=>{db.close();resolve();};};
+    });
+  });
+  await page.close();
+  const reopened=await notificationPage();page=reopened.page;
+  try{
+    await page.waitForFunction(()=>view==='vCar',{timeout:12000});
+    assert.equal(await page.$eval('#cwModel',e=>e.value),'Dacia Logan');
+    assert.equal(await page.evaluate(()=>document.activeElement.closest('input')?.id||document.activeElement.id),'cwVig');
+    assert.deepEqual(reopened.fouten,[]);
+  }finally{await page.close();}
+});
 before(B.start);after(B.stop);
 test('Account buttons explain missing fields without sending credentials',async()=>{
   const {page}=await B.open({gegevens:{}});

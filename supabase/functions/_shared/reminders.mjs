@@ -22,26 +22,26 @@ export function reminderSummary(rows,day=localDay()) {
         const client=clients.get(c.clientId)||{};
         if(!client.docNumber||!client.licenceNumber)counts.dossiers++;
       }
-      const rentPaid=(c.payments||[]).filter(p=>p.kind==='rent').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const rentPaid=Number(c.cautionAppliedRent||0)+(c.payments||[]).filter(p=>p.kind==='rent'||p.kind==='refund').reduce((sum,p)=>sum+Number(p.amount||0),0);
       if(validDate(c.from)&&c.from<=day&&Number(c.total||0)>rentPaid)counts.balances++;
       const cautionPaid=(c.payments||[]).filter(p=>p.kind==='caution').reduce((sum,p)=>sum+Number(p.amount||0),0);
-      const cautionClosed=Number(c.cautionReturned||0)+Number(c.cautionHeld||0);
+      const cautionClosed=Number(c.cautionReturned||0)+Number(c.cautionWithheld||0);
       if(c.retour&&!c.released&&validDate(c.limit)&&c.limit<=day&&cautionPaid>cautionClosed)counts.deposits++;
     }
   }
   return counts;
 }
 export function reminderItems(rows,day=localDay()) {
-  const items=[];
+  const items=[],clients=rows.filter(r=>r.path.startsWith('clients/'));
   for(const row of rows){
     if(!row.path.startsWith('vehicles/')&&!row.path.startsWith('rentals/'))continue;
     const id=row.path.split('/')[1],vehicle=row.path.startsWith('vehicles/');
-    const counts=reminderSummary([row,...rows.filter(r=>r.path.startsWith('clients/'))],day);
+    const counts=reminderSummary([row,...clients],day);
     for(const [kind,count] of Object.entries(counts))if(count){
       const section=kind==='documents'?'documents':kind==='maintenance'?'maintenance':kind;
       const url='./#atlas='+ (vehicle?'vehicle':'rental')+'&id='+encodeURIComponent(id)+'&section='+section;
       if(kind==='documents'){
-        for(const doc of ['insuranceUntil','inspectionUntil','vignetteUntil'])if(validDate(row.data[doc])&&(Date.parse(row.data[doc])-Date.parse(day))/86400000<=30)items.push({kind,id,label:(row.data.model||id)+' · '+doc,url:url+'&doc='+doc});
+        for(const doc of ['insuranceUntil','inspectionUntil','vignetteUntil'])if(validDate(row.data[doc])&&(Date.parse(row.data[doc])-Date.parse(day))/86400000<=30)items.push({kind,id,doc,label:row.data.model||id,url:url+'&doc='+doc});
       }else items.push({kind,id,label:vehicle?(row.data.model||id):(row.data.code||id),url});
     }
   }

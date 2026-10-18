@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 if(process.env.VERCEL_ENV==='production')throw Error('Production release requires a separate, explicitly approved release workflow.');
 const root=fileURLToPath(new URL('../',import.meta.url));
 console.log('Test runtime:',process.version,'ICU',process.versions.icu,'timezone data',process.versions.tz);
-const tests=['push','maintenance','rental-flow','availability','scanner','test-environment'].map(n=>'tests/'+n+'.test.mjs');
+const tests=['push','push-server','maintenance','rental-flow','availability','scanner','test-environment'].map(n=>'tests/'+n+'.test.mjs');
 const result=spawnSync(process.execPath,['--test',...tests],{cwd:root,stdio:'inherit'});
 if(result.status!==0)process.exit(result.status||1);
 const out=new URL('../pilot-dist/',import.meta.url);mkdirSync(out,{recursive:true});

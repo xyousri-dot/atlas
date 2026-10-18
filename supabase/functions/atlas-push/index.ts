@@ -1,4 +1,4 @@
-// LOCAL DRAFT: not deployed, no scheduler installed, no secrets generated.
+// Shared source for the isolated atlas-test service; customer release is separate.
 import {createClient} from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 import {localDay,reminderSummary,reminderItems,summaryPayload,validSubscription} from '../_shared/reminders.mjs';

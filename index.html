@@ -8971,33 +8971,45 @@ async function phoneAPI(action,data,retried){
   if(!res.ok)throw new Error(phoneText().pending);return res.json();
 }
 function notificationText(){return ({fr:{title:'Vos alertes',missing:'Cet élément a été supprimé ou ne fait pas partie de ce compte.',login:'Connectez-vous au compte qui a reçu cette alerte.',retry:'Impossible de charger les données. Vérifiez la connexion puis réessayez.',empty:'Aucune alerte active. Tout a peut-être déjà été traité.',maintenance:'Entretien',documents:'Documents',late:'Retour en retard',departures:'Départ',dossiers:'Dossier incomplet',balances:'Paiement',deposits:'Caution',close:'Fermer'},nl:{title:'Jouw waarschuwingen',missing:'Dit onderdeel is verwijderd of hoort niet bij dit account.',login:'Log in met het account dat deze melding ontving.',retry:'Gegevens laden lukt niet. Controleer de verbinding en probeer opnieuw.',empty:'Geen actieve waarschuwingen. De taken zijn mogelijk al afgehandeld.',maintenance:'Onderhoud',documents:'Documenten',late:'Te late retour',departures:'Vertrek',dossiers:'Onvolledig dossier',balances:'Betaling',deposits:'Borg',close:'Sluiten'},ar:{title:'تنبيهاتك',missing:'تم حذف العنصر أو لا ينتمي لهذا الحساب.',login:'سجل الدخول بالحساب الذي تلقى التنبيه.',retry:'تعذر تحميل البيانات. تحقق من الاتصال وأعد المحاولة.',empty:'لا توجد تنبيهات نشطة.',maintenance:'الصيانة',documents:'الوثائق',late:'تأخر الإرجاع',departures:'التسليم',dossiers:'ملف ناقص',balances:'الدفع',deposits:'الضمان',close:'إغلاق'}})[L];}
-var NOTIFICATION_BUSY=false,NOTIFICATION_READY=false;
+var NOTIFICATION_BUSY=false,NOTIFICATION_READY=false,NOTIFICATION_RETRY=false;
+function notificationProblem(message,retry){
+  var old=$('notificationProblem');if(old)old.remove();
+  var box=el('div','card');box.id='notificationProblem';box.setAttribute('role','alert');box.style.cssText='position:fixed;left:5%;right:5%;top:15%;z-index:160;background:white;padding:24px';box.appendChild(el('p',null,message));
+  if(retry){var button=el('button','btn',({fr:'Réessayer',nl:'Opnieuw proberen',ar:'إعادة المحاولة'})[L]);button.onclick=openNotificationTarget;box.appendChild(button);}
+  var close=el('button','btn ghost',notificationText().close);close.onclick=function(){box.remove();NOTIFICATION_RETRY=false;history.replaceState(null,'',location.pathname+location.search);};box.appendChild(close);document.body.appendChild(box);
+}
 async function openNotificationTarget(){
   if(NOTIFICATION_BUSY||NOTIFICATION_READY===false||location.hash.indexOf('#atlas=')!==0)return;
-  var p=new URLSearchParams(location.hash.slice(1)),type=p.get('atlas'),id=p.get('id'),section=p.get('section'),tx=notificationText();
+  var targetHash=location.hash,p=new URLSearchParams(targetHash.slice(1)),type=p.get('atlas'),id=p.get('id'),section=p.get('section'),tx=notificationText();
   if(!sbKlaar()){naarAanmelden();toast(tx.login);return;}
   if(p.get('owner')&&p.get('owner')!==((SBSES.user||{}).id||'')){naarAanmelden();toast(tx.login);return;}
-  NOTIFICATION_BUSY=true;
+  NOTIFICATION_BUSY=true;NOTIFICATION_RETRY=false;var account=((SBSES.user||{}).id||'');
   try{
-    if(!await sbHaal())throw Error('offline');await reload();
+    var problem=$('notificationProblem');if(problem)problem.remove();
+    if(!await sbHaal()){if(!sbKlaar()){naarAanmelden();toast(tx.login);return;}throw Error('offline');}await reload();
+    if(!sbKlaar()||account!==((SBSES.user||{}).id||'')){naarAanmelden();toast(tx.login);return;}
+    if(location.hash!==targetHash)return;
     var old=$('notificationAlerts');if(old)old.remove();
     if(type==='alerts'){
-      var result=await phoneAPI('reminders'),panel=el('div','card');panel.id='notificationAlerts';panel.style.cssText='position:fixed;inset:8%;z-index:150;overflow:auto;background:white;padding:24px';panel.setAttribute('role','dialog');panel.setAttribute('aria-label',tx.title);panel.appendChild(el('h2',null,tx.title));
+      var result=await phoneAPI('reminders');if(!sbKlaar()||account!==((SBSES.user||{}).id||'')){naarAanmelden();toast(tx.login);return;}if(location.hash!==targetHash)return;
+      var panel=el('div','card');panel.id='notificationAlerts';panel.style.cssText='position:fixed;inset:8%;z-index:150;overflow:auto;background:white;padding:24px';panel.setAttribute('role','dialog');panel.setAttribute('aria-label',tx.title);panel.appendChild(el('h2',null,tx.title));
       var close=el('button','btn ghost',tx.close);close.onclick=function(){panel.remove();history.replaceState(null,'',location.pathname+location.search);};panel.appendChild(close);
+      if(!Array.isArray(result.items))throw Error('response');
       if(!result.items.length)panel.appendChild(el('p',null,tx.empty));
-      result.items.forEach(function(item){var b=el('button','btn ghost',(tx[item.kind]||item.kind)+' · '+item.label);b.style.cssText='display:block;width:100%;margin-top:12px';b.onclick=function(){panel.remove();location.hash=item.url.split('#')[1];};panel.appendChild(b);});document.body.appendChild(panel);return;
+      result.items.forEach(function(item){var docs={insuranceUntil:T().cwInsL,inspectionUntil:T().cwInspL,vignetteUntil:T().cwVigL};var b=el('button','btn ghost',(tx[item.kind]||item.kind)+' · '+item.label+(item.doc?' · '+(docs[item.doc]||''):''));b.style.cssText='display:block;width:100%;margin-top:12px';b.onclick=function(){panel.remove();location.hash=item.url.split('#')[1];};panel.appendChild(b);});document.body.appendChild(panel);return;
     }
     var item=(type==='vehicle'?CARS:type==='rental'?RENTALS:[]).find(function(x){return x.id===id;});
-    if(!item){toast(tx.missing);return;}
+    if(!item||item.cancelled){notificationProblem(tx.missing,false);return;}
     if(type==='vehicle'){
       openCar(item);var docFields={insuranceUntil:'cwIns',inspectionUntil:'cwInsp',vignetteUntil:'cwVig'};var focus=section==='documents'?$(docFields[p.get('doc')]||'cwIns'):$('notificationMaintenance');
       if(focus){focus.scrollIntoView({block:'center'});focus.setAttribute('tabindex','-1');focus.focus();}
     }else if(section==='balances'||section==='deposits'){receipt(item,item.retour?'retour':'depart');$('rTitle').textContent=tx[section];}
     else if(section==='dossiers')openNew(null,item);
     else openCard(item);
-  }catch(e){toast(tx.retry);}finally{NOTIFICATION_BUSY=false;}
+  }catch(e){NOTIFICATION_RETRY=true;notificationProblem(tx.retry,true);}finally{NOTIFICATION_BUSY=false;if(location.hash!==targetHash&&location.hash.indexOf('#atlas=')===0)openNotificationTarget();}
 }
 window.addEventListener('hashchange',openNotificationTarget);
+window.addEventListener('online',function(){if(NOTIFICATION_RETRY)openNotificationTarget();});
 async function recoverNotificationTarget(){
   if(!navigator.serviceWorker||location.protocol==='file:')return;
   try{
