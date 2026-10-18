@@ -26,7 +26,7 @@
   // https://www.plus.transformation.gouv.fr/experiences/4124633_passeport
   // Scope by ISSUING country, not the holder's nationality. Keep checksum checks
   // and the review flag; never apply a French format to other countries.
-  for(let i=0;i<rows.length-1;i++)if(rows[i].startsWith('P<FRA')&&rows[i].length===44&&rows[i+1].length===44){
+  for(let i=0;i<rows.length-1;i++)if(rows[i].startsWith('P<FRA')&&rows[i].length>=44&&rows[i+1].length>=44){
    const chars=rows[i+1].slice(0,9).split('');
    for(const p of [0,1,4,5,6,7,8])chars[p]=chars[p]==='I'?'1':chars[p]==='O'?'0':chars[p];
    for(const p of [2,3])chars[p]=chars[p]==='1'?'I':chars[p]==='0'?'O':chars[p];
