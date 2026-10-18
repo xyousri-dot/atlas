@@ -39,7 +39,10 @@ export function reminderItems(rows,day=localDay()) {
     const counts=reminderSummary([row,...rows.filter(r=>r.path.startsWith('clients/'))],day);
     for(const [kind,count] of Object.entries(counts))if(count){
       const section=kind==='documents'?'documents':kind==='maintenance'?'maintenance':kind;
-      items.push({kind,id,label:vehicle?(row.data.model||id):(row.data.code||id),url:'./#atlas='+ (vehicle?'vehicle':'rental')+'&id='+encodeURIComponent(id)+'&section='+section});
+      const url='./#atlas='+ (vehicle?'vehicle':'rental')+'&id='+encodeURIComponent(id)+'&section='+section;
+      if(kind==='documents'){
+        for(const doc of ['insuranceUntil','inspectionUntil','vignetteUntil'])if(validDate(row.data[doc])&&(Date.parse(row.data[doc])-Date.parse(day))/86400000<=30)items.push({kind,id,label:(row.data.model||id)+' · '+doc,url:url+'&doc='+doc});
+      }else items.push({kind,id,label:vehicle?(row.data.model||id):(row.data.code||id),url});
     }
   }
   return items;

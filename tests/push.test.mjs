@@ -6,7 +6,7 @@ import {reminderSummary,reminderItems,summaryPayload,validSubscription,localDay}
 test('Waarschuwingen linken naar eigen auto of contract en samenvatting naar takenlijst',()=>{
  const rows=[{path:'vehicles/car 1',data:{model:'Clio',km:119500,maintenance:[{dueKm:120000}],insuranceUntil:'2026-10-18'}},{path:'rentals/r1',data:{from:'2026-10-17',total:500}}];
  const items=reminderItems(rows,'2026-10-17');
- assert.ok(items.some(x=>x.url==='./#atlas=vehicle&id=car%201&section=documents'));
+ assert.ok(items.some(x=>x.url==='./#atlas=vehicle&id=car%201&section=documents&doc=insuranceUntil'));
  assert.ok(items.some(x=>x.url==='./#atlas=vehicle&id=car%201&section=maintenance'));
  assert.ok(items.some(x=>x.url==='./#atlas=rental&id=r1&section=balances'));
  assert.equal(summaryPayload({documents:1},'fr',[items[0]]).url,items[0].url);
@@ -19,7 +19,7 @@ test('Meldingslink wacht op aanmelden, weigert ander account en opent juiste act
  calls.length=0;a.sbKlaar=()=>true;a.SBSES={user:{id:'owner1'}};a.location.hash+='&owner=other';await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
  calls.length=0;a.location.hash='#atlas=vehicle&id=c1&section=documents';a.sbHaal=async()=>{calls.push('cloud');return true;};a.reload=async()=>{};a.CARS=[{id:'c1'}];a.$=id=>id==='cwIns'?{scrollIntoView(){calls.push('documents');},setAttribute(){},focus(){}}:null;a.openCar=x=>calls.push(x.id);
  await a.openNotificationTarget();assert.deepEqual(calls,['cloud','c1','documents']);
- calls.length=0;a.location.hash='#atlas=rental&id=r1&section=balances';a.RENTALS=[{id:'r1',retour:{}}];a.receipt=(r,k)=>calls.push(r.id+':'+k);await a.openNotificationTarget();assert.deepEqual(calls,['cloud','r1:retour']);
+ calls.length=0;a.location.hash='#atlas=rental&id=r1&section=balances';a.RENTALS=[{id:'r1',retour:{}}];a.$=id=>id==='rTitle'?{textContent:''}:null;a.receipt=(r,k)=>calls.push(r.id+':'+k);await a.openNotificationTarget();assert.deepEqual(calls,['cloud','r1:retour']);
  calls.length=0;a.location.hash='#atlas=vehicle&id=deleted';await a.openNotificationTarget();assert.deepEqual(calls,['cloud','notice']);
  calls.length=0;a.sbHaal=async()=>false;await a.openNotificationTarget();assert.deepEqual(calls,['notice']);
 });

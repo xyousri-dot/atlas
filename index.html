@@ -8990,9 +8990,9 @@ async function openNotificationTarget(){
     var item=(type==='vehicle'?CARS:type==='rental'?RENTALS:[]).find(function(x){return x.id===id;});
     if(!item){toast(tx.missing);return;}
     if(type==='vehicle'){
-      openCar(item);var focus=section==='documents'?$('cwIns'):$('notificationMaintenance');
+      openCar(item);var docFields={insuranceUntil:'cwIns',inspectionUntil:'cwInsp',vignetteUntil:'cwVig'};var focus=section==='documents'?$(docFields[p.get('doc')]||'cwIns'):$('notificationMaintenance');
       if(focus){focus.scrollIntoView({block:'center'});focus.setAttribute('tabindex','-1');focus.focus();}
-    }else if(section==='balances'||section==='deposits')receipt(item,item.retour?'retour':'depart');
+    }else if(section==='balances'||section==='deposits'){receipt(item,item.retour?'retour':'depart');$('rTitle').textContent=tx[section];}
     else if(section==='dossiers')openNew(null,item);
     else openCard(item);
   }catch(e){toast(tx.retry);}finally{NOTIFICATION_BUSY=false;}
