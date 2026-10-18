@@ -31,7 +31,20 @@ export function reminderSummary(rows,day=localDay()) {
   }
   return counts;
 }
-export function summaryPayload(counts,language='fr') {
+export function reminderItems(rows,day=localDay()) {
+  const items=[];
+  for(const row of rows){
+    if(!row.path.startsWith('vehicles/')&&!row.path.startsWith('rentals/'))continue;
+    const id=row.path.split('/')[1],vehicle=row.path.startsWith('vehicles/');
+    const counts=reminderSummary([row,...rows.filter(r=>r.path.startsWith('clients/'))],day);
+    for(const [kind,count] of Object.entries(counts))if(count){
+      const section=kind==='documents'?'documents':kind==='maintenance'?'maintenance':kind;
+      items.push({kind,id,label:vehicle?(row.data.model||id):(row.data.code||id),url:'./#atlas='+ (vehicle?'vehicle':'rental')+'&id='+encodeURIComponent(id)+'&section='+section});
+    }
+  }
+  return items;
+}
+export function summaryPayload(counts,language='fr',items=[]) {
   const total=Object.values(counts).reduce((a,n)=>a+n,0);
   if(!total)return null;
   const body=({
@@ -39,7 +52,7 @@ export function summaryPayload(counts,language='fr') {
     nl:`${total} punten: vertrek ${counts.departures}, dossiers ${counts.dossiers}, betalingen ${counts.balances}, borgen ${counts.deposits}, onderhoud ${counts.maintenance}, documenten ${counts.documents}, te laat ${counts.late}.`,
     ar:`${total} تنبيه: تسليم ${counts.departures}، ملفات ${counts.dossiers}، دفعات ${counts.balances}، ضمانات ${counts.deposits}، صيانة ${counts.maintenance}، وثائق ${counts.documents}، تأخير ${counts.late}.`
   })[language]||`${total} rappel(s). Ouvrez Atlas.`;
-  return {body,tag:'atlas-daily',url:'./'};
+  return {body,tag:'atlas-daily',url:items.length===1?items[0].url:'./#atlas=alerts'};
 }
 export function validSubscription(s){
   try{

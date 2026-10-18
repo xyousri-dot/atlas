@@ -1,7 +1,7 @@
 // LOCAL DRAFT: not deployed, no scheduler installed, no secrets generated.
 import {createClient} from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
-import {localDay,reminderSummary,summaryPayload,validSubscription} from '../_shared/reminders.mjs';
+import {localDay,reminderSummary,reminderItems,summaryPayload,validSubscription} from '../_shared/reminders.mjs';
 
 const env=(name:string)=>Deno.env.get(name)||'';
 const db=createClient(env('SUPABASE_URL'),env('SUPABASE_SERVICE_ROLE_KEY'),{auth:{persistSession:false}});
@@ -9,6 +9,7 @@ const origins=env('ATLAS_PUSH_ORIGINS').split(',').filter(Boolean);
 const allowed=()=>env('ATLAS_PUSH_ENABLED')==='true'&&!!env('VAPID_PUBLIC_KEY')&&!!env('VAPID_PRIVATE_KEY')&&!!env('VAPID_SUBJECT');
 function check(result:any){if(result.error)throw new Error('storage');return result.data;}
 async function send(device:any,payload:any,key:string){
+  payload={...payload,url:(payload.url||'./#atlas=alerts')+((payload.url||'').includes('#')?'&':'#')+'owner='+encodeURIComponent(device.owner_id)};
   const claim=await db.from('atlas_push_deliveries').insert({device_id:device.id,delivery_key:key});
   if(claim.error?.code==='23505')return 'duplicate';
   check(claim);
@@ -56,9 +57,10 @@ Deno.serve(async(req:Request)=>{
         if(!byOwner.has(device.owner_id)){
           const rows=check(await db.from('atlas').select('path,data').eq('owner_id',device.owner_id).limit(1001));
           if(rows.length>1000)throw Error('agency-limit');
-          byOwner.set(device.owner_id,reminderSummary(rows,day));
+          byOwner.set(device.owner_id,{counts:reminderSummary(rows,day),items:reminderItems(rows,day)});
         }
-        const payload=summaryPayload(byOwner.get(device.owner_id),device.language);
+        const summary=byOwner.get(device.owner_id);
+        const payload=summaryPayload(summary.counts,device.language,summary.items);
         if(payload)results.push(await send(device,payload,'daily:'+day));
       }
       return reply({accepted:results.filter(x=>x==='accepted').length,failed:results.filter(x=>x==='failed').length});
@@ -68,9 +70,19 @@ Deno.serve(async(req:Request)=>{
     const {data,error}=await db.auth.getUser(token);
     if(error||!data.user)return reply({error:'unauthorized'},401);
     const owner=data.user.id;
+    if(body.action==='reminders'){
+      const rows=check(await db.from('atlas').select('path,data').eq('owner_id',owner).limit(1001));
+      if(rows.length>1000)return reply({error:'agency-limit'},503);
+      return reply({items:reminderItems(rows)});
+    }
     // Fixed, clearly labelled examples, available only in the isolated test project.
     if(body.action==='examples'&&env('SUPABASE_URL')==='https://manikkusokwysmdfhxtu.supabase.co'){
       const devices=check(await db.from('atlas_push_devices').select('*').eq('owner_id',owner));
+      const rows=check(await db.from('atlas').select('path,data').eq('owner_id',owner).limit(1000));
+      const vehicle=rows.find(r=>r.path.startsWith('vehicles/'));
+      const rental=rows.find(r=>r.path.startsWith('rentals/'));
+      const target=(row,section)=>row?'./#atlas='+(row.path.startsWith('vehicles/')?'vehicle':'rental')+'&id='+encodeURIComponent(row.path.split('/')[1])+'&section='+section:'./#atlas=alerts';
+      const urls=[target(vehicle,'maintenance'),target(vehicle,'documents'),target(rental,'balances')];
       const examples=[
         'TEST · Entretien : courroie à vérifier avant 120 000 km. Exemple fictif.',
         'TEST · Document : assurance à renouveler dans 7 jours. Exemple fictif.',
@@ -79,7 +91,7 @@ Deno.serve(async(req:Request)=>{
       const results=[];
       for(const device of devices){
         if(!validSubscription(device.subscription))continue;
-        for(const [i,message] of examples.entries())results.push(await send(device,{body:message,tag:'atlas-example-'+i,url:'./'},'example:'+localDay()+':'+i));
+        for(const [i,message] of examples.entries())results.push(await send(device,{body:message,tag:'atlas-linked-example-'+i,url:urls[i]},'linked-example:'+localDay()+':'+i));
       }
       return reply({accepted:results.filter(x=>x==='accepted').length,failed:results.filter(x=>x==='failed').length,duplicate:results.filter(x=>x==='duplicate').length});
     }

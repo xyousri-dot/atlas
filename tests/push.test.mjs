@@ -2,7 +2,27 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {reminderSummary,summaryPayload,validSubscription,localDay} from '../supabase/functions/_shared/reminders.mjs';
+import {reminderSummary,reminderItems,summaryPayload,validSubscription,localDay} from '../supabase/functions/_shared/reminders.mjs';
+test('Waarschuwingen linken naar eigen auto of contract en samenvatting naar takenlijst',()=>{
+ const rows=[{path:'vehicles/car 1',data:{model:'Clio',km:119500,maintenance:[{dueKm:120000}],insuranceUntil:'2026-10-18'}},{path:'rentals/r1',data:{from:'2026-10-17',total:500}}];
+ const items=reminderItems(rows,'2026-10-17');
+ assert.ok(items.some(x=>x.url==='./#atlas=vehicle&id=car%201&section=documents'));
+ assert.ok(items.some(x=>x.url==='./#atlas=vehicle&id=car%201&section=maintenance'));
+ assert.ok(items.some(x=>x.url==='./#atlas=rental&id=r1&section=balances'));
+ assert.equal(summaryPayload({documents:1},'fr',[items[0]]).url,items[0].url);
+ assert.equal(summaryPayload({documents:2},'fr',items).url,'./#atlas=alerts');
+});
+test('Meldingslink wacht op aanmelden, weigert ander account en opent juiste actuele kaart',async()=>{
+ const a=zandbak(scriptUit(leesHtml()));a.URLSearchParams=URLSearchParams;a.location={hash:'#atlas=vehicle&id=c1&section=documents'};a.NOTIFICATION_BUSY=false;
+ const calls=[];a.toast=x=>calls.push('notice');a.naarAanmelden=()=>calls.push('login');a.sbKlaar=()=>false;
+ await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
+ calls.length=0;a.sbKlaar=()=>true;a.SBSES={user:{id:'owner1'}};a.location.hash+='&owner=other';await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
+ calls.length=0;a.location.hash='#atlas=vehicle&id=c1&section=documents';a.sbHaal=async()=>{calls.push('cloud');return true;};a.reload=async()=>{};a.CARS=[{id:'c1'}];a.$=id=>id==='cwIns'?{scrollIntoView(){calls.push('documents');},setAttribute(){},focus(){}}:null;a.openCar=x=>calls.push(x.id);
+ await a.openNotificationTarget();assert.deepEqual(calls,['cloud','c1','documents']);
+ calls.length=0;a.location.hash='#atlas=rental&id=r1&section=balances';a.RENTALS=[{id:'r1',retour:{}}];a.receipt=(r,k)=>calls.push(r.id+':'+k);await a.openNotificationTarget();assert.deepEqual(calls,['cloud','r1:retour']);
+ calls.length=0;a.location.hash='#atlas=vehicle&id=deleted';await a.openNotificationTarget();assert.deepEqual(calls,['cloud','notice']);
+ calls.length=0;a.sbHaal=async()=>false;await a.openNotificationTarget();assert.deepEqual(calls,['notice']);
+});
 import {leesHtml,scriptUit,zandbak} from './atlas.mjs';
 test('Instellingenrefresh bewaart lopende diagnose, account- of taalwissel vervangt paneel',()=>{
  const a=zandbak(scriptUit(leesHtml()));let current=null,created=0;
