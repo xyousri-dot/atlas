@@ -68,6 +68,21 @@ Deno.serve(async(req:Request)=>{
     const {data,error}=await db.auth.getUser(token);
     if(error||!data.user)return reply({error:'unauthorized'},401);
     const owner=data.user.id;
+    // Fixed, clearly labelled examples, available only in the isolated test project.
+    if(body.action==='examples'&&env('SUPABASE_URL')==='https://manikkusokwysmdfhxtu.supabase.co'){
+      const devices=check(await db.from('atlas_push_devices').select('*').eq('owner_id',owner));
+      const examples=[
+        'TEST · Entretien : courroie à vérifier avant 120 000 km. Exemple fictif.',
+        'TEST · Document : assurance à renouveler dans 7 jours. Exemple fictif.',
+        'TEST · Paiement : location avec solde à encaisser. Exemple fictif.'
+      ];
+      const results=[];
+      for(const device of devices){
+        if(!validSubscription(device.subscription))continue;
+        for(const [i,message] of examples.entries())results.push(await send(device,{body:message,tag:'atlas-example-'+i,url:'./'},'example:'+localDay()+':'+i));
+      }
+      return reply({accepted:results.filter(x=>x==='accepted').length,failed:results.filter(x=>x==='failed').length,duplicate:results.filter(x=>x==='duplicate').length});
+    }
     if(body.action==='config')return reply({publicKey:env('VAPID_PUBLIC_KEY')});
     if(body.action==='status'){
       const device=check(await db.from('atlas_push_devices').select('id').eq('owner_id',owner).eq('endpoint',body.endpoint).maybeSingle());
