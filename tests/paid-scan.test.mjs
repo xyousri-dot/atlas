@@ -1,7 +1,8 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {createScanHandler,validatePhotos,validatedReading,scanSchema} from '../supabase/functions/_shared/scan-service.mjs';
+import {createScanHandler,validatePhotos,validatedReading,scanSchema,scanRequestBody} from '../supabase/functions/_shared/scan-service.mjs';
 const photo={type:'image/jpeg',data:Buffer.from([255,216,255,...new Array(40).fill(0)]).toString('base64')};
 const input={fotos:[photo],requestId:'fictional-request-123456'};
+test('Moroccan date instructions retain visible-date transcription and no invented defaults',()=>{const body=scanRequestBody([photo]);assert.match(body.system,/DD\.MM\.YYYY/);assert.match(body.system,/never substitute them/);assert.match(body.system,/never invent/);assert.equal(body.messages[0].content[1].source.data,photo.data);});
 const reading={fotos:[Object.fromEntries(Object.keys(scanSchema.properties.fotos.items.properties).map(k=>[k,k==='foto'?0:k==='soort'?'paspoort':k==='mrz'?[]:k==='achternaam'?'TEST':k==='geboortedatum'?'1990-03-04':'']))]};
 function setup(opt={}){let calls=0;const handler=createScanHandler({env:k=>({SUPABASE_URL:'https://manikkusokwysmdfhxtu.supabase.co',ANTHROPIC_API_KEY:'fake-unit-test-key'}[k]||''),authenticate:async t=>t==='fake-user'?'owner':null,reserve:async()=>opt.claim||'allowed',fetcher:async()=>{calls++;return new Response(JSON.stringify({stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify(reading)}],usage:{input_tokens:100,output_tokens:80}}),{status:opt.status||200});}});return {handler,calls:()=>calls};}
 function req(body=input,token='fake-user',origin=''){return new Request('https://test/scan',{method:'POST',headers:{authorization:'Bearer '+token,...origin?{origin}:{}},body:JSON.stringify(body)});}
