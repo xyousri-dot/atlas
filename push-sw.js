@@ -1,6 +1,21 @@
 /* No fetch handler: never cache customer files, auth tokens or application HTML. */
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+// Preserve the destination across an iPhone standalone-app launch.
+function atlasPushTarget(value){
+  return new Promise(resolve=>{
+    if(typeof indexedDB==='undefined')return resolve(null);
+    const request=indexedDB.open('atlas-push-routing',1);
+    request.onupgradeneeded=()=>request.result.createObjectStore('targets');
+    request.onerror=()=>resolve(null);
+    request.onsuccess=()=>{
+      const db=request.result,tx=db.transaction('targets','readwrite'),store=tx.objectStore('targets');let result=null;
+      if(value)store.put(value,'pending');
+      else{const get=store.get('pending');get.onsuccess=()=>{result=get.result||null;store.delete('pending');};}
+      tx.oncomplete=()=>{db.close();resolve(result);};tx.onerror=tx.onabort=()=>{db.close();resolve(null);};
+    };
+  });
+}
 /* One generic receipt only: no subscription, token, customer or message body. */
 function atlasPushReceipt(value){
   return new Promise(resolve=>{
@@ -18,6 +33,9 @@ function atlasPushReceipt(value){
   });
 }
 self.addEventListener('message',event=>{
+  if(event.data?.type==='atlas-push-target'&&event.ports?.[0]){
+    event.waitUntil((async()=>{const target=await atlasPushTarget();event.ports[0].postMessage(target&&Date.now()-target.at<300000?target:null);})());return;
+  }
   if(event.data?.type!=='atlas-push-health'||!event.ports?.[0])return;
   event.waitUntil((async()=>{
     let local='not-tested';
@@ -49,9 +67,14 @@ self.addEventListener('notificationclick',event=>{
   event.notification.close();
   event.waitUntil((async()=>{
     const url=atlasPushURL(event.notification.data?.url,self.registration.scope);
+    await atlasPushTarget({url,at:Date.now()});
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     const existing=windows.find(w=>w.url.startsWith(self.registration.scope));
-    if(existing){await existing.navigate(url);return existing.focus();}
+    if(existing){
+      try{await existing.navigate(url);}catch{}
+      if(existing.postMessage)existing.postMessage({type:'atlas-open-target',url});
+      return existing.focus();
+    }
     return self.clients.openWindow(url);
   })());
 });

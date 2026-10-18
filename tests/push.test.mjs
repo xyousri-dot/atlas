@@ -13,7 +13,7 @@ test('Waarschuwingen linken naar eigen auto of contract en samenvatting naar tak
  assert.equal(summaryPayload({documents:2},'fr',items).url,'./#atlas=alerts');
 });
 test('Meldingslink wacht op aanmelden, weigert ander account en opent juiste actuele kaart',async()=>{
- const a=zandbak(scriptUit(leesHtml()));a.URLSearchParams=URLSearchParams;a.location={hash:'#atlas=vehicle&id=c1&section=documents'};a.NOTIFICATION_BUSY=false;
+ const a=zandbak(scriptUit(leesHtml()));a.URLSearchParams=URLSearchParams;a.location={hash:'#atlas=vehicle&id=c1&section=documents'};a.NOTIFICATION_BUSY=false;a.NOTIFICATION_READY=true;
  const calls=[];a.toast=x=>calls.push('notice');a.naarAanmelden=()=>calls.push('login');a.sbKlaar=()=>false;
  await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
  calls.length=0;a.sbKlaar=()=>true;a.SBSES={user:{id:'owner1'}};a.location.hash+='&owner=other';await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
@@ -22,6 +22,12 @@ test('Meldingslink wacht op aanmelden, weigert ander account en opent juiste act
  calls.length=0;a.location.hash='#atlas=rental&id=r1&section=balances';a.RENTALS=[{id:'r1',retour:{}}];a.$=id=>id==='rTitle'?{textContent:''}:null;a.receipt=(r,k)=>calls.push(r.id+':'+k);await a.openNotificationTarget();assert.deepEqual(calls,['cloud','r1:retour']);
  calls.length=0;a.location.hash='#atlas=vehicle&id=deleted';await a.openNotificationTarget();assert.deepEqual(calls,['cloud','notice']);
  calls.length=0;a.sbHaal=async()=>false;await a.openNotificationTarget();assert.deepEqual(calls,['notice']);
+});
+test('Een meldingslink opent pas nadat het opstartscherm klaar is',async()=>{
+ const a=zandbak(scriptUit(leesHtml()));a.location={hash:'#atlas=vehicle&id=c1'};a.NOTIFICATION_READY=false;a.NOTIFICATION_BUSY=false;
+ let reads=0;a.sbKlaar=()=>true;a.sbHaal=async()=>{reads++;return true;};
+ await a.openNotificationTarget();assert.equal(reads,0);
+ const source=leesHtml();assert.ok(source.includes('notificationBootBase();NOTIFICATION_READY=true;openNotificationTarget();recoverNotificationTarget()'));
 });
 import {leesHtml,scriptUit,zandbak} from './atlas.mjs';
 test('Instellingenrefresh bewaart lopende diagnose, account- of taalwissel vervangt paneel',()=>{
@@ -111,6 +117,15 @@ test('Serviceworker toont ontvangen push zonder open app en opent alleen eigen s
  assert.equal(notifications[0][1].data.url,scope);
  handlers.notificationclick({notification:{close(){},data:{url:'https://evil.test/'}},waitUntil:p=>pending=p});await pending;
  assert.deepEqual(opened,[scope]);
+});
+test('iPhone-klik bewaart bestemming en stuurt haar ook bij mislukte navigatie naar open app',async()=>{
+ const handlers={},messages=[];let pending,saved,focused=false;
+ const scope='https://example.test/atlas/',url=scope+'#atlas=vehicle&id=c1&section=documents';
+ const win={url:scope,navigate:async()=>{throw Error('iOS navigation');},postMessage:m=>messages.push(m),focus:async()=>{focused=true;}};
+ const self={registration:{scope},addEventListener:(n,f)=>handlers[n]=f,clients:{matchAll:async()=>[win]}};
+ const ctx={self,URL,Date};vm.createContext(ctx);vm.runInContext(readFileSync(new URL('../push-sw.js',import.meta.url),'utf8'),ctx);ctx.atlasPushTarget=async value=>{saved=value;};
+ handlers.notificationclick({notification:{close(){},data:{url}},waitUntil:p=>pending=p});await pending;
+ assert.equal(saved.url,url);assert.equal(messages[0].url,url);assert.equal(messages[0].type,'atlas-open-target');assert.equal(focused,true);
 });
 test('Ontvangstdiagnose onderscheidt push, lokale test en weergavefout zonder persoonsgegevens',async()=>{
  const handlers={},notes=[];let pending,receipt=null,fail=false;

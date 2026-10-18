@@ -8971,9 +8971,9 @@ async function phoneAPI(action,data,retried){
   if(!res.ok)throw new Error(phoneText().pending);return res.json();
 }
 function notificationText(){return ({fr:{title:'Vos alertes',missing:'Cet élément a été supprimé ou ne fait pas partie de ce compte.',login:'Connectez-vous au compte qui a reçu cette alerte.',retry:'Impossible de charger les données. Vérifiez la connexion puis réessayez.',empty:'Aucune alerte active. Tout a peut-être déjà été traité.',maintenance:'Entretien',documents:'Documents',late:'Retour en retard',departures:'Départ',dossiers:'Dossier incomplet',balances:'Paiement',deposits:'Caution',close:'Fermer'},nl:{title:'Jouw waarschuwingen',missing:'Dit onderdeel is verwijderd of hoort niet bij dit account.',login:'Log in met het account dat deze melding ontving.',retry:'Gegevens laden lukt niet. Controleer de verbinding en probeer opnieuw.',empty:'Geen actieve waarschuwingen. De taken zijn mogelijk al afgehandeld.',maintenance:'Onderhoud',documents:'Documenten',late:'Te late retour',departures:'Vertrek',dossiers:'Onvolledig dossier',balances:'Betaling',deposits:'Borg',close:'Sluiten'},ar:{title:'تنبيهاتك',missing:'تم حذف العنصر أو لا ينتمي لهذا الحساب.',login:'سجل الدخول بالحساب الذي تلقى التنبيه.',retry:'تعذر تحميل البيانات. تحقق من الاتصال وأعد المحاولة.',empty:'لا توجد تنبيهات نشطة.',maintenance:'الصيانة',documents:'الوثائق',late:'تأخر الإرجاع',departures:'التسليم',dossiers:'ملف ناقص',balances:'الدفع',deposits:'الضمان',close:'إغلاق'}})[L];}
-var NOTIFICATION_BUSY=false;
+var NOTIFICATION_BUSY=false,NOTIFICATION_READY=false;
 async function openNotificationTarget(){
-  if(NOTIFICATION_BUSY||location.hash.indexOf('#atlas=')!==0)return;
+  if(NOTIFICATION_BUSY||NOTIFICATION_READY===false||location.hash.indexOf('#atlas=')!==0)return;
   var p=new URLSearchParams(location.hash.slice(1)),type=p.get('atlas'),id=p.get('id'),section=p.get('section'),tx=notificationText();
   if(!sbKlaar()){naarAanmelden();toast(tx.login);return;}
   if(p.get('owner')&&p.get('owner')!==((SBSES.user||{}).id||'')){naarAanmelden();toast(tx.login);return;}
@@ -8998,7 +8998,19 @@ async function openNotificationTarget(){
   }catch(e){toast(tx.retry);}finally{NOTIFICATION_BUSY=false;}
 }
 window.addEventListener('hashchange',openNotificationTarget);
-window.addEventListener('load',function(){if(location.hash.indexOf('#atlas=')===0)openNotificationTarget();});
+async function recoverNotificationTarget(){
+  if(!navigator.serviceWorker||location.protocol==='file:')return;
+  try{
+    var reg=await phoneBound(navigator.serviceWorker.register('./push-sw.js'));await phoneBound(reg.update());reg=await phoneBound(navigator.serviceWorker.ready);
+    var channel=new MessageChannel();var target=await phoneBound(new Promise(function(resolve){channel.port1.onmessage=function(e){channel.port1.close();resolve(e.data);};reg.active.postMessage({type:'atlas-push-target'},[channel.port2]);}));
+    if(target&&target.url){var url=new URL(target.url,location.href);if(url.origin===location.origin&&url.pathname===location.pathname&&url.hash.indexOf('#atlas=')===0){history.replaceState(null,'',url.href);await openNotificationTarget();}}
+  }catch(e){}
+}
+var notificationBootBase=demoBalk;
+demoBalk=function(){notificationBootBase();NOTIFICATION_READY=true;openNotificationTarget();recoverNotificationTarget();};
+if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='atlas-open-target'){try{var url=new URL(e.data.url,location.href);if(url.origin===location.origin&&url.pathname===location.pathname&&url.hash.indexOf('#atlas=')===0){history.replaceState(null,'',url.href);openNotificationTarget();}}catch(err){}}
+});
 var notificationLoginBase=naAanmelden;
 naAanmelden=function(){notificationLoginBase();if(location.hash.indexOf('#atlas=')===0)openNotificationTarget();};
 function phoneStartState(){
