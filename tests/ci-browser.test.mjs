@@ -18,6 +18,23 @@ test('Account buttons explain missing fields without sending credentials',async(
     }
   }finally{await page.close();}
 });
+test('Registration result remains visible after a background refresh',async()=>{
+  const {page}=await B.open({gegevens:{}});
+  try{
+    await page.evaluate(()=>{
+      view='vSet';render();
+      window.fetch=async()=>({ok:false,status:429,json:async()=>({error_code:'over_email_send_rate_limit'})});
+    });
+    await page.type('#stCloudMail','test@example.invalid');
+    await page.type('#stCloudWw','temporary-test-value');
+    await page.click('#stCloudNieuw');
+    await page.waitForFunction(()=>document.querySelector('#stCloudStat').textContent.length>40);
+    const melding=await page.$eval('#stCloudStat',e=>e.textContent);
+    await page.evaluate(()=>tekenCloud());
+    assert.equal(await page.$eval('#stCloudStat',e=>e.textContent),melding);
+    assert.equal(await page.$eval('#stCloudWw',e=>e.value),'');
+  }finally{await page.close();}
+});
 test('Admin authorization, safe rendering and clearing stale data',async()=>{
   const {page}=await B.open();
   try{

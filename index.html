@@ -10025,6 +10025,12 @@ function tekenAILamp(){
   l.style.color = aan ? "var(--brand)" : "var(--muted, #888)";
   l.onclick = aan ? null : function(){ naarAanmelden(); };
 }
+var SBCLOUDMELDING=null;
+function zetCloudMelding(tekst,kleur){
+  SBCLOUDMELDING={tekst:tekst,kleur:kleur||"var(--warn)"};
+  var vak=$("stCloudStat");
+  if(vak){ vak.setAttribute("role","alert"); vak.textContent=tekst; vak.style.color=SBCLOUDMELDING.kleur; }
+}
 function tekenCloud(){
   var t=T(), st=$("stCloudStat"); if(!st) return;
   $("stCloudH").textContent=t.stCloudH; $("stCloudP").textContent=t.stCloudP;
@@ -10050,6 +10056,7 @@ function tekenCloud(){
   else if(SBSTAT==="bezig") tekst=t.stCloudBezig;
   else { tekst=t.stCloudAan(SBQ.length); kleur="var(--brand)"; }
   if(aangemeld && sbMail()) tekst=t.stAls(sbMail())+". "+tekst;
+  if(!aangemeld && SBCLOUDMELDING){ tekst=SBCLOUDMELDING.tekst; kleur=SBCLOUDMELDING.kleur; }
   st.textContent=tekst; st.style.color=kleur;
   try{ tekenAILamp(); }catch(e){}
 }
@@ -10061,19 +10068,19 @@ if($("stCloudSave")) $("stCloudSave").addEventListener("click",async function(){
 function cloudFormComplete(mail,ww){
   if(mail && ww)return true;
   var target=mail?$("stCloudWw"):$("stCloudMail"), status=$("stCloudStat");
-  status.setAttribute("role","alert");
-  status.textContent=({fr:mail?"Saisissez à nouveau votre mot de passe, puis cliquez sur « Créer un compte » pour vous inscrire, ou « Se connecter » si votre compte existe déjà.":"Saisissez votre adresse e-mail.",nl:mail?"Vul je wachtwoord opnieuw in. Kies ‘Account maken’ voor een nieuw account of ‘Aanmelden’ als je al een account hebt.":"Vul je e-mailadres in.",ar:mail?"أدخل كلمة المرور مجدداً، ثم اختر إنشاء حساب جديد أو تسجيل الدخول لحساب موجود.":"أدخل بريدك الإلكتروني."})[L];
-  status.style.color="var(--warn)";target.focus();return false;
+  zetCloudMelding(({fr:mail?"Saisissez à nouveau votre mot de passe, puis cliquez sur « Créer un compte » pour vous inscrire, ou « Se connecter » si votre compte existe déjà.":"Saisissez votre adresse e-mail.",nl:mail?"Vul je wachtwoord opnieuw in. Kies ‘Account maken’ voor een nieuw account of ‘Aanmelden’ als je al een account hebt.":"Vul je e-mailadres in.",ar:mail?"أدخل كلمة المرور مجدداً، ثم اختر إنشاء حساب جديد أو تسجيل الدخول لحساب موجود.":"أدخل بريدك الإلكتروني."})[L]);
+  target.focus();return false;
 }
 if($("stCloudIn")) $("stCloudIn").addEventListener("click",async function(){
   var t=T(), knop=this, oud=knop.textContent;
   var mail=$("stCloudMail").value.trim(), ww=$("stCloudWw").value;
   if(!cloudFormComplete(mail,ww)) return;
+  SBCLOUDMELDING=null;
   knop.disabled=true; knop.textContent=t.stCloudBezig;
   var uit=await sbAanmelden(mail,ww);
   knop.disabled=false; knop.textContent=oud;
   $("stCloudWw").value="";
-  if(!uit.ok){ $("stCloudStat").textContent=sbUitleg(uit.fout); $("stCloudStat").style.color="var(--warn)"; return; }
+  if(!uit.ok){ zetCloudMelding(sbUitleg(uit.fout)); return; }
   SBSTAT="bezig"; tekenCloud(); toast(t.stCloudOk);
   await sbSamenvoegen(); await sbRond(); tekenCloud(); naAanmelden();
 });
@@ -10081,11 +10088,12 @@ if($("stCloudNieuw")) $("stCloudNieuw").addEventListener("click",async function(
   var t=T(), knop=this, oud=knop.textContent;
   var mail=$("stCloudMail").value.trim(), ww=$("stCloudWw").value;
   if(!cloudFormComplete(mail,ww)) return;
+  SBCLOUDMELDING=null;
   knop.disabled=true; knop.textContent=t.stCloudBezig;
   var uit=await sbNieuwAccount(mail,ww);
   knop.disabled=false; knop.textContent=oud; $("stCloudWw").value="";
-  if(uit.bevestig){ $("stCloudStat").textContent=t.stCloudBevestig; $("stCloudStat").style.color="var(--gold)"; return; }
-  if(!uit.ok){ $("stCloudStat").textContent=sbUitleg(uit.fout); $("stCloudStat").style.color="var(--warn)"; return; }
+  if(uit.bevestig){ zetCloudMelding(t.stCloudBevestig,"var(--gold)"); return; }
+  if(!uit.ok){ zetCloudMelding(sbUitleg(uit.fout)); return; }
   toast(t.stCloudNieuwOk); SBSTAT="bezig"; tekenCloud(); await sbSamenvoegen(); await sbRond(); tekenCloud(); naAanmelden();
 });
 if($("stCloudTest")) $("stCloudTest").addEventListener("click",async function(){
