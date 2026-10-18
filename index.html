@@ -1,6 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F4EE">
+<link rel="manifest" href="./manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
@@ -915,6 +916,35 @@ input[type="date"]{min-width:0;max-width:100%}
 @media (min-width:760px) and (max-width:1023px){
   .tabs{width:640px;max-width:calc(100% - 40px);bottom:14px;border-radius:22px;border:1px solid var(--line);box-shadow:var(--sh)}
 }
+/* Three business actions; controls stay on one screen, secondary evidence folds. */
+.simple-phases{display:flex;gap:10px;list-style:none;padding:0;margin:0 0 22px;flex-wrap:wrap}
+.simple-phases li{display:flex;align-items:center;gap:8px;color:var(--ink3);font-size:14px}
+.simple-phases .phase-number{display:inline-grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;font-weight:700}
+.simple-phases .active{color:var(--ink);font-weight:700}.simple-phases .active .phase-number{background:var(--ink);color:#fff;border-color:var(--ink)}
+.simple-phases .complete{color:var(--brand)}
+.simple-details{margin:12px 0}.simple-details>summary{cursor:pointer;padding:12px 0;font-weight:600}
+.simple-details[open]>summary{margin-bottom:8px}
+#vNew.simple-flow>.two{display:block}#vNew.simple-flow>.two>div:last-child{display:none}
+#vNew.simple-flow .vstap-nr{display:none}#vNew.simple-flow .vstap-k{padding:12px 18px}
+#vNew.simple-flow .vstap-in{padding:14px 18px}#vNew.simple-flow .vstap{margin:0}
+#vNew.simple-flow>.two>div:first-child{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+#vForm.simple-flow>.two{grid-template-columns:1fr}#vForm.simple-flow>.two>div:first-child{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+#vForm.simple-flow .card{margin:0}#vForm.simple-flow .step{display:none}
+#vForm.simple-flow .simple-details .diag{grid-template-columns:1fr 1fr}
+#vForm.simple-flow #noDmg{margin-top:14px;width:100%}
+.simple-balance{border:2px solid var(--brand)}
+@media(max-width:760px){#vNew.simple-flow>.two>div:first-child,#vForm.simple-flow>.two>div:first-child{grid-template-columns:1fr}.simple-phases{gap:6px}.simple-phases li{font-size:12px;flex:1;align-items:flex-start}.simple-phases .phase-number{width:24px;height:24px;flex-shrink:0}#vForm.simple-flow .simple-details .diag{grid-template-columns:1fr}}
+</style>
+<style>
+.vehicle-map{border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0;background:#f7f8f6}
+.vehicle-map svg{display:block;max-width:210px;margin:0 auto;height:240px}
+.vehicle-map .part{fill:#adb4ad;stroke:#fff;stroke-width:2;transition:fill .25s}
+.vehicle-map .soon{fill:#b77609}.vehicle-map .overdue{fill:#b43b30}.vehicle-map .planned{fill:#507a9c}
+.vehicle-map .pulse{animation:atlas-part 2s ease-in-out infinite}
+@keyframes atlas-part{50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.vehicle-map .pulse{animation:none}}
+.vehicle-map .parts{display:flex;flex-wrap:wrap;gap:6px}.vehicle-map .parts button{border:1px solid var(--line);border-radius:12px;padding:9px;background:white;color:var(--ink);font:inherit}
+.vehicle-map .parts button[aria-pressed=true]{outline:2px solid var(--ink)}
 </style>
 
 <div class="bar">
@@ -2136,7 +2166,7 @@ var TXT = {
   promP:"Rendue à la reprise, après contrôle ensemble. Retenue possible uniquement pour :",
   promLi:["un dommage <strong>absent de cette fiche</strong> ;","du carburant manquant ;","une amende datée de la location."],
   promWhen:"Plus aucune retenue après le",
-  promFine:"Une date écrite, c'est la seule chose que le client retiendra de votre agence. Aucun concurrent ne la donne.",
+  promFine:"Les conditions et la date de restitution sont écrites sur le contrat.",
   wa:"Envoyer sur WhatsApp", pdf:"Télécharger le contrat", pdfBusy:"Création du contrat…",
   waMsg:function(r,c,ag,lim){ return "Bonjour "+r.clientName+", votre location "+r.code+" ("+c.model+") est enregistree. Caution de "+r.caution+" DH, rendue a la reprise apres controle."+(ag.promise!==false?" Plus aucune retenue apres le "+lim+".":"")+" "+ag.name+", "+ag.city+"."; },
   vCap:"Caution détenue", vNoRef:"Pas de fiche de départ : impossible de prouver ce qui est nouveau.",
@@ -2150,11 +2180,11 @@ var TXT = {
   rNone:"aucun", rPts:function(n){ return n+" point"+(n>1?"s":""); },
   cmpH:"Départ / retour", cmpDep:"Départ", cmpRet:"Retour", cmpNo:"pas de photo", cmpNoDep:"Pas de photo de départ pour cette location.",
   rNoteDep:"La caution est inscrite, avec sa date limite.", rNoteRet:"Indiquez ci-dessous combien vous rendez — le reste est automatiquement inscrit comme retenu.", release:"Caution rendue",
-  settleH:"Règlement de la caution", settleReturnedL:"Rendu au client (DH)", settleWithheldL:"Retenu (dommages)",
+  settleH:"Règlement de la caution", settleReturnedL:"Rendu au client (DH)", settleWithheldL:"Retenu avec motif",
   settleNoteL:"Motif de la retenue (facultatif, ex. pare-brise)", settleBtn:"Confirmer le règlement",
   settleBad:"Montant invalide — il ne peut pas être négatif ni dépasser la caution.",
   settleGap:function(a,b){ return "Caution convenue "+a+", réellement reçue "+b+". Vous ne pouvez rendre que ce que vous avez reçu. Si ce n'est pas correct, notez d'abord la caution dans Paiements."; },
-  rReturned:"Rendu au client", rWithheld:"Retenu (dommages)", rWithholdNote:"Motif",
+  rReturned:"Rendu au client", rWithheld:"Retenu avec motif", rWithholdNote:"Motif",
   qPartial:function(ret,held){ return "Réglé : <strong>"+ret+"</strong> rendu, <strong>"+held+"</strong> retenu pour dommages."; },
   cashH:"Caisse", cashP:"Ce qui est entré et sorti aujourd'hui.",
   cashNetL:"Net du jour", cashInL:"Entrées", cashOutL:"Cautions rendues", cashCashL:"Dont espèces", cashCardL:"Dont carte",
@@ -2169,7 +2199,7 @@ var TXT = {
   payKinds:{rent:"Location",caution:"Caution",extra:"Supplément",refund:"Caution rendue",cancelback:"Remboursé (annulation)"},
   payMethods:{cash:"Espèces",card:"Carte",transfer:"Virement"},
   ledH:"Cautions détenues", ledP:"L'argent de vos clients que vous gardez encore. Pas du chiffre d'affaires.",
-  ledTotL:"Total en votre possession", ledNumL:"Contrats", ledLateL:"Encore à régler (délai dépassé)", ledOldL:"La plus ancienne", ledWithheldL:"Total retenu pour dommages",
+  ledTotL:"Total en votre possession", ledNumL:"Contrats", ledLateL:"Encore à régler (délai dépassé)", ledOldL:"La plus ancienne", ledWithheldL:"Total retenu et justifié",
   days:"jours", ledEmpty:"Vous ne détenez aucune caution en ce moment.",
   stWait:"amende en attente", stLate:"en retard", stToday:"à rendre", stOpen:"en cours",
   blocked:"bloquée jusqu'au ", whyOut:"Voiture encore en location", whyBack:"Retour traité",
@@ -3447,7 +3477,7 @@ function stepOf(r){
   if(r.cancelled) return 0;
   if(!r.depart) return 1;
   if(!r.retour) return 2;
-  if(!r.released && Number(r.caution)>0) return 3;
+  if(dueRent(r)>0 || dueExtras(r)>0 || (!r.released && paidCaution(r)>0)) return 3;
   return 4;
 }
 function openStep(r){
@@ -3510,6 +3540,21 @@ function renderDay(){
     e.appendChild(b1); e.appendChild(b2); box.appendChild(e); return;
   }
   var nu=today();
+  var risques=businessRisks(nu);
+  if(risques.length){
+    var riskBox=el("div","card");riskBox.appendChild(el("h2","ch",riskText().title));
+    riskBox.appendChild(el("p","fine",riskText().help));
+    var riskMore=document.createElement("details");riskMore.appendChild(el("summary",null,({fr:"Autres alertes",nl:"Overige waarschuwingen",ar:"تنبيهات أخرى"})[L]+" · "+Math.max(0,risques.length-3)));
+    risques.forEach(function(a,i){var b=el("button","alert"+(a.urgent?" bad":""),a.label);b.type="button";b.addEventListener("click",function(){if(a.action==="car")openCar(a.car);else if(a.action==="pay")receipt(a.rental,a.rental.retour?"retour":"depart");else if(a.action==="client"&&client(a.rental.clientId))openClient(client(a.rental.clientId));else openNew(null,a.rental);});(i<3?riskBox:riskMore).appendChild(b);});
+    if(risques.length>3)riskBox.appendChild(riskMore);
+    box.appendChild(riskBox);
+  }
+  var onderhoud=maintenanceAlerts(CARS,nu);
+  if(onderhoud.length){
+    var mb=el("div","card"); mb.appendChild(el("h2","ch",maintenanceText().attention));
+    onderhoud.forEach(function(a){ var b=el("button","alert"+(a.status==="overdue"?" bad":""),a.car.model+" · "+a.task.label+" — "+maintenanceLabel(a)); b.type="button"; b.addEventListener("click",function(){openCar(a.car);}); mb.appendChild(b); });
+    box.appendChild(mb);
+  }
   /* Papieren van een auto verlopen (verzekering, keuring, vignet): dat moet hij
      zien voor hij die auto meegeeft. Verlopen = bovenaan in rood, één tik naar de
      auto. Binnenkort verlopen = één regel onderaan die openklapt. */
@@ -3552,22 +3597,22 @@ function renderDay(){
   /* Eerst wat vandaag moet gebeuren (te laat, terug, vertrek, borg), dan de rest. */
   function terugKaart(r){ var laat=r.to<nu, vandaag=r.to===nu;
     kaart(r, laat?t.teLaat(dayDiff(r.to,nu)):(vandaag?t.terugVandaag:t.terugOp(dDay(r.to))), laat?"laat":(vandaag?"vandaag":""),
-      [{label:t.bTerug, fn:function(){ snelTerug(r); }},
+      [{label:t.bTerug, fn:function(){ openForm(r,"retour"); }},
        {label:t.bContract, ghost:true, fn:function(){ receipt(r,"depart"); }}]); }
   function vertrekKaart(r){ var vandaag=r.from<=nu;
     kaart(r, vandaag?t.vertrektVandaag:t.vertrekt(dDay(r.from)), vandaag?"vandaag":"",
-      [{label:t.bMee, fn:function(){ snelVertrek(r); }},
+      [{label:t.bMee, fn:function(){ if(r.from>today()){ toast(flowText().futureDeparture); return; } openForm(r,"depart"); }},
        {label:t.bWijzig, ghost:true, fn:function(){ editRental=null; openNew(null,r); }}]); }
   var nuTerug=weg.filter(function(r){ return r.to<=nu; }), laterTerug=weg.filter(function(r){ return r.to>nu; });
   var nuWeg=gepland.filter(function(r){ return r.from<=nu; }), laterWeg=gepland.filter(function(r){ return r.from>nu; });
   var boetes=openBoetes();
-  var aantalNu=nuTerug.length+nuWeg.length+borg.length+boetes.length;
+  var aantalNu=nuTerug.length+nuWeg.length+borg.length+boetes.length+risques.length+onderhoud.filter(function(a){return a.status!=="soon";}).length;
   box.insertBefore(dagStrook(nu,aantalNu), box.firstChild);
   kop(t.hNu+(aantalNu?" ("+aantalNu+")":""));
   if(!aantalNu) box.appendChild(el("p","leegtje",t.geenNu));
   nuTerug.forEach(terugKaart);
   nuWeg.forEach(vertrekKaart);
-  borg.forEach(function(r){ kaart(r, t.hBorgKort+" "+dh(r.caution), "", [{label:t.bBorg, fn:function(){ receipt(r,"retour"); }}]); });
+  borg.forEach(function(r){ var due=dueRent(r)+dueExtras(r); kaart(r, due>0?t.payDue+" "+dh(due):t.hBorgKort+" "+dh(paidCaution(r)), "", [{label:due>0?t.payH:t.bBorg, fn:function(){ receipt(r,"retour"); }}]); });
   /* Boete binnen: de bestuurder aanwijzen binnen 30 dagen. */
   boetes.forEach(function(x){
     var tm=boeteTermijn(x.b), over=dayDiff(tm,nu);
@@ -3726,8 +3771,8 @@ function renderPlan(){
       var ds=planMonth+"-"+String(d).padStart(2,"0"), dow=new Date(ds+"T12:00:00Z").getUTCDay();
       var cell=el("div","cell"+(ds===today()?" today":"")+(dow===0||dow===6?" we":"")); g.appendChild(cell); rowCells.push(cell);
     }
-    RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && overlap(r.from, plus(r.to,1), first, monthEnd); }).forEach(function(r){
-      var s=Math.max(0,dayDiff(first,r.from)), e=Math.min(nDays-1,dayDiff(first,r.to));
+    RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && overlap(r.from, r.to, first, monthEnd); }).forEach(function(r){
+      var s=Math.max(0,dayDiff(first,r.from)), e=Math.min(nDays-1,dayDiff(first,r.to)-1);
       var st=stage(r), cls = st==="done"?"fin":st==="depart"?"res":(r.to<today()?"late":"out");
       var bar=el("button","bar "+cls,r.clientName); bar.type="button";
       bar.style.left="2px"; bar.style.width=((e-s+1)*vak-4)+"px";
@@ -7719,6 +7764,7 @@ function tekenPrijsRegel(){
   box.innerHTML=t.nwSomRegel(t.nwDag(d), dh(c.rate), dh(Number($("nwTotal").value)||0), dh(Number($("nwCaution").value)||0));
   tekenBorgKnoppen();
   try{ zetHuurKnop(); }catch(e){}
+  if(NWSTAP===4 && !editRental) tekenBetaalStap();
 }
 /* ============ NIEUW CONTRAT IN DRIE SCHERMEN ============
    Eén ding per scherm: 1. wie huurt (kaart scannen of naam), 2. welke auto
@@ -7733,24 +7779,15 @@ function klantIngevuld(){
 }
 function toonHuurStap(){
   var t=T(), secties=document.querySelectorAll("#vNew section.vstap"), v=$("nwVoortgang");
-  $("vNew").classList.toggle("nwwizard",!!NWSTAP);
-  /* stappen: één tegelijk; bij wijzigen/verlengen (NWSTAP 0) alles behalve de betaling */
-  Array.prototype.forEach.call(secties,function(sec,i){ sec.hidden = NWSTAP ? i!==NWSTAP-1 : i===3; });
-  v.hidden=!NWSTAP; v.innerHTML="";
-  if(NWSTAP){
-    var namen=[t.nwS1,t.nwS2,t.nwS3,t.nwS4];
-    /* beweging 3: de stap die net klaar is, krijgt een vinkje met een pop */
-    var netKlaar = NWSTAP>VORIGESTAP ? NWSTAP-2 : -1;
-    namen.forEach(function(x,i){
-      var d=el("div","punt"+(i+1<NWSTAP?" klaar":(i+1===NWSTAP?" nu":""))+(i===netKlaar?" net":"")+(NWSTAP>VORIGESTAP && i===NWSTAP-1 && VORIGESTAP?" vult":""));
-      d.appendChild(el("i",null,i+1<NWSTAP?"\u2713":String(i+1))); d.appendChild(el("span",null,x)); v.appendChild(d);
-    });
-    $("nwH").textContent=namen[NWSTAP-1];
-    if(VORIGESTAP && VORIGESTAP!==NWSTAP) schuif(secties[NWSTAP-1],NWSTAP>VORIGESTAP);
-  }
-  VORIGESTAP=NWSTAP;
+  NWSTAP=editRental?0:4;
+  $("vNew").classList.remove("nwwizard");
+  $("vNew").classList.add("simple-flow");
+  Array.prototype.forEach.call(secties,function(sec,i){ sec.hidden=!!editRental&&i===3; });
+  v.hidden=true; v.innerHTML="";
+  $("nwH").textContent=editRental?t.nwSaveEdit:simpleText().prepare;
+  tekenDrieFasen($("vNew"),1);
+  tekenBetaalStap();
   zetHuurKnop();
-  window.scrollTo(0,0);
 }
 function huurNaarStap(n){
   NWSTAP=n;
@@ -7763,8 +7800,9 @@ function huurVolgende(){
     var n=$("nwName"); n.focus(); n.classList.remove("schud"); void n.offsetWidth; n.classList.add("schud");
     toast(t.nwNaamEerst); return;
   }
-  if(NWSTAP===1 && ctlFouten()){
-    ask(t.ctlDoorgaan,t.fVolgende).then(function(ja){ if(ja) huurNaarStap(2); });
+  if(NWSTAP===1 && SNELBEZIG){ toast(t.snelWacht); return; }
+  if(NWSTAP===1 && SNELKLANT && (!scanBevestigd() || ctlFouten())){
+    toast(flowText().reviewRequired);
     return;
   }
   if(NWSTAP===3) tekenBetaalStap();
@@ -7774,7 +7812,7 @@ function huurVolgende(){
    Eén vraag: hoe betaalt de klant? Contant of kaart = meteen als betaald geboekt
    (huur en borg). Overschrijving = op het klaar-scherm staat de knop om het
    betaalverzoek met je RIB via WhatsApp te sturen. Later = niets geboekt. */
-var NWBETAAL="cash";
+var NWBETAAL="later";
 function tekenBetaalStap(){
   var t=T(), doos=$("nwBetaal"); if(!doos) return;
   var huur=Number($("nwTotal").value)||0, borg=Number($("nwCaution").value)||0;
@@ -7787,7 +7825,7 @@ function tekenBetaalStap(){
   var keuzes=el("div","betaalkeuzes");
   [["cash",t.payMethods.cash,'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>'],["card",t.payMethods.card,'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>'],["transfer",t.betVirement,'<path d="M7 7h11l-3-3M17 17H6l3 3"/>'],["later",t.betLater,'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/>']].forEach(function(k){
     var b=el("button","betaalkeuze"); b.type="button"; b.dataset.v=k[0]; b.setAttribute("aria-pressed",NWBETAAL===k[0]?"true":"false");
-    var ico=el("span","ico"); ico.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+k[2]+'</svg>'; b.appendChild(ico); b.appendChild(el("span",null,k[1]));
+    var ico=el("span","ico"); ico.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+k[2]+'</svg>'; b.appendChild(ico); b.appendChild(el("span",null,k[1]+((k[0]==="cash"||k[0]==="card")?" · "+flowText().received:"")));
     b.addEventListener("click",function(){ NWBETAAL=k[0]; tekenBetaalStap(); });
     keuzes.appendChild(b);
   });
@@ -7840,7 +7878,7 @@ openNew=function(presetClient,edit){
       if(vrij){ sel.value=vrij.id; recalc(); tekenAutoTegels(); }
     }
   }
-  NWSTAP = editRental ? 0 : 1; NWBETAAL="cash"; SCANTWIJFEL={};
+  NWSTAP = editRental ? 0 : 1; NWBETAAL="later"; SCANTWIJFEL={}; SCANBEVESTIGD="";
   tekenControle();
   toonHuurStap();
 };
@@ -7848,10 +7886,9 @@ var zetHuurKnopBasis=zetHuurKnop;
 zetHuurKnop=function(){
   zetHuurKnopBasis();
   var t=T(), b=$("bGo"), k=$("bBack"); if(!b || view!=="vNew" || !NWSTAP) return;
-  if(NWSTAP<3){ b.textContent=t.fVolgende; b.disabled=false; }
-  else if(NWSTAP===3){ b.textContent=t.fVolgende; b.disabled=!$("nwClash").hidden; }
-  else b.disabled=!$("nwClash").hidden;
-  k.className="btn ghost"; k.textContent = NWSTAP>1 ? t.fVorige : t.cancel;
+  b.disabled=!$("nwClash").hidden;
+  b.textContent=$("nwFrom").value>today()?T().nwReserve:simpleText().checkDeparture;
+  k.className="btn ghost"; k.textContent=t.cancel;
 };
 /* ============ CONTROLE NA DE SCAN ============ */
 var SCANTWIJFEL={};
@@ -7866,11 +7903,12 @@ var CTLVELDEN=[["name","text"],["docNumber","text"],["birth","date"],["docExpiry
 function ctlWaarde(k){ return k==="name" ? $("nwName").value.trim() : String((SNELKLANT&&SNELKLANT[k])||""); }
 /* De slimme scan (Claude, ingelogd) leest zoals een mens en Atlas rekent zijn
    strook na; de eigen lezer in de app niet. Alleen daar mag een naam groen zijn. */
-function viaSlimmeScan(){ try{ return typeof sbKlaar==="function" && sbKlaar() && !AIFOUT; }catch(e){ return false; } }
+function viaSlimmeScan(){ return scanBevestigd(); }
 function ctlOordeel(k,v){
   var t=T(), nu=today(), ok={ s:"ok", why:"" };
   function w(why){ return { s:"warn", why:why }; } function f(why){ return { s:"bad", why:why }; }
   if(!v) return (k==="nationality"||k==="licenceIssue"||k==="address") ? { s:"leeg", why:t.ctlOntbreekt } : w(t.ctlOntbreekt);
+  if(["birth","docExpiry","licenceIssue","licenceExpiry"].indexOf(k)>=0 && !echteDatum(v)) return f(t.ctlNakijken);
   if(k==="name"){ if(!(/^[A-Za-zÀ-ɏ' -]{3,}$/.test(v) && v.indexOf(" ")>0)) return w(t.ctlNakijken); return (SCANTWIJFEL.name || !viaSlimmeScan()) ? w(t.ctlTwijfel) : ok; }
   if(k==="address" && !adresGeloofwaardig(v)) return w(t.ctlNakijken);
   if(k==="docNumber"){
@@ -7879,7 +7917,7 @@ function ctlOordeel(k,v){
     if(($("nwDocWrap") && !$("nwDocWrap").hidden) || SCANTWIJFEL.docNumber) return w(t.ctlTwijfel);
     return (SCANTWIJFEL.docOk || viaSlimmeScan()) ? ok : w(t.ctlTwijfel);
   }
-  if(k==="birth"){ var jaar=dayDiff(v,nu)/365.25; if(jaar<18) return f(t.ctlJong); if(jaar>100) return w(t.ctlNakijken); return SCANTWIJFEL.birth ? w(t.ctlTwijfel) : ok; }
+  if(k==="birth"){ var jaar=Number(nu.slice(0,4))-Number(v.slice(0,4))-(nu.slice(5)<v.slice(5)?1:0); if(jaar<18) return f(t.ctlJong); if(jaar>100) return w(t.ctlNakijken); return SCANTWIJFEL.birth ? w(t.ctlTwijfel) : ok; }
   if(k==="docExpiry"||k==="licenceExpiry"){ if(v<nu) return f(t.ctlVerlopen); return SCANTWIJFEL[k] ? w(t.ctlTwijfel) : ok; }
   if(k==="licenceIssue") return v>nu ? w(t.ctlNakijken) : ok;
   if(k==="licenceNumber"){
@@ -7891,9 +7929,14 @@ function ctlOordeel(k,v){
 }
 function ctlZet(k,v){
   if(!SNELKLANT) return;
+  SCANBEVESTIGD="";
+  var check=$("scanReviewed"); if(check) check.checked=false;
   delete SCANTWIJFEL[k];   /* zelf nagekeken en aangepast: geen twijfel meer */
   if(k==="name"){ $("nwName").value=v; markKlantKlaarBasis(); }
   SNELKLANT[k]=v;
+  /* Een volgende scan leest dit formulier opnieuw: bewaar correcties ook daar. */
+  var bron={name:"cvName",docNumber:"cvDocNo",birth:"cvBirth",docExpiry:"cvDocExp",nationality:"cvNat",address:"cvAddr",licenceNumber:"cvLic",licenceIssue:"cvLicIssue",licenceExpiry:"cvLicExp"}[k];
+  if(bron && $(bron)) $(bron).value=v;
   /* de scanner vroeg soms om het nummer na te typen: dat vak volgt mee */
   if(k==="docNumber" && $("nwDocWrap") && !$("nwDocWrap").hidden) $("nwDocNo").value=v;
   if(k==="licenceNumber" && $("nwLicWrap") && !$("nwLicWrap").hidden) $("nwLicNo").value=v;
@@ -7933,7 +7976,64 @@ function tekenControle(){
     box.appendChild(rij); oordeel();
   });
   telOp();
+  var review=el("label","scan-review"), check=document.createElement("input");
+  review.style.cssText="display:flex;align-items:center;gap:12px;padding:16px 0";
+  check.type="checkbox"; check.id="scanReviewed"; check.checked=scanBevestigd();
+  check.addEventListener("change",function(){ SCANBEVESTIGD=check.checked?scanSnapshot():""; });
+  review.appendChild(check); review.appendChild(el("span",null,flowText().review)); box.appendChild(review);
+  var more=document.createElement("details"); more.className="simple-details";
+  more.appendChild(el("summary",null,simpleText().moreDocuments));
+  Array.prototype.slice.call(box.querySelectorAll(".ctl-rij")).forEach(function(row){
+    var input=row.querySelector("input");
+    if(["name","docNumber","licenceNumber"].indexOf(input.dataset.veld)<0){ more.appendChild(row); if(row.dataset.s==="bad") more.open=true; }
+  });
+  box.insertBefore(more,review);
 }
+var SCANBEVESTIGD="";
+function scanSnapshot(){ return JSON.stringify(CTLVELDEN.map(function(x){ return ctlWaarde(x[0]); }).concat(SNELKLANT&&SNELKLANT.docType)); }
+function scanBevestigd(){ return !!SCANBEVESTIGD && SCANBEVESTIGD===scanSnapshot(); }
+function echteDatum(v){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  var d=new Date(v+"T12:00:00Z"); return !isNaN(d.getTime()) && d.toISOString().slice(0,10)===v;
+}
+function simpleText(){ return ({
+  fr:{phases:["Remettre la voiture","Reprendre la voiture","Régler le solde"],prepare:"Préparer la location",checkDeparture:"Continuer vers la remise",toSettlement:"Confirmer le retour et régler",damage:"Signaler un dommage",photos:"Ajouter des photos (facultatif)",moreDocuments:"Autres informations du document — à vérifier",paymentDetails:"Détails et historique des paiements",settlement:"Régler le solde",finish:"Terminer — tout est réglé"},
+  nl:{phases:["Auto meegeven","Auto terugnemen","Afrekenen"],prepare:"Verhuur voorbereiden",checkDeparture:"Verder naar meegeven",toSettlement:"Retour bevestigen en afrekenen",damage:"Schade aangeven",photos:"Foto’s toevoegen (optioneel)",moreDocuments:"Overige documentgegevens — nakijken",paymentDetails:"Betalingsdetails en geschiedenis",settlement:"Afrekenen",finish:"Afronden — alles geregeld"},
+  ar:{phases:["تسليم السيارة","استرجاع السيارة","تسوية الحساب"],prepare:"تحضير الكراء",checkDeparture:"متابعة تسليم السيارة",toSettlement:"تأكيد الرجوع والتسوية",damage:"تسجيل ضرر",photos:"إضافة صور (اختياري)",moreDocuments:"معلومات الوثيقة الأخرى — للمراجعة",paymentDetails:"تفاصيل وسجل المدفوعات",settlement:"تسوية الحساب",finish:"إنهاء — تمت التسوية"}
+})[L]; }
+function tekenDrieFasen(root,phase){
+  var old=root.querySelector(".simple-phases"); if(old) old.remove();
+  var list=el("ol","simple-phases"); list.setAttribute("aria-label",simpleText().phases.join(" / "));
+  simpleText().phases.forEach(function(name,i){ var item=el("li",i+1===phase?"active":i+1<phase?"complete":"");
+    if(i+1===phase) item.setAttribute("aria-current","step");
+    item.appendChild(el("span","phase-number",i+1<phase?"✓":String(i+1))); item.appendChild(el("span",null,name)); list.appendChild(item);
+  });
+  root.insertBefore(list,root.firstChild);
+}
+function compacteControle(){
+  var cards=formKaarten(), damage=cards[0], photo=cards[1];
+  if(damage && !damage.querySelector("details.simple-details")){
+    var diag=damage.querySelector(".diag"), details=document.createElement("details"); details.className="simple-details";
+    details.appendChild(el("summary",null,simpleText().damage));
+    damage.appendChild($("noDmg")); damage.appendChild(details); if(diag) details.appendChild(diag);
+  }
+  if(damage){ var det=damage.querySelector("details.simple-details"); det.querySelector("summary").textContent=simpleText().damage; det.open=!!(draft&&draft.marks.length); }
+  if(photo && !photo.querySelector("details")){
+    var p=document.createElement("details"); p.className="simple-details"; p.appendChild(el("summary",null,simpleText().photos)); p.appendChild($("shots")); photo.appendChild(p);
+  }
+  if(photo) photo.querySelector("summary").textContent=simpleText().photos;
+}
+var snelScanZonderControle=snelScan;
+snelScan=async function(bestanden,soort){
+  if(SNELBEZIG) return;
+  SCANBEVESTIGD="";
+  try{ return await snelScanZonderControle(bestanden,soort); }
+  catch(e){
+    SNELBEZIG=null;
+    if($("nwScanStat")){ $("nwScanStat").className="snelstat half"; $("nwScanStat").textContent=T().snelNiets; }
+    toast(T().scanFail);
+  }
+};
 var markKlantKlaarBasis=markKlantKlaar;
 markKlantKlaar=function(){
   if(SNELKLANT && SNELKLANT.address && !adresGeloofwaardig(SNELKLANT.address)){ SNELKLANT.address=""; if($("cvAddr")) $("cvAddr").value=""; }
@@ -8512,6 +8612,7 @@ async function snelScan(bestanden,soort){
   terugNaarHuur();
   var klaar;
   SNELBEZIG=new Promise(function(r){ klaar=r; });
+  try{
   var lijst=Array.prototype.slice.call(bestanden), voorkanten=[];
   /* eerst de slimme scan; lukt die niet, dan de oude lezer per foto */
   var ai=null, aiUit=null;
@@ -8584,6 +8685,7 @@ async function snelScan(bestanden,soort){
   } else if($("nwScanAI")) $("nwScanAI").hidden=true;
   $("nwScanLic").hidden=false; $("nwScanLic").textContent = idVoor ? t.snelKnopAchterId : (licVoor ? t.snelKnopAchterLic : (k.licenceNumber?t.snelLicOk(k.licenceNumber):t.snelLic));
   SNELBEZIG=null; klaar();
+  } finally { clearInterval(tik); SNELBEZIG=null; klaar(); }
 }
 $("nwScanKaart").addEventListener("click",function(){ $("snelKies").click(); });
 $("snelKies").multiple=true;
@@ -8622,10 +8724,16 @@ async function saveRental(){
 async function saveRentalEcht(){
   var t=T(), from=$("nwFrom").value, to=$("nwTo").value;
   if(!from||!to||to<=from){ $("nwTo").focus(); return; }
+  if(SNELBEZIG){ toast(t.snelWacht); return; }
+  if(SNELKLANT && (!scanBevestigd() || ctlFouten())){ huurNaarStap(1); toast(flowText().reviewRequired); return; }
+  if(!Number.isFinite(Number($("nwTotal").value)) || Number($("nwTotal").value)<0 || !Number.isFinite(Number($("nwCaution").value)) || Number($("nwCaution").value)<0){ toast(flowText().badAmount); return; }
   var c=car($("nwCar").value), cid=$("nwClient").value, name, tel;
+  if(!c.id || !echteDatum(from) || !echteDatum(to)){ toast(t.nwClash); return; }
   var conflict=huurConflict(c,from,to,editRental&&editRental.id);
   if(conflict){ paintClash(conflict); toast(t.nwClash); return; }
   if(editRental){
+    if(editRental.retour || editRental.cancelled){ receipt(editRental,editRental.retour?"retour":"depart"); return; }
+    if(editRental.depart && (c.id!==editRental.vehicleId || from!==editRental.from)){ toast(t.nwClash); return; }
     var cl0=client(cid), upd=Object.assign({},editRental,{ driver2:leesD2(), vehicleId:c.id, from:from, to:to, days:Math.max(1,dayDiff(from,to)), rate:Number(c.rate)||0, total:Number($("nwTotal").value)||0, caution:Number($("nwCaution").value)||0 });
     if(cl0){ upd.clientId=cl0.id; upd.clientName=cl0.name; upd.clientTel=cl0.tel||""; }
     if(upd.depart) upd.limit=plus(to, AG.window||30);
@@ -8666,21 +8774,14 @@ async function saveRentalEcht(){
      zet. Foto's en schade aanduiden kan daarna nog, maar houdt het contract niet
      meer tegen. Begint de huur later, dan is het een reservering. */
   var nuWeg = from<=today();
-  if(nuWeg){
-    var km=Number($("nwKm")&&$("nwKm").value)||Number(c.km)||0;
-    huur.depart={ marks:[], shots:{}, km:km, fuel:"100", sig:null, at:new Date().toISOString(), snel:true };
-    huur.limit=plus(to, AG.window||30);
-    if(km>(Number(c.km)||0)){ var c2=Object.assign({},c,{km:km}); await S.set("vehicles/"+c.id,stripId(c2)); }
-  }
   await S.set("rentals/"+rid,huur);
   await reload();
   var nieuw=RENTALS.filter(function(x){ return x.id===rid; })[0];
   if(nieuw && nuWeg){
     toast(t.saved);
-    receipt(nieuw,"depart");
-    /* De PDF meteen maken: daar drukte de verhuurder op. */
-    var knop=$("rSide").querySelector("button.btn");
-    if(knop) makeContract(nieuw,knop);
+    try{ STAPEL[IDX]="vDay"; history.replaceState({v:"vDay",i:IDX},""); }catch(e){}
+    VIA_POP=true; try{view="vDay"; render();} finally{VIA_POP=false;}
+    openForm(nieuw,"depart");
     return;
   }
   NWOPEN=false; naarKlaar("vDay"); toast(t.saved);
@@ -8752,7 +8853,7 @@ function carPL(c){
   var all=RENTALS.filter(function(r){ return r.vehicleId===c.id; });
   /* Bij een lopende verhuur is de borg geen omzet. Bij een geannuleerde is wat
      je van de borg mocht houden dat wel. */
-  var rev=all.reduce(function(a,r){ return a+paidRent(r)+(r.cancelled?paidCaution(r):0); },0);
+  var rev=all.reduce(function(a,r){ return a+paidRent(r)+paidExtras(r)+(r.cancelled?paidCaution(r):0); },0);
   var due=all.filter(live).reduce(function(a,r){ return a+dueRent(r); },0);
   var days=rents.reduce(function(a,r){ return a+(r.days||0); },0);
   var ex=EXP.filter(function(e){ return e.vehicleId===c.id; });
@@ -8787,13 +8888,159 @@ function renderFleet(){
     /* Wat de verhuurder over een auto wil weten: staat hij hier of is hij weg? */
     var a=el("div","amt"), nu=today();
     var bij=RENTALS.filter(function(r){ return live(r) && r.vehicleId===c.id && stepOf(r)===2; })[0];
-    var st = !bij ? el("span","status vrij",t.stVrij) : (bij.to<nu ? el("span","status laat",t.stTeLaat) : el("span","status weg",t.stWegTot(dDay(bij.to))));
+    var reserved=huurConflict(c,nu,plus(nu,1));
+    var st = !bij ? el("span","status vrij",reserved?flowText().reserved:t.stVrij) : (bij.to<nu ? el("span","status laat",t.stTeLaat) : el("span","status weg",t.stWegTot(dDay(bij.to))));
     a.appendChild(st);
     b.appendChild(a); b.appendChild(el("span","chev","›"));
     b.addEventListener("click",function(){ openCar(c); });
     list.appendChild(b);
   });
   box.appendChild(list);
+}
+function riskText(){return ({
+fr:{title:"Risques à vérifier",help:"Contrôles des données enregistrées. Touchez une alerte pour corriger ; aucune action ni aucun message n’est envoyé automatiquement.",conflict:"Réservations incompatibles — modifier l’affectation",missingCar:"Voiture introuvable — corriger le contrat",client:"Identité ou permis incomplet — vérifier le dossier client",expiry:"Document client expirant avant la fin de location — vérifier",carDocs:"Assurance, visite ou vignette manquante / expirant pendant la location — vérifier la voiture",money:"Paiement encore à encaisser",deposit:"Caution non reçue intégralement — vérifier avant départ",dates:"Dates incohérentes — corriger le contrat"},
+nl:{title:"Risico’s om te controleren",help:"Controle van geregistreerde gegevens. Tik op een waarschuwing om die op te lossen; er worden geen acties of berichten automatisch uitgevoerd.",conflict:"Botsende reserveringen — auto opnieuw toewijzen",missingCar:"Auto niet gevonden — contract corrigeren",client:"Identiteit of rijbewijs onvolledig — klantdossier controleren",expiry:"Klantdocument verloopt vóór einde huur — controleren",carDocs:"Verzekering, keuring of vignette ontbreekt / verloopt tijdens huur — auto controleren",money:"Betaling nog te ontvangen",deposit:"Borg niet volledig ontvangen — vóór vertrek controleren",dates:"Datums kloppen niet — contract corrigeren"},
+ar:{title:"مخاطر تستحق المراجعة",help:"فحص البيانات المسجلة. اضغط على التنبيه لتصحيحه. لا تُنفذ إجراءات ولا تُرسل رسائل تلقائياً.",conflict:"حجوزات متعارضة — عدل السيارة",missingCar:"السيارة غير موجودة — صحح العقد",client:"الهوية أو الرخصة ناقصة — راجع ملف العميل",expiry:"وثيقة العميل تنتهي قبل نهاية الكراء — تحقق",carDocs:"وثائق السيارة ناقصة أو تنتهي أثناء الكراء — تحقق",money:"دفعة لم تُحصّل بعد",deposit:"الضمان لم يُحصّل كاملاً — تحقق قبل التسليم",dates:"تواريخ غير متناسقة — صحح العقد"}
+})[L];}
+function businessRisks(day){
+  var tx=riskText(),out=[],until=plus(day,30),seen={};
+  function add(r,c,key,action,urgent,suffix){var id=(key==="conflict"?c.id:r.id)+":"+key;if(seen[id])return;seen[id]=1;out.push({rental:r,car:c,action:action,urgent:urgent,label:(c.model||r.code||"?")+" · "+(r.clientName||"")+" — "+tx[key]+(suffix?" · "+suffix:"")});}
+  RENTALS.forEach(function(r){
+    if(r.cancelled||r.retour||r.from>until)return;
+    var c=car(r.vehicleId)||{},cl=client(r.clientId)||{};
+    if(!echteDatum(r.from)||!echteDatum(r.to)||r.to<=r.from){add(r,c,"dates","contract",true);return;}
+    if(!c.id){add(r,c,"missingCar","contract",true);return;}
+    if(!r.depart && huurConflict(c,r.from,r.to,r.id))add(r,c,"conflict","contract",true);
+    if(!cl.id||!cl.docNumber||!cl.licenceNumber||!cl.docExpiry||!cl.licenceExpiry)add(r,c,"client","client",r.from<=day);
+    if([cl.docExpiry,cl.licenceExpiry].some(function(d){return d&&(!echteDatum(d)||d<r.to);}))add(r,c,"expiry","client",true);
+    if([c.insuranceUntil,c.inspectionUntil,c.vignetteUntil].some(function(d){return !d||!echteDatum(d)||d<r.to;}))add(r,c,"carDocs","car",true);
+    if(r.from<=day && dueRent(r)+dueExtras(r)>0)add(r,c,"money","pay",false,dh(dueRent(r)+dueExtras(r)));
+    if(r.from<=day && !r.released && paidCaution(r)<Number(r.caution||0))add(r,c,"deposit","pay",false,dh(Math.max(0,Number(r.caution||0)-paidCaution(r))));
+  });
+  return out.sort(function(a,b){return Number(b.urgent)-Number(a.urgent);});
+}
+function vehicleText(){return ({fr:{part:"Partie de la voiture",title:"Votre voiture, en un regard",help:"Gris : non évalué · Bleu : échéance enregistrée · Orange : bientôt · Rouge : échéance atteinte. Ce n’est pas un diagnostic mécanique.",none:"Aucun contrôle enregistré pour cette partie."},nl:{part:"Onderdeel van de auto",title:"Je auto in één oogopslag",help:"Grijs: niet beoordeeld · Blauw: termijn vastgelegd · Oranje: binnenkort · Rood: grens bereikt. Dit is geen mechanische diagnose.",none:"Geen controle voor dit onderdeel geregistreerd."},ar:{part:"جزء السيارة",title:"سيارتك بنظرة واحدة",help:"رمادي: غير مفحوص · أزرق: موعد مسجل · برتقالي: قريب · أحمر: حان الموعد. ليس تشخيصاً ميكانيكياً.",none:"لا فحص مسجل لهذا الجزء."}})[L];}
+function vehicleParts(){return ['engine','brakes','tires','battery','other'].map(function(id,i){return {id:id,label:({fr:['Moteur et distribution','Freins','Pneus','Batterie','Autre'],nl:['Motor en distributie','Remmen','Banden','Accu','Overig'],ar:['المحرك والتوزيع','الفرامل','الإطارات','البطارية','أخرى']})[L][i]};});}
+function vehiclePartState(c,id){
+  var tasks=(c.maintenance||[]).filter(function(t){return !t.completedAt&&(t.part||'other')===id;});
+  var ranks={overdue:0,soon:1,unknown:2,planned:3};
+  tasks.sort(function(a,b){return ranks[maintenanceStatus(c,a).status]-ranks[maintenanceStatus(c,b).status];});
+  return {status:tasks.length?maintenanceStatus(c,tasks[0]).status:'unknown',tasks:tasks};
+}
+function vehicleVisual(c){
+  var tx=vehicleText(),root=el('div','vehicle-map');root.appendChild(el('h3',null,tx.title));root.appendChild(el('p','fine',tx.help));
+  var shapes={engine:'<rect x="66" y="45" width="88" height="48" rx="10"/>',battery:'<rect x="132" y="100" width="25" height="30" rx="5"/>',brakes:'<circle cx="52" cy="82" r="8"/><circle cx="168" cy="82" r="8"/><circle cx="52" cy="213" r="8"/><circle cx="168" cy="213" r="8"/>',tires:'<rect x="34" y="57" width="17" height="48" rx="6"/><rect x="169" y="57" width="17" height="48" rx="6"/><rect x="34" y="188" width="17" height="48" rx="6"/><rect x="169" y="188" width="17" height="48" rx="6"/>',other:'<rect x="68" y="203" width="84" height="40" rx="8"/>'};
+  var svg='<svg viewBox="0 0 220 290" aria-hidden="true"><path d="M66 18Q110 3 154 18L170 60V232Q169 265 146 274H74Q51 265 50 232V60Z" fill="#e0e5e0" stroke="#67796d" stroke-width="3"/><path d="M70 108H150L145 180H75Z" fill="#c0cfc8"/>';
+  var parts=vehicleParts();parts.forEach(function(p){var state=vehiclePartState(c,p.id);svg+='<g class="part '+state.status+(state.status==='overdue'?' pulse':'')+'">'+shapes[p.id]+'</g>';});svg+='</svg>';var drawing=el('div');drawing.innerHTML=svg;root.appendChild(drawing);
+  var buttons=el('div','parts'),info=el('div');info.setAttribute('aria-live','polite');
+  parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+' · '+(state.tasks.length?(maintenanceText()[state.status]||p.label):'—'));b.type='button';b.setAttribute('aria-pressed','false');b.addEventListener('click',function(){Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');info.innerHTML='';if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});});buttons.appendChild(b);});root.appendChild(buttons);root.appendChild(info);return {root:root};
+}
+function phoneText(){return ({fr:{title:'Alertes sur votre téléphone',enable:'Activer sur cet appareil',test:'Envoyer un test',off:'Désactiver sur cet appareil',help:'Un résumé par jour : entretien, documents et retours en retard. Aucun nom de client sur l’écran verrouillé.',local:'Ouvrez Atlas via une adresse HTTPS. Un fichier local ne reçoit pas les alertes.',unsupported:'Notifications non disponibles ici. Sur iPhone, ajoutez Atlas à l’écran d’accueil puis ouvrez son icône.',pending:'Service de notifications pas encore configuré. Rien n’est activé.',login:'Connectez-vous pour associer ce téléphone à votre agence.',active:'Appareil inscrit. La réception réelle reste à confirmer sur le téléphone.',sent:'Test programmé dans environ 2 minutes. Fermez Atlas et verrouillez votre téléphone.',denied:'Notifications refusées. Modifiez l’autorisation dans les réglages du téléphone.',removed:'Alertes désactivées sur cet appareil.'},nl:{title:'Meldingen op je telefoon',enable:'Activeren op dit apparaat',test:'Test versturen',off:'Uitzetten op dit apparaat',help:'Eén samenvatting per dag: onderhoud, documenten en te late retouren. Geen klantnamen op het vergrendelscherm.',local:'Open Atlas via HTTPS. Een lokaal bestand ontvangt geen meldingen.',unsupported:'Meldingen hier niet beschikbaar. Voeg Atlas op iPhone toe aan het beginscherm en open het pictogram.',pending:'Meldingendienst nog niet ingesteld. Er is niets geactiveerd.',login:'Log in om deze telefoon aan je bedrijf te koppelen.',active:'Apparaat aangemeld. Echte ontvangst moet nog op de telefoon worden bevestigd.',sent:'Test gepland over ongeveer 2 minuten. Sluit Atlas en vergrendel je telefoon.',denied:'Meldingen geweigerd. Pas de toestemming aan in je telefooninstellingen.',removed:'Meldingen uitgezet op dit apparaat.'},ar:{title:'تنبيهات على هاتفك',enable:'تفعيل على هذا الجهاز',test:'إرسال اختبار',off:'إيقاف على هذا الجهاز',help:'ملخص يومي للصيانة والوثائق والتأخر في الإرجاع. دون أسماء العملاء على شاشة القفل.',local:'افتح Atlas عبر HTTPS، وليس كملف محلي.',unsupported:'التنبيهات غير متاحة هنا. على iPhone أضف Atlas للشاشة الرئيسية.',pending:'خدمة التنبيهات غير مهيأة بعد. لم يتم التفعيل.',login:'سجل الدخول لربط الهاتف بوكالتك.',active:'تم تسجيل الجهاز. تحقق من الاستلام على الهاتف.',sent:'تمت برمجة الاختبار خلال دقيقتين تقريباً. أغلق Atlas واقفل الهاتف.',denied:'الإذن مرفوض. عدله في إعدادات الهاتف.',removed:'تم إيقاف التنبيهات على هذا الجهاز.'}})[L];}
+async function phoneAPI(action,data,retried){
+  /* Public gateway JWT, NOT a service key. The actual ES256 user token is
+     validated server-side with auth.getUser; never weaken gateway protection. */
+  var gateway='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbXB5ZmJpdG9pb3R4dXFveW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNzA5OTksImV4cCI6MjEwNTc0Njk5OX0.bK17fj4W4BKESuvxdEAKCtCELprFIvUBbPl-LVhyl2o';
+  if(!sbKlaar()||sbBasis()!=='https://mimpyfbitoiotxuqoymj.supabase.co')throw Error(phoneText().login);
+  var stop=new AbortController(),timer=setTimeout(function(){stop.abort();},15000),res;
+  try{res=await fetch(sbBasis()+'/functions/v1/atlas-push',{method:'POST',signal:stop.signal,headers:{apikey:SB.key,Authorization:'Bearer '+gateway,'x-atlas-user-token':SBSES.access_token,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:action},data||{}))});}finally{clearTimeout(timer);}
+  if(res.status===401&&!retried&&await sbVernieuw())return phoneAPI(action,data,true);
+  if(!res.ok)throw new Error(phoneText().pending);return res.json();
+}
+function phoneStartState(){
+  if(location.protocol==='file:')return 'local';
+  var ios=/iPad|iPhone|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var installed=navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+  if(ios&&!installed)return 'install';
+  if(!window.isSecureContext||!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return 'unsupported';
+  if(!sbKlaar())return 'login';
+  if(Notification.permission==='denied')return 'denied';
+  return 'ready';
+}
+function phoneGuideText(){return ({
+  fr:{start:'Activer mes alertes',ready:'Activez les alertes, puis autorisez les notifications. Un test sera programmé automatiquement.',install:'Sur iPhone : ouvrez Atlas dans Safari → Partager → Sur l’écran d’accueil → Ajouter. Ouvrez ensuite l’icône Atlas et revenez ici. iOS 16.4 ou plus récent requis.',installButton:'Voir les étapes iPhone',error:'Activation incomplète. Vérifiez votre connexion puis réessayez. Aucune réception n’est encore confirmée.',testError:'Appareil inscrit, mais le test n’a pas été programmé. Réessayez avec « Envoyer un test ».',checking:'Activation en cours…',manage:'Gérer cet appareil'},
+  nl:{start:'Mijn meldingen aanzetten',ready:'Zet meldingen aan en geef toestemming. Een test wordt automatisch ingepland.',install:'Op iPhone: open Atlas in Safari → Delen → Zet op beginscherm → Voeg toe. Open daarna het Atlas-pictogram en kom hier terug. iOS 16.4 of nieuwer vereist.',installButton:'Bekijk iPhone-stappen',error:'Activeren niet afgerond. Controleer je verbinding en probeer opnieuw. Ontvangst is nog niet bevestigd.',testError:'Apparaat aangemeld, maar de test is niet ingepland. Probeer « Test versturen ».',checking:'Bezig met activeren…',manage:'Dit apparaat beheren'},
+  ar:{start:'تفعيل تنبيهاتي',ready:'فعّل التنبيهات واسمح بالإشعارات. ستتم برمجة اختبار تلقائياً.',install:'على iPhone: افتح Atlas في Safari ← مشاركة ← إضافة إلى الشاشة الرئيسية. افتح أيقونة Atlas ثم عد إلى هنا. يلزم iOS 16.4 أو أحدث.',installButton:'خطوات iPhone',error:'لم يكتمل التفعيل. تحقق من الاتصال وحاول مجدداً. الاستلام غير مؤكد بعد.',testError:'تم تسجيل الجهاز لكن الاختبار لم يُبرمج. أعد المحاولة بزر الاختبار.',checking:'جارٍ التفعيل…',manage:'إدارة هذا الجهاز'}
+})[L];}
+function phoneBound(promise){
+  return new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(Error('worker-timeout'));},8000);Promise.resolve(promise).then(function(value){clearTimeout(timer);resolve(value);},function(error){clearTimeout(timer);reject(error);});});
+}
+async function phoneDiagnostic(local){
+  var reg=await phoneBound(navigator.serviceWorker.register('./push-sw.js'));await phoneBound(reg.update());
+  reg=await phoneBound(navigator.serviceWorker.ready);
+  var worker=reg.installing||reg.waiting;
+  if(worker&&worker.state!=='activated')await new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(Error('worker-timeout'));},8000);worker.addEventListener('statechange',function(){if(worker.state==='activated'){clearTimeout(timer);resolve();}else if(worker.state==='redundant'){clearTimeout(timer);reject(Error('worker-redundant'));}});});
+  return new Promise(function(resolve,reject){var channel=new MessageChannel(),timer=setTimeout(function(){channel.port1.close();reject(Error('worker-timeout'));},8000);channel.port1.onmessage=function(event){clearTimeout(timer);channel.port1.close();resolve(event.data);};if(!reg.active){clearTimeout(timer);channel.port1.close();reject(Error('worker-missing'));return;}reg.active.postMessage({type:'atlas-push-health',local:local===true},[channel.port2]);});
+}
+function phoneDiagnosticText(){return ({
+fr:{button:'Diagnostiquer les notifications',read:'Vérifier la réception push',local:'Test local demandé au système : ',none:'Aucune arrivée push enregistrée par ce navigateur.',receipt:'Dernière arrivée push : ',note:'Accepté ne signifie pas visible. Vérifiez Focus et les notifications système. Un test local ne teste pas l’envoi serveur.',error:'Diagnostic impossible : '},
+nl:{button:'Meldingen controleren',read:'Pushontvangst controleren',local:'Lokale test aan systeem aangeboden: ',none:'Deze browser heeft nog geen pushontvangst geregistreerd.',receipt:'Laatste push ontvangen: ',note:'Geaccepteerd betekent niet zichtbaar. Controleer Focus en systeemmeldingen. Een lokale test bewijst geen serververzending.',error:'Controle niet gelukt: '},
+ar:{button:'تشخيص الإشعارات',read:'التحقق من وصول الإشعار',local:'نتيجة الاختبار المحلي: ',none:'لم يسجل هذا المتصفح وصول إشعار بعد.',receipt:'آخر وصول: ',note:'القبول لا يثبت الظهور. تحقق من التركيز وإعدادات النظام. الاختبار المحلي لا يختبر الخادم.',error:'تعذر التشخيص: '}
+})[L];}
+function phoneSettingsContext(){return L+'|'+(sbKlaar()?((SBSES.user||{}).id||sbMail()||'signed-in'):'signed-out');}
+function mountPhoneSettings(){
+  var previous=$('phoneSettings'),context=phoneSettingsContext();
+  if(previous&&previous.atlasPhoneContext===context)return previous;
+  if(previous)previous.remove();
+  var panel=phonePanel();panel.atlasPhoneContext=context;$('stVer').parentNode.appendChild(panel);return panel;
+}
+function phonePanel(){
+  var tx=phoneText(),root=el('div','card');root.id='phoneSettings';root.appendChild(el('h2','ch',tx.title));root.appendChild(el('p','fine',tx.help));var status=el('p','fine',tx.pending);status.setAttribute('aria-live','polite');root.appendChild(status);
+  var guide=phoneGuideText(),state=phoneStartState();status.textContent=state==='install'?guide.install:state==='ready'?guide.ready:tx[state]||guide.error;
+  var on=el('button','btn',state==='install'?guide.installButton:guide.start),test=el('button','btn ghost',tx.test),off=el('button','btn ghost',tx.off),manage=el('details'),manageTitle=el('summary',null,guide.manage);on.type='button';root.appendChild(on);manage.appendChild(manageTitle);[test,off].forEach(function(b){b.type='button';manage.appendChild(b);});root.appendChild(manage);test.hidden=true;off.hidden=true;manage.hidden=true;
+  var dx=phoneDiagnosticText(),diagnostic=el('button','btn ghost',dx.button),readReceipt=el('button','btn ghost',dx.read),health=el('p','fine');health.setAttribute('aria-live','polite');[diagnostic,readReceipt].forEach(function(b){b.type='button';manage.appendChild(b);b.addEventListener('click',async function(){if(b.disabled)return;b.disabled=true;health.textContent=guide.checking;try{var result=await phoneDiagnostic(b===diagnostic);health.textContent=(b===diagnostic?dx.local+result.local+'. ':'')+(result.receipt?dx.receipt+result.receipt.receivedAt+' · '+result.receipt.state:dx.none)+' '+dx.note;}catch(e){health.textContent=dx.error+String(e.message||'Error');}finally{b.disabled=false;}});});manage.appendChild(health);
+  on.addEventListener('click',async function(){if(on.disabled)return;var state=phoneStartState();if(state!=='ready'){status.textContent=state==='install'?guide.install:tx[state]||guide.error;return;}on.disabled=true;status.textContent=guide.checking;try{
+    /* Keep the system permission request directly inside the deliberate tap,
+       before network awaits: iPhone requires a user gesture. */
+    var permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(permission!=='granted'){status.textContent=tx.denied;return;}
+    var config=await phoneAPI('config');if(!config.publicKey)throw new Error(tx.pending);
+    await navigator.serviceWorker.register('./push-sw.js');var reg=await navigator.serviceWorker.ready;
+    var key=Uint8Array.from(atob(config.publicKey.replace(/-/g,'+').replace(/_/g,'/')),function(c){return c.charCodeAt(0);});
+    var sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+    await phoneAPI('subscribe',{subscription:sub.toJSON(),language:L});status.textContent=tx.active;test.hidden=false;off.hidden=false;on.hidden=true;manage.hidden=false;
+    try{await phoneAPI('test',{endpoint:sub.endpoint});status.textContent=tx.sent;}catch(e){status.textContent=guide.testError;manage.open=true;}
+  }catch(e){status.textContent=guide.error;}finally{on.disabled=false;}});
+  test.addEventListener('click',async function(){test.disabled=true;try{var reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(!sub)throw Error();await phoneAPI('test',{endpoint:sub.endpoint});status.textContent=tx.sent;}catch(e){status.textContent=tx.pending;}finally{test.disabled=false;}});
+  off.addEventListener('click',async function(){off.disabled=true;try{var reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){await phoneAPI('unsubscribe',{endpoint:sub.endpoint});await sub.unsubscribe();}status.textContent=tx.removed;on.hidden=false;off.hidden=true;test.hidden=true;manage.hidden=true;manage.open=false;}catch(e){status.textContent=guide.error;}finally{off.disabled=false;}});
+  if(location.protocol!=='file:'&&sbKlaar()&&navigator.serviceWorker){(async function(){try{var reg=await navigator.serviceWorker.getRegistration(),sub=reg&&await reg.pushManager.getSubscription();if(!sub)return;var result=await phoneAPI('status',{endpoint:sub.endpoint});if(result.registered){status.textContent=tx.active;on.hidden=true;off.hidden=false;test.hidden=false;manage.hidden=false;}}catch(e){}})();}
+  return root;
+}
+function maintenanceText(){ return ({
+fr:{title:"Entretien et prévention",attention:"À prévoir pour vos voitures",add:"Ajouter un rappel",task:"Intervention",km:"À faire au kilométrage (km)",date:"Ou avant le",source:"Référence : carnet ou garage",help:"Renseignez les échéances du constructeur ou du garage pour ce moteur. Aucune fréquence n’est devinée. Alerte 1 000 km ou 30 jours avant ; la première limite atteinte compte.",empty:"Aucun entretien planifié — cela ne signifie pas que tout est à jour.",save:"Enregistrer le rappel",done:"Intervention effectuée",confirm:"Confirmer que cette intervention a réellement été effectuée ? Le rappel sera archivé, sans inventer la prochaine échéance ni enregistrer un paiement.",overdue:"À faire maintenant",soon:"À prévoir",unknown:"Kilométrage inconnu : à vérifier",invalid:"Indiquez une intervention et au moins une échéance valide (km ou date).",history:"Interventions enregistrées",next:"Après intervention, ajoutez la prochaine échéance et saisissez la facture dans les dépenses si nécessaire.",types:["Vidange et filtres","Courroie de distribution","Freins : contrôle","Pneus : contrôle","Batterie : contrôle","Autre intervention"]},
+nl:{title:"Onderhoud en preventie",attention:"Aandacht voor je auto's",add:"Herinnering toevoegen",task:"Werkzaamheden",km:"Uitvoeren bij kilometerstand (km)",date:"Of uiterlijk op",source:"Bron: onderhoudsboekje of garage",help:"Gebruik de termijnen van fabrikant of garage voor deze motor. Geen verzonnen intervallen. Waarschuwing 1.000 km of 30 dagen vooraf; de eerste grens telt.",empty:"Geen onderhoud gepland — dit betekent niet dat alles in orde is.",save:"Herinnering bewaren",done:"Onderhoud uitgevoerd",confirm:"Is dit onderhoud werkelijk uitgevoerd? De herinnering wordt gearchiveerd; geen automatische volgende termijn of betaling.",overdue:"Nu uitvoeren",soon:"Binnenkort uitvoeren",unknown:"Kilometerstand onbekend: controleren",invalid:"Vul werkzaamheden en minstens één geldige termijn in (km of datum).",history:"Geregistreerd onderhoud",next:"Voeg na onderhoud de volgende termijn toe en registreer zo nodig de factuur bij uitgaven.",types:["Olie en filters","Distributieriem","Remmen controleren","Banden controleren","Accu controleren","Andere werkzaamheden"]},
+ar:{title:"الصيانة والوقاية",attention:"سيارات تحتاج انتباهك",add:"إضافة تذكير",task:"نوع الصيانة",km:"عند عداد الكيلومترات",date:"أو قبل تاريخ",source:"المرجع: دفتر الصيانة أو المرآب",help:"استعمل آجال المصنع أو المرآب لهذا المحرك. تنبيه قبل 1000 كم أو 30 يوماً؛ أول حد يُبلغ هو المعتمد.",empty:"لا صيانة مبرمجة — هذا لا يعني أن كل شيء سليم.",save:"حفظ التذكير",done:"تمت الصيانة",confirm:"هل أُنجزت الصيانة فعلاً؟ سيتم حفظها في السجل دون إنشاء موعد أو دفع تلقائي.",overdue:"مطلوب الآن",soon:"قريباً",unknown:"العداد غير معروف: تحقق",invalid:"أدخل نوع الصيانة وموعداً صالحاً بالكيلومترات أو التاريخ.",history:"سجل الصيانة",next:"أضف الموعد المقبل وسجل الفاتورة في المصاريف عند الحاجة.",types:["الزيت والفلاتر","حزام التوزيع","فحص الفرامل","فحص الإطارات","فحص البطارية","صيانة أخرى"]}
+})[L]; }
+function maintenanceStatus(c,task,day){
+  if(task.completedAt) return {status:"done"};
+  var hasKm=task.dueKm!==null && task.dueKm!=="" && Number.isFinite(Number(task.dueKm)) && Number(task.dueKm)>0;
+  var hasDate=!!task.dueDate && echteDatum(task.dueDate);
+  var known=c.km!==null && c.km!=="" && Number.isFinite(Number(c.km)) && Number(c.km)>=0;
+  var kmLeft=hasKm&&known?Number(task.dueKm)-Number(c.km):null;
+  var daysLeft=hasDate?dayDiff(day||today(),task.dueDate):null;
+  var status=(kmLeft!==null&&kmLeft<=0)||(daysLeft!==null&&daysLeft<=0)?"overdue":(kmLeft!==null&&kmLeft<=1000)||(daysLeft!==null&&daysLeft<=30)?"soon":hasKm&&!known?"unknown":(!hasKm&&!hasDate)?"unknown":"planned";
+  return {status:status,kmLeft:kmLeft,daysLeft:daysLeft};
+}
+function maintenanceAlerts(cars,day){
+  var out=[]; cars.forEach(function(c){(c.maintenance||[]).forEach(function(task){var s=maintenanceStatus(c,task,day);if(["overdue","soon","unknown"].indexOf(s.status)>=0) out.push(Object.assign({car:c,task:task},s));});});
+  var rank={overdue:0,unknown:1,soon:2};return out.sort(function(a,b){return rank[a.status]-rank[b.status];});
+}
+function maintenanceLabel(a){var tx=maintenanceText();return (tx[a.status]||tx.soon)+(a.task.dueKm?" · "+kmf(a.task.dueKm):"")+(a.task.dueDate?" · "+dShort(a.task.dueDate):"");}
+function maintenancePanel(c){
+  var tx=maintenanceText(),box=el("div","card");box.style.marginTop="12px";box.appendChild(el("h2","ch",tx.title));
+  var visual=vehicleVisual(c);box.appendChild(visual.root);
+  var tasks=c.maintenance||[],active=tasks.filter(function(x){return !x.completedAt;});
+  if(!active.length) box.appendChild(el("p","fine",tx.empty));
+  active.forEach(function(task){var st=maintenanceStatus(c,task),row=el("div","row"),left=el("div");left.appendChild(el("b",null,task.label));left.appendChild(el("p",st.status==="overdue"?"neg":"fine",maintenanceLabel(Object.assign({task:task},st))));if(task.source)left.appendChild(el("p","fine",task.source));row.appendChild(left);
+    var done=el("button","btn ghost sm",tx.done);done.type="button";done.addEventListener("click",async function(){if(done.disabled||!await ask(tx.confirm,tx.done))return;done.disabled=true;try{var fresh=await S.get("vehicles/"+c.id);if(!fresh)return;var items=(fresh.maintenance||[]).map(function(x){return x.id===task.id&&!x.completedAt?Object.assign({},x,{completedAt:today(),completedKm:fresh.km}):x;});await S.set("vehicles/"+c.id,Object.assign({},fresh,{maintenance:items}));await reload();carEdit=car(c.id);paintCarSide();toast(tx.next);}catch(e){dbErr(e);}finally{done.disabled=false;}});row.appendChild(done);box.appendChild(row);
+  });
+  var details=document.createElement("details");details.appendChild(el("summary",null,tx.add));details.appendChild(el("p","fine",tx.help));
+  function input(label,type){var wrap=el("label","f");wrap.appendChild(el("span","lbl",label));var inp=document.createElement("input");inp.type=type;inp.setAttribute("aria-label",label);wrap.appendChild(inp);details.appendChild(wrap);return inp;}
+  var label=input(tx.task,"text");label.placeholder=tx.types.join(" · ");
+  var part=document.createElement("select");part.setAttribute("aria-label",vehicleText().part);
+  vehicleParts().forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.label;part.appendChild(o);});part.value='other';details.appendChild(part);
+  var km=input(tx.km,"number");km.min="1";km.step="1";var date=input(tx.date,"date"),source=input(tx.source,"text");
+  var save=el("button","btn",tx.save);save.type="button";save.addEventListener("click",async function(){if(save.disabled)return;var k=km.value.trim(),d=date.value;if(!label.value.trim()||(!k&&!d)||(k&&(!Number.isInteger(Number(k))||Number(k)<=0))||(d&&!echteDatum(d))){toast(tx.invalid);return;}save.disabled=true;try{var fresh=await S.get("vehicles/"+c.id);if(!fresh)return;var task={id:uid(),label:label.value.trim(),part:part.value,dueKm:k?Number(k):null,dueDate:d||"",source:source.value.trim(),createdAt:today()};await S.set("vehicles/"+c.id,Object.assign({},fresh,{maintenance:(fresh.maintenance||[]).concat(task)}));await reload();carEdit=car(c.id);paintCarSide();toast(T().saved);}catch(e){dbErr(e);}finally{save.disabled=false;}});details.appendChild(save);box.appendChild(details);
+  var history=tasks.filter(function(x){return x.completedAt;});if(history.length){var h=document.createElement("details");h.appendChild(el("summary",null,tx.history+" · "+history.length));history.forEach(function(x){h.appendChild(el("p","fine",x.label+" · "+dShort(x.completedAt)+(x.completedKm!=null?" · "+kmf(x.completedKm):"")));});box.appendChild(h);}
+  return box;
 }
 function openCar(c){
   var t=T(); carEdit=c;
@@ -8825,6 +9072,7 @@ function paintCarSide(){
   h.appendChild(g);
   if(pl.due>0){ var dl=el("div","row"); dl.style.cssText="margin-top:12px;border-top:1px solid rgba(255,255,255,.18);padding-top:10px"; dl.appendChild(el("span","k",t.plDue)); dl.appendChild(el("span","v",dh(pl.due))); h.appendChild(dl); }
   s.appendChild(h);
+  s.appendChild(maintenancePanel(c));
   var more=el("button","link",CARMORE?t.plLess:t.plMore); more.type="button"; more.style.cssText="margin-top:10px";
   more.addEventListener("click",function(){ CARMORE=!CARMORE; paintCarSide(); });
   s.appendChild(more);
@@ -8866,7 +9114,8 @@ async function saveCar(){
     purchasePrice:Number($("cwPrice").value)||0, purchaseDate:$("cwBought").value||"", loanMonthly:Number($("cwLoan").value)||0, loanMonthsLeft:Number($("cwLoanN").value)||0 };
   /* na de allereerste auto meteen naar Vandaag: daar begint het verhuren */
   var eersteAuto=!carEdit && !CARS.length;
-  await S.set("vehicles/"+(carEdit?carEdit.id:uid()),data); await reload(); naarKlaar(eersteAuto?"vDay":"vFleet"); toast(t.saved);
+  var bestaand=carEdit?await S.get("vehicles/"+carEdit.id):{};
+  await S.set("vehicles/"+(carEdit?carEdit.id:uid()),Object.assign({},bestaand||{},data)); await reload(); naarKlaar(eersteAuto?"vDay":"vFleet"); toast(t.saved);
 }
 async function delCar(){
   if(!carEdit){ naarKlaar("vFleet"); return; }
@@ -8880,6 +9129,7 @@ async function delCar(){
 /* ============ INSTELLINGEN ============ */
 var ATLASVER="138";
 function fillSettings(){
+  mountPhoneSettings();
   $("stVer").textContent="Atlas versie "+ATLASVER;
   var t=T();
   $("stOcrH").textContent=t.stOcrH; $("stOcrP").textContent=t.stOcrP;
@@ -8909,6 +9159,8 @@ async function saveSettings(){
 
 /* ============ OVERDRACHT ============ */
 function openForm(r,kind){
+  if(!r || r.cancelled || (kind==="retour" && (!r.depart || r.retour)) || (kind==="depart" && r.depart)) return;
+  if(kind==="depart" && r.from>today()){ toast(flowText().futureDeparture); return; }
   var t=T(); rental=r; mode=kind;
   var c=car(r.vehicleId), ref=r.depart;
   draft={ marks:[], shots:{}, km:"", fuel:null, sig:null, kindIdx:0, noDmg:false };
@@ -9076,22 +9328,16 @@ function tekenStapKnoppen(st){
 var FSTAP=0;
 function formKaarten(){ return Array.prototype.slice.call($("vForm").querySelectorAll(".two > div:first-child > .card")); }
 function toonStap(){
-  var t=T(), kaarten=formKaarten(), laatste=kaarten.length;
-  $("vForm").querySelector(".two").classList.add("stappen");
-  kaarten.forEach(function(k,i){ k.classList.toggle("stapuit", i!==FSTAP); });
-  $("side").classList.toggle("stapuit", FSTAP!==laatste);
+  var kaarten=formKaarten(); FSTAP=kaarten.length;
+  $("vForm").classList.add("simple-flow");
+  $("vForm").querySelector(".two").classList.remove("stappen");
+  kaarten.forEach(function(k){ k.classList.remove("stapuit"); });
+  $("side").classList.remove("stapuit");
+  $("side").hidden=mode==="depart";
+  tekenDrieFasen($("vForm"),mode==="depart"?1:2);
+  compacteControle();
   var sv=$("fSamenvat"); if(sv) sv.remove();
-  if(FSTAP===laatste){
-    var st=steps(), ul=el("ul","samenvat"); ul.id="fSamenvat";
-    st.forEach(function(x,i){ var li=el("li"); li.appendChild(el("span",null,(x.ok?"\u2713 ":"\u25cb ")+stapNaam(i)));
-      var r=el("span"); r.appendChild(el("b",null,x.txt+" "));
-      var w=el("button",null,t.fWijzig); w.type="button"; w.addEventListener("click",function(){ FSTAP=i; toonStap(); }); r.appendChild(w);
-      li.appendChild(r); ul.appendChild(li); });
-    var kop=el("h2","ch",t.fOverzicht); var doos=el("div","card"); doos.id="fSamenvat"; doos.appendChild(kop); doos.appendChild(ul);
-    $("side").insertBefore(doos,$("side").firstChild);
-  }
-  if(FSTAP===3) setTimeout(function(){ sizeSig(); if(draft && draft.sig) paintSig(draft.sig); },30);
-  window.scrollTo(0,0);
+  setTimeout(function(){ sizeSig(); if(draft && draft.sig) paintSig(draft.sig); },30);
   refresh();
 }
 /* "1 jour", "2 jours": enkelvoud bij 1, in elke taal. */
@@ -9150,30 +9396,32 @@ function refresh(){
   if(!draft) return;
   var t=T(), st=steps(), done=st.filter(function(s){return s.ok;}).length;
   st.forEach(function(s,i){ $(s.id).className="step"+(s.ok?" on":""); $(s.id).textContent=s.ok?"✓":String(i+1); var n=$(s.state); n.textContent=s.txt; n.className="state"+(s.ok?" ok":""); });
-  $("prog").hidden=false; $("progTxt").textContent=done===4?t.progAll:done+" "+t.progDone; $("progWho").textContent=rental?rental.clientName:""; $("progBar").style.width=(done/4*100)+"%";
-  tekenStapKnoppen(st);
+  $("prog").hidden=true;
   toonKmMelding();
-  var laatste=formKaarten().length;
-  if(FSTAP<laatste){
-    $("bGo").textContent=t.fVolgende; $("bGo").disabled=!magDoor(st[FSTAP]);
-    $("bBack").textContent = FSTAP>0 ? t.fVorige : t.back;
-    $("progTxt").textContent=t.fStapVan(FSTAP+1,laatste+1);
-  } else {
-    $("bGo").textContent = mode==="depart"?t.goDepart:t.goRetour; $("bGo").disabled=!st.every(magDoor);
-    $("bBack").textContent=t.fVorige;
-    $("progTxt").textContent=t.fStapVan(laatste+1,laatste+1)+" \u00b7 "+t.fOverzicht;
-  }
+  FSTAP=formKaarten().length;
+  $("bGo").textContent=mode==="depart"?t.goDepart:simpleText().toSettlement;
+  $("bGo").disabled=!st.every(magDoor);
+  $("side").hidden=mode==="depart" || !st.every(magDoor);
+  $("bBack").textContent=t.back;
   $("note").textContent = st.every(magDoor)?(mode==="depart"?t.noteDepart:t.noteRetour):t.stillNeed+st.filter(function(s){return !magDoor(s);}).map(function(s){ return t.missing[s.id]; }).join(", ");
 }
 async function finishHandover(){
-  delete DRAFTS[rental.id+"|"+mode];
+  if(HANDOVERBEWAREN || !rental || !draft || !steps().every(magDoor)) return;
+  if(mode==="retour" && (!rental.depart || rental.retour || rental.cancelled)) return;
+  if(mode==="depart" && (rental.depart || rental.cancelled || rental.from>today())) return;
+  if(mode==="depart" && huurConflict(car(rental.vehicleId),rental.from,rental.to,rental.id)){ toast(T().nwClash); return; }
+  HANDOVERBEWAREN=true;
+  try{
   var rec={ marks:draft.marks.map(function(m){ return {x:m.x,y:m.y,ki:m.ki}; }), shots:draft.shots, km:Number(draft.km), fuel:draft.fuel, sig:draft.sig||null, at:new Date().toISOString() };
   var patch={}; patch[mode]=rec; if(mode==="depart") patch.limit=limitDate(rental);
   var next=Object.assign({},rental,patch);
   await S.set("rentals/"+rental.id,stripId(next));
+  delete DRAFTS[rental.id+"|"+mode];
   var c=car(rental.vehicleId); if(rec.km && rec.km>(c.km||0)){ c.km=rec.km; await S.set("vehicles/"+c.id,stripId(c)); }
   await reload(); rental=RENTALS.filter(function(x){ return x.id===next.id; })[0]||next; receipt(rental,mode);
+  } finally { HANDOVERBEWAREN=false; }
 }
+var HANDOVERBEWAREN=false;
 
 /* ============ BON ============ */
 function betaaldBlok(r){
@@ -9203,6 +9451,8 @@ function receipt(r,kind){
   LAATSTEBON={ id:r.id, mode:kind };
   var t=T(), c=car(r.vehicleId), rec=r[kind]||null;
   rental=r;
+  $("vDone").classList.add("simple-flow");
+  tekenDrieFasen($("vDone"),r.retour?3:1);
   $("rTitle").textContent = (kind==="depart" && rec && rec.snel) ? t.rSnelKlaar : (kind==="depart"?t.rDepart:t.rRetour); $("rSub").innerHTML=esc(r.clientName)+" · "+esc(c.model)+" "+plateHTML(c);
   var main=$("rMain"); main.innerHTML="";
   var card=el("div","card"); card.appendChild(Object.assign(el("h2","ch"),{textContent:t.rWhat}));
@@ -9214,13 +9464,17 @@ function receipt(r,kind){
       row(t.rReturned,dh(ret)); if(held>0) row(t.rWithheld,dh(held));
       if(held>0 && r.withholdNote){ var nr=el("div","row"); nr.appendChild(el("span","k",t.rWithholdNote)); nr.appendChild(el("span","v",r.withholdNote)); card.appendChild(nr); }
     }
-    main.appendChild(card);
+    if(kind==="retour"){var recordDetails=document.createElement("details"); recordDetails.className="simple-details"; recordDetails.appendChild(el("summary",null,t.rWhat)); recordDetails.appendChild(card); main.appendChild(recordDetails);} else main.appendChild(card);
   } else {
     card.appendChild(Object.assign(el("p","fine"),{textContent:t.rNoDoc}));
     row(t.rCaution,dh(r.caution));
     main.appendChild(card);
   }
-  main.appendChild(payPanel(r));
+  if(r.retour){
+    var ledger=document.createElement("details"); ledger.className="simple-details";
+    ledger.appendChild(el("summary",null,simpleText().paymentDetails)); ledger.appendChild(payPanel(r)); main.appendChild(ledger);
+    if(dueRent(r)+dueExtras(r)>0){ ledger.open=true; }
+  } else main.appendChild(payPanel(r));
   /* Bij het vertrek hoeft de verhuurder dit niet te lezen: het staat op het
      contract. Het blijft bereikbaar onder één klapje. */
   if(kind==="depart" && rec){
@@ -9230,6 +9484,7 @@ function receipt(r,kind){
     main.appendChild(dt);
   }
   if(rec && kind==="retour"){
+    var extraDetails=document.createElement("details"); extraDetails.className="simple-details"; extraDetails.appendChild(el("summary",null,flowText().extras+(extraTotal(r)?" · "+dh(extraTotal(r)):""))); extraDetails.appendChild(extraCostsPanel(r)); main.appendChild(extraDetails);
     var cc=el("div","card"); cc.appendChild(Object.assign(el("h2","ch"),{textContent:t.cmpH})); var any=false;
     angles().forEach(function(a){
       var x=r.depart&&r.depart.shots?r.depart.shots[a.k]:null, y=r.retour&&r.retour.shots?r.retour.shots[a.k]:null; if(!x&&!y) return; any=true;
@@ -9237,11 +9492,12 @@ function receipt(r,kind){
       [[t.cmpDep,x],[t.cmpRet,y]].forEach(function(p){ var f=document.createElement("figure"); f.appendChild(el("figcaption",null,p[0])); if(p[1]){ var im=el("img"); im.src=srcOf(p[1]); im.alt=a.l; f.appendChild(im); } else f.appendChild(el("div","nope",t.cmpNo)); g.appendChild(f); });
       cc.appendChild(g);
     });
-    if(!any) cc.appendChild(Object.assign(el("p","fine"),{textContent:t.cmpNoDep})); main.appendChild(cc);
+    if(!any) cc.appendChild(Object.assign(el("p","fine"),{textContent:t.cmpNoDep}));
+    var compareDetails=document.createElement("details"); compareDetails.className="simple-details"; compareDetails.appendChild(el("summary",null,t.cmpH)); compareDetails.appendChild(cc); main.appendChild(compareDetails);
   }
   var side=$("rSide"); side.innerHTML="";
   if(!rec){
-    if(!r.released && r.caution>0 && kind==="retour") side.appendChild(settlePanel(r));
+    if(!r.released && paidCaution(r)>0 && kind==="retour" && r.retour) side.appendChild(settlePanel(r));
   } else if(kind==="depart"){
     /* Het contract is waarvoor de verhuurder hier staat, dus het staat bovenaan
        en als volle knop. De borgbelofte en de rest lezen mag daarna. */
@@ -9259,19 +9515,27 @@ function receipt(r,kind){
       side.appendChild(fb);
     }
   } else {
-    if(rec){
+    if(rec && !r.released){
       var v=el("div","verdict"); v.id="verdict"; side.appendChild(v);
       var keep=[rental,mode,draft]; rental=r; mode="retour";
       draft={ marks:(rec.marks||[]).map(function(m){ return {x:m.x,y:m.y,ki:m.ki,fresh:true}; }), shots:rec.shots, km:String(rec.km), fuel:rec.fuel, sig:rec.sig, noDmg:false };
       updateVerdict(); rental=keep[0]; mode=keep[1]; draft=keep[2];
     }
-    if(!r.released && r.caution>0) side.appendChild(settlePanel(r));
+    if(!r.released && paidCaution(r)>0) side.appendChild(settlePanel(r));
   }
   if(kind!=="depart"){ var kb=el("button","btn ghost",t.kcBtn); kb.style.cssText="margin-top:10px;width:100%"; kb.addEventListener("click",function(){ openCard(r); }); side.appendChild(kb); }
-  if(!r.cancelled) $("rMain").appendChild(contractVerwijderKnop(r));
+  if(r.retour){
+    $("rTitle").textContent=simpleText().settlement;
+    var summary=el("div","card simple-balance");
+    var balances=[[T().payDue,dueRent(r)+dueExtras(r)],[T().hBorgKort,r.released?0:paidCaution(r)],[T().rReturned,Number(r.cautionReturned)||0]];
+    if(Number(r.cautionWithheld)>0) balances.push([T().rWithheld,Number(r.cautionWithheld)]);
+    balances.forEach(function(x){ var line=el("div","row"); line.appendChild(el("span",null,x[0])); line.appendChild(el("b",null,dh(x[1]))); summary.appendChild(line); });
+    main.insertBefore(summary,main.firstChild);
+  }
+  if(!r.cancelled){ var management=document.createElement("details"); management.className="simple-details"; management.appendChild(el("summary",null,T().editRental)); management.appendChild(contractVerwijderKnop(r)); $("rMain").appendChild(management); }
   show("vDone"); $("prog").hidden=true;
   $("bBack").hidden=true;
-  $("bGo").disabled=false; $("bGo").textContent=t.klaarKnop;
+  $("bGo").disabled=false; $("bGo").textContent=r.retour?(stepOf(r)===4?simpleText().finish:t.betLater):t.klaarKnop;
   $("note").textContent=""; draft=null;
 }
 
@@ -9284,24 +9548,43 @@ function settlePanel(r){
   box.appendChild(Object.assign(el("h2","ch"),{textContent:t.settleH}));
   if(full!==(Number(r.caution)||0)) box.appendChild(Object.assign(el("p","fine"),{textContent:t.settleGap(dh(Number(r.caution)||0),dh(full)),style:"margin:0 0 12px"}));
   var f1=el("div","f"); f1.appendChild(Object.assign(el("label","lbl"),{textContent:t.settleReturnedL}));
-  var amt=document.createElement("input"); amt.type="number"; amt.inputMode="numeric"; amt.min="0"; amt.max=String(full); amt.value=String(full);
+  var amt=document.createElement("input"); amt.type="number"; amt.inputMode="decimal"; amt.step="0.01"; amt.setAttribute("aria-label",t.settleReturnedL); amt.min="0"; amt.max=String(full); amt.value=String(full);
   f1.appendChild(amt); box.appendChild(f1);
   var calc=el("div","calc"); calc.style.marginTop="12px";
   var line=el("div","line"); line.appendChild(el("span",null,t.settleWithheldL)); var heldSpan=el("span",null,dh(0)); line.appendChild(heldSpan); calc.appendChild(line);
   box.appendChild(calc);
-  var f2=el("div","f"); f2.style.marginTop="12px"; f2.appendChild(Object.assign(el("label","lbl"),{textContent:t.settleNoteL}));
-  var note=document.createElement("input"); note.type="text"; note.autocomplete="off"; f2.appendChild(note); box.appendChild(f2);
+  var f2=el("div","f"); f2.style.marginTop="12px"; f2.appendChild(Object.assign(el("label","lbl"),{textContent:flowText().reasonRequired}));
+  var note=document.createElement("input"); note.type="text"; note.setAttribute("aria-label",flowText().reasonRequired); note.autocomplete="off"; f2.appendChild(note); box.appendChild(f2);
+  var apply=document.createElement("input"); apply.type="checkbox";
+  var applyLabel=el("label","fine"); applyLabel.appendChild(apply); applyLabel.appendChild(el("span",null,flowText().applyRetention));
+  if(dueRent(r)+dueExtras(r)>0) box.appendChild(applyLabel);
+  var refund=document.createElement("select"); refund.setAttribute("aria-label",t.payHow);
+  ["cash","card","transfer"].forEach(function(m){ var o=document.createElement("option"); o.value=m; o.textContent=t.payMethods[m]; refund.appendChild(o); }); box.appendChild(refund);
   function clampedHeld(){ var v=Number(amt.value); if(isNaN(v)) v=0; v=Math.max(0,Math.min(full,v)); return full-v; }
   amt.addEventListener("input",function(){ heldSpan.textContent=dh(clampedHeld()); });
   var go=el("button","btn",t.settleBtn); go.style.cssText="margin-top:14px;width:100%";
   go.addEventListener("click",async function(){
     var v=Number(amt.value);
-    if(isNaN(v)||v<0||v>full){ toast(t.settleBad); return; }
-    var withheld=full-v, patch={released:true,releasedAt:today(),cautionReturned:v,cautionWithheld:withheld,withholdNote:note.value.trim()};
+    if(go.disabled) return;
+    if(!r.retour || r.released || !Number.isFinite(v)||v<0||v>full){ toast(t.settleBad); return; }
+    if(full-v>0 && !note.value.trim()){ toast(flowText().reasonRequired); note.focus(); return; }
+    go.disabled=true;
+    try{
+    var patch=settlementPatch(r,v,note.value.trim(),refund.value,apply.checked);
     await S.set("rentals/"+r.id,stripId(Object.assign({},r,patch)));
-    await reload(); naarKlaar("vLed"); toast(t.saved);
+    await reload(); receipt(RENTALS.find(function(x){ return x.id===r.id; }),"retour"); toast(t.saved);
+    } finally { go.disabled=false; }
   });
   box.appendChild(go);
+  var options=document.createElement("details"); options.className="simple-details";
+  options.appendChild(el("summary",null,({fr:"Autre montant ou mode de restitution",nl:"Ander bedrag of terugbetaalwijze",ar:"مبلغ أو طريقة إرجاع أخرى"})[L]));
+  [f1,calc,f2,applyLabel,refund].forEach(function(n){ if(n.parentNode===box) options.appendChild(n); });
+  box.insertBefore(options,go);
+  function paintRefund(){
+    f2.hidden=clampedHeld()<=0;
+    go.textContent=({fr:"Rendre",nl:"Teruggeven",ar:"إرجاع"})[L]+" "+dh(Number(amt.value)||0)+" · "+t.payMethods[refund.value];
+  }
+  amt.addEventListener("input",paintRefund); refund.addEventListener("change",paintRefund); paintRefund();
   return box;
 }
 
@@ -10040,11 +10323,47 @@ async function makeContract(r,btn){
 /* ============ BETALINGEN EN KAS ============
    Tot nu toe wist Atlas alleen wat er afgesproken was. Hier komt bij wat er echt
    betaald is, zodat de kassa 's avonds klopt. */
+function flowText(){ var tx=({
+  fr:{review:"J’ai comparé les informations avec les documents originaux.",reviewRequired:"Vérifiez les champs puis confirmez la lecture des documents.",badAmount:"Saisissez un montant positif ou zéro.",reasonRequired:"Indiquez la raison du montant retenu.",depositClosed:"La caution est déjà clôturée ou la voiture est revenue.",futureDeparture:"Le départ est prévu plus tard. Modifiez les dates si nécessaire.",reserved:"Réservée",extras:"Frais supplémentaires",extraDue:"Frais restant à payer",description:"Motif : carburant, retard, dommage…",addCharge:"Ajouter ces frais",received:"Paiement reçu",unpaid:"Non encaissé : aucun paiement ne sera enregistré."},
+  nl:{review:"Ik heb de gegevens met de originele documenten vergeleken.",reviewRequired:"Controleer de velden en bevestig de documentcontrole.",badAmount:"Vul een positief bedrag of nul in.",reasonRequired:"Vul de reden voor de inhouding in.",depositClosed:"De borg is afgehandeld of de auto is terug.",futureDeparture:"Het vertrek is later gepland. Pas zo nodig de datums aan.",reserved:"Gereserveerd",extras:"Extra kosten",extraDue:"Nog te betalen extra kosten",description:"Reden: brandstof, vertraging, schade…",addCharge:"Kosten toevoegen",received:"Betaling ontvangen",unpaid:"Nog niet ontvangen: er wordt geen betaling geboekt."},
+  ar:{review:"راجعت المعلومات مع الوثائق الأصلية.",reviewRequired:"راجع الحقول وأكد مراجعة الوثائق.",badAmount:"أدخل مبلغا موجبا أو صفرا.",reasonRequired:"اذكر سبب الاقتطاع.",depositClosed:"تمت تسوية الضمان أو رجعت السيارة.",futureDeparture:"المغادرة مقررة لاحقا. عدل التواريخ عند الحاجة.",reserved:"محجوزة",extras:"مصاريف إضافية",extraDue:"مصاريف متبقية",description:"السبب: وقود، تأخير، ضرر…",addCharge:"إضافة المصاريف",received:"تم استلام الدفع",unpaid:"لم يتم الاستلام: لن يسجل أي دفع."}
+})[L]||{};
+  tx.applyRetention=({fr:"Utiliser la retenue pour régler le solde (sans nouvel encaissement)",nl:"Inhouding verrekenen met het openstaande saldo (geen nieuwe ontvangst)",ar:"تسوية الرصيد من الضمان دون تسجيل قبض جديد"})[L];
+  return tx;
+}
+function extraCostsPanel(r){
+  var tx=flowText(), box=el("div","card"); box.appendChild(el("h2","ch",tx.extras));
+  box.appendChild(el("p","fine",paymentText().charge));
+  (r.charges||[]).forEach(function(x){ var row=el("div","row"); row.appendChild(el("span",null,x.note)); row.appendChild(el("b",null,dh(x.amount))); box.appendChild(row); });
+  var note=document.createElement("input"); note.type="text"; note.placeholder=tx.description; note.setAttribute("aria-label",tx.description); box.appendChild(note);
+  var amount=document.createElement("input"); amount.type="number"; amount.min="0.01"; amount.step="0.01"; amount.placeholder="DH"; amount.setAttribute("aria-label",tx.extras+" (DH)"); box.appendChild(amount);
+  var go=el("button","btn ghost",tx.addCharge); go.type="button";
+  go.addEventListener("click",async function(){
+    if(go.disabled) return;
+    var value=Number(amount.value); if(!Number.isFinite(value)||value<=0||!note.value.trim()){ toast(tx.description); return; }
+    go.disabled=true;
+    try{
+      var fresh=await S.get("rentals/"+r.id); if(!fresh || !fresh.retour || fresh.cancelled) return;
+      var charges=(fresh.charges||[]).concat({id:uid(),amount:Math.round(value*100)/100,note:note.value.trim(),date:today()});
+      await S.set("rentals/"+r.id,Object.assign({},fresh,{charges:charges})); await reload(); receipt(RENTALS.find(function(x){return x.id===r.id;}),"retour");
+    } finally {go.disabled=false;}
+  });
+  box.appendChild(go); return box;
+}
 function pays(r){ return (r&&r.payments)||[]; }
-function paidRent(r){ return pays(r).filter(function(x){ return x.kind!=="caution"; }).reduce(function(a,x){ return a+(Number(x.amount)||0); },0); }
+function paidRent(r){ return (Number(r.cautionAppliedRent)||0)+pays(r).filter(function(x){ return x.kind==="rent" || x.kind==="refund"; }).reduce(function(a,x){ return a+(Number(x.amount)||0); },0); }
+function extraTotal(r){ return (r.charges||[]).reduce(function(a,x){ return a+(Number(x.amount)||0); },0); }
+function paidExtras(r){ return (Number(r.cautionAppliedExtras)||0)+pays(r).filter(function(x){ return x.kind==="extra"; }).reduce(function(a,x){ return a+(Number(x.amount)||0); },0); }
+function dueExtras(r){ return Math.max(0,extraTotal(r)-paidExtras(r)); }
+function settlementPatch(r,returned,note,method,apply){
+  var withheld=paidCaution(r)-returned;
+  var rent=apply?Math.min(withheld,dueRent(r)):0;
+  var extra=apply?Math.min(withheld-rent,dueExtras(r)):0;
+  return {released:true,releasedAt:today(),cautionReturned:returned,cautionWithheld:withheld,withholdNote:note,refundMethod:method,cautionAppliedRent:rent,cautionAppliedExtras:extra};
+}
 function paidCaution(r){ return pays(r).filter(function(x){ return x.kind==="caution"; }).reduce(function(a,x){ return a+(Number(x.amount)||0); },0); }
 function dueRent(r){ return Math.max(0,(Number(r.total)||0)-paidRent(r)); }
-function dueCaution(r){ return Math.max(0,(Number(r.caution)||0)-paidCaution(r)); }
+function dueCaution(r){ return r.retour || r.released || r.cancelled ? 0 : Math.max(0,(Number(r.caution)||0)-paidCaution(r)); }
 
 /* Alle geldbewegingen van één dag: binnen uit betalingen, buiten uit teruggegeven borg. */
 /* Alle verhuren, ook geannuleerde: geld dat gisteren binnenkwam mag vandaag niet
@@ -10091,13 +10410,13 @@ function renderCash(){
     box.appendChild(row);
   });
   /* wat er nog openstaat, ongeacht de dag */
-  var open=RENTALS.filter(function(r){ return live(r) && dueRent(r)>0; });
+  var open=RENTALS.filter(function(r){ return live(r) && dueRent(r)+dueExtras(r)>0; });
   var ob=$("cashOpen"); ob.innerHTML="";
   if(!open.length) ob.appendChild(el("div","none",t.cashNoOpen));
   open.forEach(function(r){
     var c=car(r.vehicleId), row=el("div","row");
     var k=el("span","k"); k.innerHTML="<b>"+esc(r.clientName)+"</b><br><span style='font-size:13px;color:var(--ink3)'>"+esc(c.model)+" · "+esc(r.code)+"</span>";
-    row.appendChild(k); row.appendChild(el("span","v neg",dh(dueRent(r))));
+    row.appendChild(k); row.appendChild(el("span","v neg",dh(dueRent(r)+dueExtras(r))));
     row.style.cursor="pointer"; row.addEventListener("click",function(){ receipt(r, r.retour?"retour":"depart"); });
     ob.appendChild(row);
   });
@@ -10106,13 +10425,19 @@ $("cashPrev").addEventListener("click",function(){ cashDate=plus(cashDate||today
 $("cashNext").addEventListener("click",function(){ cashDate=plus(cashDate||today(),1); renderCash(); });
 
 /* Het blok op de huurbon: wat is afgesproken, wat is betaald, wat staat nog open. */
+function paymentText(){ return L==="fr"?{paid:"Tout est payé — aucun paiement à ajouter",due:"Reste à encaisser",deposit:"La caution reçue reste séparée ; sa restitution se règle au retour.",excess:"Le montant dépasse le solde restant. Vérifiez le paiement.",charge:"Ajouter des frais ne signifie pas que le client a payé."}:L==="ar"?{paid:"تم دفع كل المستحقات — لا دفعة إضافية",due:"المبلغ المتبقي للتحصيل",deposit:"الضمان المستلم منفصل، وتتم تسويته عند الإرجاع.",excess:"المبلغ يتجاوز الرصيد المتبقي. تحقق من الدفعة.",charge:"إضافة تكاليف لا تعني أن العميل دفعها."}:{paid:"Alles betaald — geen betaling meer toevoegen",due:"Nog te ontvangen",deposit:"De ontvangen borg blijft apart; terugbetaling regel je bij retour.",excess:"Het bedrag is hoger dan het openstaande saldo. Controleer de betaling.",charge:"Kosten toevoegen betekent niet dat de klant al betaald heeft."}; }
+function paymentDue(r,kind){ return kind==="rent"?dueRent(r):kind==="caution"?dueCaution(r):kind==="extra"?dueExtras(r):0; }
+function paymentKindsDue(r){ return ["rent","caution","extra"].filter(function(k){return paymentDue(r,k)>0;}); }
 function payPanel(r){
   var t=T(), box=el("div","card");
   box.appendChild(Object.assign(el("h2","ch"),{textContent:t.payH}));
   function line(k,v,cls){ var x=el("div","row"); x.appendChild(el("span","k",k)); x.appendChild(el("span","v"+(cls?" "+cls:""),v)); box.appendChild(x); }
   line(t.payRent,dh(r.total));
   line(t.payPaid,dh(paidRent(r)),paidRent(r)>0?"pos":"");
+  if(r.cautionAppliedRent || r.cautionAppliedExtras) line(flowText().applyRetention,dh((Number(r.cautionAppliedRent)||0)+(Number(r.cautionAppliedExtras)||0)));
   if(dueRent(r)>0) line(t.payDue,dh(dueRent(r)),"neg");
+  if(extraTotal(r)>0) line(flowText().extras,dh(extraTotal(r)));
+  if(dueExtras(r)>0) line(flowText().extraDue,dh(dueExtras(r)),"neg");
   if(Number(r.caution)>0){
     line(t.payCaution,dh(r.caution));
     line(t.payCautionPaid,dh(paidCaution(r)),paidCaution(r)>0?"pos":"");
@@ -10134,7 +10459,14 @@ function payPanel(r){
     });
     row.appendChild(del); box.appendChild(row);
   });
-  /* nieuwe betaling */
+  var outstanding=paymentKindsDue(r), pt=paymentText();
+  if(!outstanding.length){
+    box.appendChild(el("p","pos",pt.paid));
+    if(paidCaution(r)>0 && !r.released) box.appendChild(el("p","fine",pt.deposit));
+    return box;
+  }
+  box.appendChild(el("h3",null,pt.due+" · "+dh(teBetalen(r))));
+  /* Alleen werkelijk openstaande posten kunnen betaald worden. */
   var f=el("div","form"); f.style.marginTop="12px";
   var g=el("div","grid2");
   var f1=el("div","f"); f1.appendChild(Object.assign(el("label","lbl"),{textContent:t.payAmount}));
@@ -10143,8 +10475,11 @@ function payPanel(r){
   f1.appendChild(amt); g.appendChild(f1);
   var f2=el("div","f"); f2.appendChild(Object.assign(el("label","lbl"),{textContent:t.payWhat}));
   var kind=document.createElement("select");
-  ["rent","caution","extra"].forEach(function(k){ var o=document.createElement("option"); o.value=k; o.textContent=t.payKinds[k]; kind.appendChild(o); });
+  outstanding.forEach(function(k){ var o=document.createElement("option"); o.value=k; o.textContent=t.payKinds[k]; kind.appendChild(o); });
+  kind.value=outstanding[0];
   if(dueRent(r)<=0 && dueCaution(r)>0) kind.value="caution";
+  if(dueRent(r)<=0 && dueCaution(r)<=0 && dueExtras(r)>0){ kind.value="extra"; amt.value=String(dueExtras(r)); }
+  kind.addEventListener("change",function(){ amt.value=String(kind.value==="rent"?dueRent(r):kind.value==="caution"?dueCaution(r):dueExtras(r)); });
   f2.appendChild(kind); g.appendChild(f2);
   f.appendChild(g);
   var f3=el("div","f"); f3.appendChild(Object.assign(el("label","lbl"),{textContent:t.payHow}));
@@ -10154,14 +10489,20 @@ function payPanel(r){
   box.appendChild(f);
   var go=el("button","btn",t.payAdd); go.style.cssText="margin-top:12px;width:100%";
   go.addEventListener("click",async function(){
-    var v=Number(amt.value); if(!v||v<=0){ amt.focus(); return; }
+    if(go.disabled) return;
+    var v=Number(amt.value); if(!Number.isFinite(v)||v<=0){ amt.focus(); return; }
+    if(kind.value==="caution" && (r.released || r.retour)){ toast(flowText().depositClosed); return; }
     go.disabled=true;
-    var list=pays(r).slice();
+    try{
+    var current=await S.get("rentals/"+r.id);
+    if(!current || current.cancelled || v>paymentDue(current,kind.value)){ toast(pt.excess); return; }
+    var list=pays(current).slice();
     list.push({ id:uid(), amount:v, kind:kind.value, method:meth.value, date:today(), note:"" });
-    var next=Object.assign({},r,{ payments:list });
+    var next=Object.assign({},current,{ payments:list });
     await S.set("rentals/"+r.id,stripId(next)); await reload();
     var fresh=RENTALS.filter(function(z){ return z.id===r.id; })[0]||next;
     toast(t.saved); receipt(fresh, fresh.retour?"retour":"depart");
+    } finally { go.disabled=false; }
   });
   box.appendChild(go);
   box.appendChild(betaalVerzoek(r,true));
@@ -10171,7 +10512,7 @@ function payPanel(r){
    Geen kaartterminal nodig: de klant krijgt op WhatsApp het bedrag, het RIB van
    de zaak en de referentie, en betaalt met zijn bankapp. Komt het geld binnen,
    dan noteer je het hierboven als "Overschrijving". */
-function teBetalen(r){ return Math.max(0,dueRent(r))+Math.max(0,dueCaution(r)); }
+function teBetalen(r){ return Math.max(0,dueRent(r))+Math.max(0,dueExtras(r))+Math.max(0,dueCaution(r)); }
 function betaalVerzoek(r,kort){
   var t=T(), w=el("div"); w.style.cssText=kort?"margin-top:4px":"margin-top:14px;border-top:1px solid var(--line);padding-top:12px";
   var bedrag=teBetalen(r);
@@ -10326,7 +10667,6 @@ $("qGo").addEventListener("click",lookup);
    kiest hem uit de lijst. */
 $("newRental").addEventListener("click",function(){
   openNew();
-  if(view==="vNew" && $("snelCam")) $("snelCam").click();
 });
 $("newCar").addEventListener("click",function(){ openCar(null); });
 $("newClient").addEventListener("click",function(){ openClient(null); });
@@ -10334,10 +10674,8 @@ $("bBack").addEventListener("click",function(){
   if(view==="vCar"){ carEdit?delCar():eenTerug(); return; }
   if(view==="vClient"){ clientEdit?delClient():eenTerug(); return; }
   if(view==="vNew"){
-    if(NWSTAP>1){ history.back(); return; }   /* vorige stap, net als de terugknop van de telefoon */
     if(editRental && !editRental.depart){ cancelRental(); return; } editRental=null; NWOPEN=false; eenTerug(); return;
   }
-  if(view==="vForm" && FSTAP>0){ FSTAP--; toonStap(); return; }
   stashDraft(); rental=null; draft=null; eenTerug();
 });
 $("bGo").addEventListener("click",function(){

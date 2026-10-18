@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci --prefix tests",
+  "buildCommand": "node scripts/build-pilot.mjs",
+  "outputDirectory": "pilot-dist",
+  "git": { "deploymentEnabled": { "main": false } }
+}

@@ -1,4 +1,8 @@
 node_modules/
+pilot-dist/
+.vercel/
+.env
+.env.*
 .DS_Store
 tests/.v135.html
 tests/scanbank/ocr-b-outline/

@@ -4,7 +4,7 @@ import { readFileSync, mkdirSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 import { ROOT } from "./atlas.mjs";
 
-export const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+export const CHROME = process.env.CHROME_PATH || (process.platform==='darwin'?"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome":"/usr/bin/google-chrome");
 export const SCHERMEN = new URL("./schermen/", import.meta.url).pathname;
 mkdirSync(SCHERMEN, { recursive: true });
 
@@ -53,6 +53,8 @@ export async function start() {
   server = createServer((req, res) => {
     const pad = decodeURIComponent(req.url.split("?")[0]);
     if (pad === "/" || pad === "/index.html") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(process.env.ATLAS_HTML || ROOT + "index.html")); return; }
+    const assets={'/manifest.webmanifest':'application/manifest+json','/push-sw.js':'application/javascript','/atlas-icon.svg':'image/svg+xml'};
+    if(assets[pad]){res.writeHead(200,{'content-type':assets[pad]});res.end(readFileSync(ROOT+pad.slice(1)));return;}
     res.writeHead(404); res.end();
   });
   await new Promise(r => server.listen(0, "127.0.0.1", r));

@@ -227,7 +227,7 @@ for (const taal of ["fr", "ar"]) test(`Vandaag (${taal}): ochtendstrook, werk ee
   await page.close();
 });
 
-test("Terug: contract maken → Photos et dommages → terug = Contrat prêt → terug = Vandaag", async () => {
+test("Contract aanmaken bewaart een reservering en opent vertrekcontrole; terug leidt naar Vandaag", async () => {
   const { page, fouten } = await B.open({ taal: "fr" });
   const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
   const v = () => page.evaluate(() => view);
@@ -237,31 +237,19 @@ test("Terug: contract maken → Photos et dommages → terug = Contrat prêt →
   assert.equal(await v(), "vNew");
   /* stap 1: zonder naam mag je niet verder */
   await page.click("#bGo"); await wacht();
-  assert.equal(await page.evaluate(() => NWSTAP), 1, "zonder naam blijft stap 1");
+  assert.equal(await v(), "vNew", "zonder naam blijft de voorbereiding open");
   await page.type("#nwName", "KLANT TEST");
-  await page.click("#bGo"); await wacht();
-  assert.equal(await page.evaluate(() => NWSTAP), 2);
+  assert.equal(await page.evaluate(() => [...document.querySelectorAll('#vNew section.vstap')].filter(s=>!s.hidden).length),4);
   const gekozen = await page.evaluate(() => document.querySelector("#nwCarTegels .tegel[aria-pressed=true]")?.textContent || "");
   assert.ok(gekozen && !/occup/.test(gekozen) && !/Duster/.test(gekozen), "geen bezette auto vooraf gekozen: " + gekozen);
-  /* stap 2: tik op een auto → meteen stap 3 */
+  /* Auto, dagen en betaling staan samen op één scherm. */
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
-  assert.equal(await page.evaluate(() => NWSTAP), 3);
-  /* terug op de telefoon = vorige stap, niet het hele contract kwijt */
-  await page.goBack(); await wacht();
-  assert.deepEqual(await page.evaluate(() => [view, NWSTAP]), ["vNew", 2]);
-  await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
-  await page.click("#bGo"); await wacht();   /* stap 3 → 4 (betaling) */
+  assert.equal(await v(),"vNew");
   await page.click("#bGo"); await wacht(800);
-  assert.equal(await v(), "vDone", "na Établir le contrat");
-  await page.evaluate(() => [...document.querySelectorAll("#vDone button")].find(b => /Photos et dommages/.test(b.textContent)).click()); await wacht();
-  assert.equal(await v(), "vForm");
+  assert.equal(await v(), "vForm", "na opslaan eerst het vertrek controleren");
+  assert.equal(await page.evaluate(() => RENTALS.find(r => r.clientName === 'KLANT TEST').depart),null);
   await page.click("#bBack"); await wacht();
-  assert.equal(await v(), "vDone", "Retour in de app → terug naar Contrat prêt");
-  await page.evaluate(() => [...document.querySelectorAll("#vDone button")].find(b => /Photos et dommages/.test(b.textContent)).click()); await wacht();
-  await page.goBack(); await wacht();
-  assert.equal(await v(), "vDone", "terugknop telefoon → Contrat prêt");
-  await page.goBack(); await wacht();
-  assert.equal(await v(), "vDay", "nog eens terug → Vandaag, niet het oude formulier");
+  assert.equal(await v(), "vDay", "terug naar Vandaag, niet het oude nieuwe-contractformulier");
   assert.deepEqual(fouten, []);
   await page.close();
 });
@@ -294,26 +282,23 @@ test("Na de scan: controlekaart met alle velden, fouten zichtbaar, aanpassingen 
   await wacht(1200);
   const st = await page.evaluate(() => ({ zichtbaar: !$("nwControle").hidden, rijen: [...document.querySelectorAll("#nwControle .ctl-rij")].map(r => [r.querySelector("input").dataset.veld, r.dataset.s]), stap: NWSTAP, fotos: document.querySelectorAll("#nwControle .ctl-fotos img").length }));
   assert.ok(st.zichtbaar, "controlekaart zichtbaar");
-  assert.equal(st.stap, 1, "niet vanzelf door: eerst nakijken");
+  assert.equal(await page.evaluate(()=>view),"vNew", "niet vanzelf opslaan: eerst nakijken");
   assert.equal(st.rijen.length, 9);
   assert.equal(st.fotos, 1, "foto erbij");
   const s = Object.fromEntries(st.rijen);
   assert.equal(s.docNumber, "ok", "bewezen nummer = groen"); assert.equal(s.birth, "ok");
   assert.equal(s.name, "warn", "naam uit de eigen lezer is nooit groen (geen controlecijfer)"); assert.equal(s.licenceExpiry, "bad", "verlopen rijbewijs = fout");
   await B.foto(page, "fr-controle-na-scan");
-  /* met een fout: Suivant vraagt eerst */
+  /* Een verlopen document kan niet door een bevestigingsvraag worden omzeild. */
   await page.click("#bGo"); await wacht();
-  assert.ok(await page.$(".ask"), "bij een fout eerst een vraag");
-  await page.evaluate(() => document.querySelector(".ask .btn.ghost").click()); await wacht();
+  assert.equal(await page.evaluate(() => view),"vNew");
   /* verbeteren in de kaart */
   const zet = (veld, v) => page.evaluate((veld, v) => { const i = document.querySelector(`#nwControle input[data-veld="${veld}"]`); i.value = v; i.dispatchEvent(new Event("input")); }, veld, v);
   await zet("docNumber", "gi4598");
   await zet("licenceExpiry", "2031-01-01");
   assert.equal(await page.evaluate(() => document.querySelector('#nwControle input[data-veld="licenceExpiry"]').closest(".ctl-rij").dataset.s), "ok");
-  await page.click("#bGo"); await wacht();
-  assert.equal(await page.evaluate(() => NWSTAP), 2, "geen fout meer → door");
+  await page.click("#scanReviewed");
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
-  await page.click("#bGo"); await wacht();   /* stap 3 → 4 (betaling) */
   await page.click("#bGo"); await wacht(900);
   const k = await page.evaluate(() => CLIENTS.find(c => c.name === "BADAOUI ADNANE" && c.docNumber === "GI4598"));
   assert.ok(k, "aangepast nummer staat in de klantfiche");
@@ -325,6 +310,7 @@ test("Na de scan: controlekaart met alle velden, fouten zichtbaar, aanpassingen 
 
 const jaOpVraag = page => page.evaluate(() => document.querySelector(".ask .btn.dangerish").click());
 const neeOpVraag = page => page.evaluate(() => document.querySelector(".ask .btn.ghost").click());
+const openBeheer = page => page.evaluate(() => { const d=document.getElementById('delContract').closest('details'); if(!d.open)d.querySelector('summary').click(); });
 
 test("Contract verwijderen: alles weg (betalingen, auto vrij), Annuler zet alles exact terug", async () => {
   const { page, fouten } = await B.open({ taal: "fr" });
@@ -332,10 +318,10 @@ test("Contract verwijderen: alles weg (betalingen, auto vrij), Annuler zet alles
   const voor = await page.evaluate(() => JSON.stringify(RENTALS.find(r => r.code === "AT-10001")));
   const borgVoor = await page.evaluate(() => heldList().length);
   await page.evaluate(() => receipt(RENTALS.find(r => r.code === "AT-10001"), "depart"));
-  await page.click("#delContract"); await wacht();
+  await openBeheer(page); await page.click("#delContract"); await wacht();
   await neeOpVraag(page); await wacht();
   assert.ok(await page.evaluate(() => RENTALS.some(r => r.code === "AT-10001")), "Nee = niets weg");
-  await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
+  await openBeheer(page); await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
   assert.equal(await page.evaluate(() => view), "vDay");
   assert.ok(!(await page.evaluate(() => RENTALS.some(r => r.code === "AT-10001"))), "contract weg");
   assert.equal(await page.evaluate(() => heldList().length), borgVoor - 1, "borg uit de lijst");
@@ -353,12 +339,12 @@ test("Nieuw contract verwijderen: klant die ermee ontstond gaat mee, en komt mee
   const wacht = (ms = 350) => new Promise(r => setTimeout(r, ms));
   await page.evaluate(() => { pdfFromSheet = async () => {}; });
   await page.click("#heldNieuw"); await wacht();
-  await page.type("#nwName", "NIEUWE KLANT"); await page.click("#bGo"); await wacht();
+  await page.type("#nwName", "NIEUWE KLANT");
   await page.evaluate(() => [...document.querySelectorAll("#nwCarTegels .tegel")].find(b => /Renault Clio/.test(b.textContent)).click()); await wacht(500);
-  await page.click("#bGo"); await wacht();   /* stap 3 → 4 (betaling) */
   await page.click("#bGo"); await wacht(800);
   assert.ok(await page.evaluate(() => CLIENTS.some(c => c.name === "NIEUWE KLANT")));
-  await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
+  await page.evaluate(() => receipt(RENTALS.find(r => r.clientName === 'NIEUWE KLANT'),'depart'));
+  await openBeheer(page); await page.click("#delContract"); await wacht(); await jaOpVraag(page); await wacht(600);
   assert.ok(!(await page.evaluate(() => CLIENTS.some(c => c.name === "NIEUWE KLANT"))), "klant mee weg");
   assert.ok(!(await page.evaluate(() => RENTALS.some(r => r.clientName === "NIEUWE KLANT"))));
   await page.click("#herstelKnop"); await wacht(600);
@@ -404,7 +390,7 @@ for (const taal of ["fr", "ar"]) test(`Demo-stand (${taal}): volle voorbeeldapp,
   await B.foto(page, taal + "-demo");
   /* in de demo een contract verwijderen en een auto opslaan */
   await page.evaluate(() => receipt(RENTALS[0], "depart")); await wacht();
-  await page.click("#delContract"); await wacht(); await page.evaluate(() => document.querySelector(".ask .btn.dangerish").click()); await wacht(600);
+  await openBeheer(page); await page.click("#delContract"); await wacht(); await page.evaluate(() => document.querySelector(".ask .btn.dangerish").click()); await wacht(600);
   await page.evaluate(async () => { await S.set("vehicles/nieuw", { model: "TEST" }); });
   const opslag = await page.evaluate(() => ({ lokaal: localStorage.getItem("atlas-local-2"), rij: localStorage.getItem("atlas-sb-rij") }));
   assert.equal(opslag.lokaal, echt, "echte gegevens in de browser onaangeroerd");

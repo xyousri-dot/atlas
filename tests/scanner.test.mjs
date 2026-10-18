@@ -9,6 +9,7 @@ import G from "./scanner-golden.json" with { type: "json" };
 /* Bewust veranderd, met toestemming van Youss (3 oktober 2026). Al het andere in de
    bevroren blokken (scanner, cloud, opslag, contract) moet letterlijk gelijk blijven. */
 const BEWUST = {
+  snelScan: "Youss 17 oktober: scanstatus en timer altijd vrijgeven bij fouten; herkenningsalgoritmen ongewijzigd",
   snelTerug: "auto terug: borg terug = alleen wat echt ontvangen is (kas klopte niet); km niet meer vooraf ingevuld",
   nomPrenom: "contract: samengestelde achternamen (EL FASSI, BEN ALI, AIT ...) niet meer gesplitst",
   keurNaam: "scan: naam zonder ruime meerderheid niet meer leeg, maar ingevuld met twijfelvlag (controlekaart)",

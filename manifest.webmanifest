@@ -1,0 +1,6 @@
+{
+  "id": "./", "name": "Atlas Rent", "short_name": "Atlas",
+  "start_url": "./", "scope": "./", "display": "standalone",
+  "background_color": "#F7F4EE", "theme_color": "#244b3a",
+  "icons": [{"src":"./atlas-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}

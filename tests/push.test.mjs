@@ -1,0 +1,117 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {reminderSummary,summaryPayload,validSubscription,localDay} from '../supabase/functions/_shared/reminders.mjs';
+import {leesHtml,scriptUit,zandbak} from './atlas.mjs';
+test('Instellingenrefresh bewaart lopende diagnose, account- of taalwissel vervangt paneel',()=>{
+ const a=zandbak(scriptUit(leesHtml()));let current=null,created=0;
+ a.sbKlaar=()=>true;a.SBSES={user:{id:'owner-a'}};
+ a.$=id=>id==='phoneSettings'?current:{parentNode:{appendChild:p=>{current=p;}}};
+ a.phonePanel=()=>({number:++created,textContent:'diagnose bezig',remove(){current=null;}});
+ const first=a.mountPhoneSettings();assert.equal(created,1);assert.equal(a.mountPhoneSettings(),first);assert.equal(first.textContent,'diagnose bezig');
+ a.SBSES={user:{id:'owner-b'}};assert.notEqual(a.mountPhoneSettings(),first);assert.equal(created,2);
+ a.L='nl';a.mountPhoneSettings();assert.equal(created,3);
+ a.sbKlaar=()=>false;a.mountPhoneSettings();assert.equal(created,4);
+});
+test('Iedere workerstap heeft een aflopende wachttijd, ook register/update/ready',async()=>{
+ const a=zandbak(scriptUit(leesHtml()));let timeout,cleared=0;
+ a.setTimeout=fn=>{timeout=fn;return 1;};a.clearTimeout=()=>cleared++;
+ const waiting=a.phoneBound(new Promise(()=>{}));timeout();await assert.rejects(waiting,/worker-timeout/);
+ assert.equal(await a.phoneBound(Promise.resolve('ok')),'ok');assert.equal(cleared,1);
+ const source=leesHtml();assert.ok(source.includes("await phoneBound(navigator.serviceWorker.register('./push-sw.js'))"));assert.ok(source.includes('await phoneBound(reg.update())'));assert.ok(source.includes('await phoneBound(navigator.serviceWorker.ready)'));
+});
+test('Telefoonstart begeleidt iPhone, login en geweigerde toestemming afzonderlijk',()=>{
+ const a=zandbak(scriptUit(leesHtml()));
+ a.location={protocol:'https:'};a.navigator={userAgent:'iPhone',standalone:false,serviceWorker:{}};
+ a.window.isSecureContext=true;a.window.PushManager={};a.window.Notification={};a.Notification={permission:'default'};
+ a.window.matchMedia=()=>({matches:false});
+ assert.equal(a.phoneStartState(),'install');
+ a.navigator.standalone=true;a.sbKlaar=()=>false;assert.equal(a.phoneStartState(),'login');
+ a.sbKlaar=()=>true;assert.equal(a.phoneStartState(),'ready');
+ a.Notification.permission='denied';assert.equal(a.phoneStartState(),'denied');
+ a.location.protocol='file:';assert.equal(a.phoneStartState(),'local');
+ a.location.protocol='https:';a.navigator.userAgent='Desktop';delete a.window.PushManager;assert.equal(a.phoneStartState(),'unsupported');
+ for(const lang of ['fr','nl','ar']){a.L=lang;assert.ok(a.phoneGuideText().install.includes('Safari'));assert.ok(a.phoneGuideText().start);}
+});
+test('Start vraagt toestemming vóór netwerk en plant na registratie automatisch test',()=>{
+ const code=leesHtml();const flow=code.slice(code.indexOf("on.addEventListener('click',async function(){if(on.disabled)return;var state=phoneStartState()"),code.indexOf("test.addEventListener('click'",code.indexOf('function phonePanel()')));
+ assert.ok(flow.indexOf('Notification.requestPermission()')>=0);
+ assert.ok(flow.indexOf('Notification.requestPermission()')<flow.indexOf("phoneAPI('config')"));
+ assert.ok(flow.indexOf("phoneAPI('subscribe'")<flow.indexOf("phoneAPI('test'"));
+ assert.ok(flow.includes('guide.testError'));assert.ok(!flow.includes('requestPermission();status.textContent=tx.active'));
+});
+test('Eén bewuste tik registreert en plant test; fouten geven nooit valse ontvangst',async()=>{
+ for(const scenario of ['success','denied','config-fails','test-fails']){
+  const a=zandbak(scriptUit(leesHtml())),calls=[];
+  a.el=(tag,cls,text)=>({tag,className:cls,textContent:text,children:[],handlers:{},appendChild(x){this.children.push(x);},setAttribute(){},addEventListener(n,f){this.handlers[n]=f;}});
+  a.sbKlaar=()=>true;a.location={protocol:'https:'};a.isSecureContext=true;a.PushManager={};a.atob=atob;
+  a.Notification={permission:'default',requestPermission:async()=>{calls.push('permission');return scenario==='denied'?'denied':'granted';}};
+  const sub={endpoint:'https://web.push.apple.com/test',toJSON(){return {endpoint:this.endpoint};}};
+  a.navigator={userAgent:'iPhone',standalone:true,serviceWorker:{register:async()=>calls.push('worker'),ready:Promise.resolve({pushManager:{getSubscription:async()=>null,subscribe:async()=>sub}})}};
+  a.phoneAPI=async(action)=>{calls.push(action);if(action==='config'&&scenario==='config-fails'||action==='test'&&scenario==='test-fails')throw Error('network');return action==='config'?{publicKey:'YQ'}:{};};
+  const panel=a.phonePanel(),on=panel.children.find(x=>x.tag==='button'),status=panel.children[2],manage=panel.children.find(x=>x.tag==='details');
+  assert.deepEqual(calls,[]);await on.handlers.click();assert.equal(calls[0],'permission');assert.equal(on.disabled,false);
+  if(scenario==='success'){assert.deepEqual(calls,['permission','config','worker','subscribe','test']);assert.equal(status.textContent,a.phoneText().sent);assert.equal(on.hidden,true);assert.equal(manage.hidden,false);}
+  if(scenario==='denied'){assert.deepEqual(calls,['permission']);assert.equal(status.textContent,a.phoneText().denied);assert.ok(!on.hidden);}
+  if(scenario==='config-fails'){assert.deepEqual(calls,['permission','config']);assert.equal(status.textContent,a.phoneGuideText().error);assert.ok(!on.hidden);}
+  if(scenario==='test-fails'){assert.equal(status.textContent,a.phoneGuideText().testError);assert.equal(manage.open,true);assert.equal(on.hidden,true);}
+ }
+});
+test('Achtergrondcontrole telt onderhoud, documenten en echte te late retouren zonder persoonsgegevens',()=>{
+ const rows=[{path:'vehicles/c',data:{km:119500,maintenance:[{dueKm:120000},{dueKm:130000},{dueKm:1,completedAt:'2026-01-01'}],insuranceUntil:'2026-10-18',inspectionUntil:'2026-13-01'}},{path:'rentals/r',data:{clientName:'SECRET NAME',depart:{},to:'2026-10-16'}},{path:'rentals/x',data:{depart:{},retour:{},to:'2026-10-16'}}];
+ const counts=reminderSummary(rows,'2026-10-17');assert.deepEqual(counts,{maintenance:1,documents:1,late:1});
+ for(const l of ['fr','nl','ar'])assert.ok(!JSON.stringify(summaryPayload(counts,l)).includes('SECRET'));
+ assert.equal(summaryPayload({maintenance:0,documents:0,late:0}),null);
+ assert.equal(localDay(new Date('2026-10-17T23:30:00Z')),'2026-10-18');
+});
+test('Pushabonnementen accepteren geen willekeurige servers of ongeldige sleutels',()=>{
+ const s={endpoint:'https://fcm.googleapis.com/fcm/send/test',keys:{p256dh:'a'.repeat(87),auth:'a'.repeat(22)}};
+ assert.equal(validSubscription(s),true);
+ for(const endpoint of ['http://fcm.googleapis.com/test','https://127.0.0.1/x','https://fcm.googleapis.com.evil.test/x','https://user@fcm.googleapis.com/x'])assert.equal(validSubscription({...s,endpoint}),false);
+ assert.equal(validSubscription({...s,keys:{}}),false);
+});
+test('Serviceworker toont ontvangen push zonder open app en opent alleen eigen scope',async()=>{
+ const handlers={},notifications=[],opened=[];let pending;
+ const scope='https://example.test/atlas/';
+ const self={registration:{scope,showNotification:async(...a)=>notifications.push(a)},addEventListener:(n,f)=>handlers[n]=f,clients:{matchAll:async()=>[],openWindow:async url=>opened.push(url)}};
+ const context={self,URL};vm.createContext(context);vm.runInContext(readFileSync(new URL('../push-sw.js',import.meta.url),'utf8'),context);
+ handlers.push({data:{json:()=>({body:'Test',url:'https://evil.test/',tag:'t'})},waitUntil:p=>pending=p});await pending;
+ assert.equal(notifications[0][0],'Atlas');assert.equal(notifications[0][1].body,'Test');
+ assert.equal(notifications[0][1].data.url,scope);
+ handlers.notificationclick({notification:{close(){},data:{url:'https://evil.test/'}},waitUntil:p=>pending=p});await pending;
+ assert.deepEqual(opened,[scope]);
+});
+test('Ontvangstdiagnose onderscheidt push, lokale test en weergavefout zonder persoonsgegevens',async()=>{
+ const handlers={},notes=[];let pending,receipt=null,fail=false;
+ const self={registration:{scope:'https://example.test/',showNotification:async(...args)=>{if(fail)throw Object.assign(Error(),{name:'NotAllowedError'});notes.push(args);}},addEventListener:(name,fn)=>handlers[name]=fn,clients:{claim:async()=>{}},skipWaiting:async()=>{}};
+ const ctx={self,URL,Date};vm.createContext(ctx);vm.runInContext(readFileSync(new URL('../push-sw.js',import.meta.url),'utf8'),ctx);
+ ctx.atlasPushReceipt=async value=>{if(value)receipt=value;return receipt;};
+ const answers=[];handlers.message({data:{type:'atlas-push-health',local:true},ports:[{postMessage:x=>answers.push(x)}],waitUntil:p=>pending=p});await pending;
+ assert.equal(answers[0].local,'accepted');assert.equal(answers[0].receipt,null);assert.ok(notes[0][0].includes('Diagnostic'));
+ handlers.push({data:{json:()=>({body:'PRIVATE CLIENT'})},waitUntil:p=>pending=p});await pending;
+ assert.equal(receipt.state,'display-request-accepted');assert.ok(!JSON.stringify(receipt).includes('PRIVATE'));
+ fail=true;handlers.push({data:{json:()=>({})},waitUntil:p=>pending=p});await assert.rejects(pending);
+ assert.equal(receipt.state,'display-error');assert.equal(receipt.error,'NotAllowedError');
+ handlers.message({data:{type:'atlas-push-health',local:false},ports:[{postMessage:x=>answers.push(x)}],waitUntil:p=>pending=p});await pending;
+ assert.equal(answers[1].local,'not-tested');assert.equal(notes.length,2);
+});
+test('Visuele auto: ontbrekende beoordeling nooit groen, urgentste taak bepaalt kleur',()=>{
+ const a=zandbak(scriptUit(leesHtml()));
+ const c={km:120000,maintenance:[{part:'engine',dueKm:130000},{part:'engine',dueKm:120000},{part:'tires',dueKm:1,completedAt:'2026-10-01'}]};
+ assert.equal(a.vehiclePartState(c,'engine').status,'overdue');
+ assert.equal(a.vehiclePartState(c,'tires').status,'unknown');
+ assert.equal(a.vehiclePartState(c,'battery').tasks.length,0);
+});
+test('Telefoonaanroep houdt publieke gateway-JWT en echte gebruiker gescheiden',async()=>{
+ const a=zandbak(scriptUit(leesHtml())),calls=[];
+ a.AbortController=AbortController;
+ a.SB={url:'https://mimpyfbitoiotxuqoymj.supabase.co',key:'public-key'};
+ a.SBSES={access_token:'user-es256-token'};
+ a.fetch=async(url,opt)=>{calls.push(opt);return {ok:true,status:200,json:async()=>({registered:true})};};
+ assert.equal((await a.phoneAPI('status',{endpoint:'test'})).registered,true);
+ assert.equal(calls[0].headers['x-atlas-user-token'],'user-es256-token');
+ assert.ok(calls[0].headers.Authorization.startsWith('Bearer eyJ'));
+ assert.ok(!calls[0].headers.Authorization.includes('user-es256-token'));
+ assert.ok(!calls[0].body.includes('user-es256-token'));
+});
