@@ -1,4 +1,5 @@
-import {mkdirSync,copyFileSync} from 'node:fs';
+import {mkdirSync,copyFileSync,readFileSync,writeFileSync} from 'node:fs';
+import {testEnvironment} from './test-environment.mjs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
@@ -6,9 +7,10 @@ import {fileURLToPath} from 'node:url';
 if(process.env.VERCEL_ENV==='production')throw Error('Production release requires a separate, explicitly approved release workflow.');
 const root=fileURLToPath(new URL('../',import.meta.url));
 console.log('Test runtime:',process.version,'ICU',process.versions.icu,'timezone data',process.versions.tz);
-const tests=['push','maintenance','rental-flow','availability','scanner'].map(n=>'tests/'+n+'.test.mjs');
+const tests=['push','maintenance','rental-flow','availability','scanner','test-environment'].map(n=>'tests/'+n+'.test.mjs');
 const result=spawnSync(process.execPath,['--test',...tests],{cwd:root,stdio:'inherit'});
 if(result.status!==0)process.exit(result.status||1);
 const out=new URL('../pilot-dist/',import.meta.url);mkdirSync(out,{recursive:true});
-for(const file of ['index.html','manifest.webmanifest','push-sw.js','atlas-icon.svg'])copyFileSync(new URL('../'+file,import.meta.url),new URL(file,out));
+writeFileSync(new URL('index.html',out),testEnvironment(readFileSync(new URL('../index.html',import.meta.url),'utf8')));
+for(const file of ['manifest.webmanifest','push-sw.js','atlas-icon.svg'])copyFileSync(new URL('../'+file,import.meta.url),new URL(file,out));
 console.log('Pilot built: tests passed; only four public app files copied.');

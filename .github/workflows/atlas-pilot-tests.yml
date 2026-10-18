@@ -44,3 +44,8 @@ jobs:
       - run: node --test tests/ci-browser.test.mjs
         env:
           CHROME_PATH: /usr/bin/google-chrome
+      - run: node scripts/build-pilot.mjs
+      - run: node --test tests/ci-browser.test.mjs
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          ATLAS_HTML: ${{ github.workspace }}/pilot-dist/index.html

@@ -86,10 +86,12 @@ export async function open({ taal = "fr", gegevens = testgegevens(), breed = 390
   page.on("error", e => { console.log("PAGINA-CRASH: " + e.message); fouten.push("PAGINA-CRASH: " + e.message); });
   page.on("console", m => { if (m.type() === "error" && !/fonts\.g|cdnjs|Failed to load resource/.test(m.text())) fouten.push(m.text()); });
   /* Geen netwerk naar Supabase in tests: aanmelden staat uit, dus er gaat niets heen. */
-  await page.evaluateOnNewDocument((taal, gegevens) => {
+  const storageKey = readFileSync(process.env.ATLAS_HTML || ROOT + 'index.html','utf8').match(/var LKEY2="([^"]+)";/)?.[1];
+  if(!storageKey)throw Error('Missing local storage namespace');
+  await page.evaluateOnNewDocument((taal, gegevens, storageKey) => {
     localStorage.setItem("atlas-lang", taal);
-    localStorage.setItem("atlas-local-2", JSON.stringify(gegevens));
-  }, taal, gegevens);
+    localStorage.setItem(storageKey, JSON.stringify(gegevens));
+  }, taal, gegevens, storageKey);
   await page.goto(`http://127.0.0.1:${poort}${pad}`, { waitUntil: "networkidle2", timeout: 30000 });
   await page.waitForFunction(() => document.getElementById("dayBody")?.children.length > 0, { timeout: 10000 });
   return { page, fouten };
