@@ -1,6 +1,6 @@
-/* TEST only: paid primary, one bounded attempt, then the offline reserve. */
+/* Paid primary, one bounded attempt, then the offline reserve. */
 (function(){
- if(!SBSTANDAARD.url.includes('manikkusokwysmdfhxtu')||location.protocol==='file:')return;
+ if(!/(manikkusokwysmdfhxtu|mimpyfbitoiotxuqoymj)/.test(SBSTANDAARD.url)||location.protocol==='file:')return;
  window.ATLAS_AI_SCAN_ENABLED=true;
  let paidAttempts=0;
  aiLees=async function(files){

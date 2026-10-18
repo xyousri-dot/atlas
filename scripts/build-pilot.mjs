@@ -22,7 +22,7 @@ for(const file of ['offline-scanner.js','offline-cache.js','paid-scanner.js'])co
 const releaseHash=createHash('sha256');
 for(const file of ['index.html','offline-scanner.js','offline-cache.js','paid-scanner.js','scan-quality.js','vehicle-warranties.js','warranty-rules.mjs','manifest.webmanifest','atlas-icon.svg'])releaseHash.update(readFileSync(new URL(file,out)));
 const scanVersion=releaseHash.update(readFileSync(new URL('./scan-assets-lock.json',import.meta.url))).digest('hex').slice(0,12);
-writeFileSync(new URL('offline-cache.js',out),readFileSync(new URL('../offline-cache.js',import.meta.url),'utf8').replace('atlas-test-scan-v1','atlas-test-scan-'+scanVersion));
-writeFileSync(new URL('push-sw.js',out),readFileSync(new URL('../push-sw.js',import.meta.url),'utf8')+"\n// Scanner release "+scanVersion+"\nimportScripts('./offline-cache.js');\n");
+writeFileSync(new URL('offline-cache.js',out),readFileSync(new URL('../offline-cache.js',import.meta.url),'utf8').replace('atlas-scan-20261018','atlas-test-scan-'+scanVersion));
+writeFileSync(new URL('push-sw.js',out),readFileSync(new URL('../push-sw.js',import.meta.url),'utf8').replace('atlas-scan-20261018','atlas-test-scan-'+scanVersion)+"\n// Scanner release "+scanVersion+"\n");
 writeFileSync(new URL('offline-manifest.json',out),JSON.stringify({files:['./index.html','./offline-scanner.js','./offline-cache.js','./paid-scanner.js','./scan-quality.js','./vehicle-warranties.js','./warranty-rules.mjs','./manifest.webmanifest','./atlas-icon.svg',...assets.map(a=>'./scan-assets/'+a.path)]}));
 console.log('Pilot built: tests passed; only explicitly listed public app files copied.');

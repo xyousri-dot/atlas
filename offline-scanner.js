@@ -1,6 +1,6 @@
-/* Test-only local OCR. No paid calls, no customer photos in Cache Storage. */
+/* Local OCR reserve. No paid calls, no customer photos in Cache Storage. */
 (function(){
- if(typeof SBSTANDAARD==='undefined'||!SBSTANDAARD.url.includes('manikkusokwysmdfhxtu')||location.protocol==='file:')return;
+ if(typeof SBSTANDAARD==='undefined'||!/(manikkusokwysmdfhxtu|mimpyfbitoiotxuqoymj)/.test(SBSTANDAARD.url)||location.protocol==='file:')return;
  const base=new URL('./',location.href),asset=p=>new URL('scan-assets/'+p,base).href;
  LIBS.ocr.urls=[asset('tesseract.min.js')];
  let starting=null;

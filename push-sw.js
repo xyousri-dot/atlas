@@ -33,6 +33,7 @@ function atlasPushReceipt(value){
   });
 }
 self.addEventListener('message',event=>{
+  if(['atlas-offline-prepare','atlas-offline-status'].includes(event.data?.type)){atlasOfflineMessage(event);return;}
   if(event.data?.type==='atlas-push-target'&&event.ports?.[0]){
     event.waitUntil((async()=>{const target=await atlasPushTarget();event.ports[0].postMessage(target&&Date.now()-target.at<300000?target:null);})());return;
   }
@@ -77,4 +78,36 @@ self.addEventListener('notificationclick',event=>{
     }
     return self.clients.openWindow(url);
   })());
+});
+
+/* Cache only the fixed public scanner bundle. Customer photos, API responses,
+   subscriptions and authentication data are never stored here. */
+const OFFLINE_CACHE='atlas-scan-20261018';
+let offlineListPromise;
+function offlineList(){return offlineListPromise||(offlineListPromise=fetch(new URL('./offline-manifest.json',self.registration.scope),{cache:'no-store',credentials:'same-origin'}).then(r=>{if(!r.ok)throw Error('manifest');return r.json();}).then(x=>x.files).catch(e=>{offlineListPromise=null;throw e;}));}
+function safeOfflinePath(path){return /^\.\/(?:index\.html|paid-scanner\.js|offline-scanner\.js|offline-cache\.js|offline-manifest\.json|scan-quality\.js|vehicle-warranties\.js|warranty-rules\.mjs|manifest\.webmanifest|atlas-icon\.svg|scan-assets\/[a-zA-Z0-9_./-]+)$/.test(path)&&!path.includes('..');}
+function atlasOfflineMessage(event){
+ if(!['atlas-offline-prepare','atlas-offline-status'].includes(event.data?.type)||!event.ports?.[0])return;
+ event.waitUntil((async()=>{try{
+  const cache=await caches.open(OFFLINE_CACHE);
+  if(event.data.type==='atlas-offline-prepare'){
+   const files=await offlineList();if(!Array.isArray(files)||!files.length||files.some(p=>!safeOfflinePath(p)))throw Error('allowlist');
+   for(const path of files){const url=new URL(path,self.registration.scope);const r=await fetch(url,{cache:'reload',credentials:'same-origin',redirect:'error'});if(!r.ok||r.type==='opaque'||r.redirected)throw Error('download');await cache.put(url,r);}
+   await cache.put(new URL('./offline-ready',self.registration.scope),new Response(JSON.stringify(files)));
+   for(const name of await caches.keys())if((name.startsWith('atlas-test-scan-')||name.startsWith('atlas-scan-'))&&name!==OFFLINE_CACHE)await caches.delete(name);
+  }
+  const marker=await cache.match(new URL('./offline-ready',self.registration.scope));const files=marker?await marker.json():[];
+  const ready=files.length>0&&(await Promise.all(files.map(p=>cache.match(new URL(p,self.registration.scope))))).every(Boolean);
+  event.ports[0].postMessage({ready});
+ }catch{event.ports[0].postMessage({ready:false,error:'offline-unavailable'});}})());
+}
+self.addEventListener('fetch',event=>{
+ const req=event.request,url=new URL(req.url),base=new URL(self.registration.scope);
+ if(req.method!=='GET'||url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||url.search)return;
+ const relative='./'+url.pathname.slice(base.pathname.length);
+ if(req.mode==='navigate'&&(relative==='./'||relative==='./index.html')){
+  event.respondWith(fetch(req).catch(async()=>{const r=await caches.match(new URL('./index.html',base),{cacheName:OFFLINE_CACHE});return r||Response.error();}));return;
+ }
+ if(!safeOfflinePath(relative))return;
+ event.respondWith(caches.open(OFFLINE_CACHE).then(async cache=>(await cache.match(req))||fetch(req)));
 });

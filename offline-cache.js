@@ -1,6 +1,6 @@
-/* Loaded only by the TEST build. Cache an exact public-file allowlist, never APIs,
+/* Cache an exact public-file allowlist, never APIs,
    customer documents, subscriptions, authentication responses or arbitrary URLs. */
-const OFFLINE_CACHE='atlas-test-scan-v1';
+const OFFLINE_CACHE='atlas-scan-20261018';
 let offlineListPromise;
 function offlineList(){return offlineListPromise||(offlineListPromise=fetch(new URL('./offline-manifest.json',self.registration.scope),{cache:'no-store',credentials:'same-origin'}).then(r=>{if(!r.ok)throw Error('manifest');return r.json();}).then(x=>x.files).catch(e=>{offlineListPromise=null;throw e;}));}
 function safeOfflinePath(path){return /^\.\/(?:index\.html|paid-scanner\.js|offline-scanner\.js|offline-cache\.js|offline-manifest\.json|scan-quality\.js|vehicle-warranties\.js|warranty-rules\.mjs|manifest\.webmanifest|atlas-icon\.svg|scan-assets\/[a-zA-Z0-9_./-]+)$/.test(path)&&!path.includes('..');}
@@ -15,7 +15,7 @@ self.addEventListener('message',event=>{
    await cache.put(new URL('./offline-ready',self.registration.scope),new Response(JSON.stringify(files)));
    // Old scanner bundles contain public assets only. Remove them only after a
    // complete replacement, never delete other app or customer-data stores.
-   for(const name of await caches.keys())if(name.startsWith('atlas-test-scan-')&&name!==OFFLINE_CACHE)await caches.delete(name);
+   for(const name of await caches.keys())if((name.startsWith('atlas-test-scan-')||name.startsWith('atlas-scan-'))&&name!==OFFLINE_CACHE)await caches.delete(name);
   }
   const marker=await cache.match(new URL('./offline-ready',self.registration.scope));const files=marker?await marker.json():[];
   const ready=files.length>0&&(await Promise.all(files.map(p=>cache.match(new URL(p,self.registration.scope))))).every(Boolean);
