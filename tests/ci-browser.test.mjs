@@ -74,49 +74,47 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
-async function chooseScanPhoto(page,index,source,name){
- await page.evaluate(async({index,source,name})=>{const canvas=document.createElement('canvas');canvas.width=640;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,640,400);ctx.fillStyle='black';ctx.font='24px Arial';ctx.fillText('SPECIMEN TEST ONLY',20,60);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.9));const transfer=new DataTransfer();transfer.items.add(new File([blob],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-'+source)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,source,name});
- await page.waitForFunction(index=>document.querySelectorAll('.guided-row')[index].querySelector('.guided-ok img')?.naturalWidth>0,{},index);
+async function chooseScanPhotos(page,names){
+ await page.evaluate(async names=>{const transfer=new DataTransfer();for(const name of names){const canvas=document.createElement('canvas');canvas.width=640;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,640,400);ctx.fillStyle='black';ctx.font='24px Arial';ctx.fillText('SPECIMEN TEST ONLY',20,60);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.9));transfer.items.add(new File([blob],name,{type:'image/jpeg'}));}const input=document.querySelector('.guided-files');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},names);
+ await page.waitForFunction(count=>document.querySelectorAll('.guided-card img').length===count&&[...document.querySelectorAll('.guided-card img')].every(img=>img.naturalWidth>0),{},names.length);
 }
-test('Guided scan requires both ID sides and sends ID plus optional licence in one batch',{skip:!process.env.ATLAS_HTML},async()=>{
+test('Simple scan adds multiple photos, removes one and sends the remaining batch',{skip:!process.env.ATLAS_HTML},async()=>{
  const {page,fouten}=await B.open({taal:'nl'});
  try{
   await page.evaluate(()=>{openNew();window.guidedBatch=[];snelScan=async files=>{window.guidedBatch=files.map(file=>file.name);};});
   await page.click('#nwScanKaart');await page.waitForSelector('.guided-scan');
-  assert.match(await page.$eval('.guided-intro',e=>e.textContent),/ID voor\+achter/);
-  assert.equal(await page.$$eval('.guided-row',rows=>rows.length),5);
+  assert.match(await page.$eval('.guided-intro',e=>e.textContent),/herkent zelf/);
+  assert.equal(await page.$$eval('.guided-files',inputs=>inputs.length),1);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
-  for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[3,'licence-front.jpg','library'],[4,'licence-back.jpg','library']]){
-   await chooseScanPhoto(page,index,source,name);
-   if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
-  }
+  await chooseScanPhotos(page,['id-front.jpg','id-back.jpg','licence-front.jpg','licence-back.jpg']);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
-  assert.deepEqual(await page.$$eval('.guided-ok',states=>states.map(s=>s.textContent)),['✓ Gereed · id-front.jpg','✓ Gereed · id-back.jpg','✓ Gereed · licence-front.jpg','✓ Gereed · licence-back.jpg']);
-  await page.click('.guided-go');await page.waitForFunction(()=>window.guidedBatch.length===4);
-  assert.deepEqual(await page.evaluate(()=>window.guidedBatch),['id-front.jpg','id-back.jpg','licence-front.jpg','licence-back.jpg']);
+  assert.equal(await page.$$eval('.guided-card',cards=>cards.length),4);
+  await page.click('.guided-remove');
+  await page.click('.guided-go');await page.waitForFunction(()=>window.guidedBatch.length===3);
+  assert.deepEqual(await page.evaluate(()=>window.guidedBatch),['id-back.jpg','licence-front.jpg','licence-back.jpg']);
   assert.equal(await page.$('.guided-scan'),null);assert.deepEqual(fouten,[]);
  }finally{await page.close();}
 });
-test('Guided licence file fills licence fields even when the model labels it generically',{skip:!process.env.ATLAS_HTML},async()=>{
+test('Automatically recognised licence fills its licence fields',{skip:!process.env.ATLAS_HTML},async()=>{
  const mock={calls:0,status:200,body:{fotos:[
   {foto:0,soort:'id_voor',achternaam:'TEST',voornamen:'SAMIRA',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]},
   {foto:1,soort:'id_achter',achternaam:'',voornamen:'',document_nummer:'AB123456',geboortedatum:'',geldig_tot:'',land:'MAR',mrz:[]},
-  {foto:2,soort:'ander',achternaam:'',voornamen:'',document_nummer:'07/182101',geboortedatum:'',geldig_tot:'2032-06-30',land:'MAR',mrz:[]}
+  {foto:2,soort:'rijbewijs_voor',achternaam:'',voornamen:'',document_nummer:'',geboortedatum:'',geldig_tot:'',land:'MAR',rijbewijs_nummer:'07/182101',rijbewijs_geldig_tot:'2032-06-30',mrz:[]}
  ]}};
  const {page}=await notificationPage('nl','/',mock);
  try{
   await page.evaluate(()=>openNew());await page.click('#nwScanKaart');
-  for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[3,'licence-front.jpg','library']])await chooseScanPhoto(page,index,source,name);
+  await chooseScanPhotos(page,['id-front.jpg','id-back.jpg','licence-front.jpg']);
   await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.licenceNumber==='07/182101');
   assert.equal(await page.evaluate(()=>SNELKLANT.licenceExpiry),'2032-06-30');assert.equal(mock.calls,1);assert.equal(mock.sent.fotos.length,3);for(const photo of mock.sent.fotos){assert.equal(photo.type,'image/jpeg');assert.ok(photo.data.startsWith('/9j/'));assert.ok(photo.data.length>1000);}
  }finally{await page.close();}
 });
-test('Guided passport photo alone enables scan and fills passport fields',{skip:!process.env.ATLAS_HTML},async()=>{
- const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:'ander',achternaam:'TEST',voornamen:'AMINE',document_nummer:'RX1234567',geboortedatum:'1991-02-03',geldig_tot:'2031-02-03',land:'MAR',mrz:[]}]}};
+test('Automatically recognised passport photo alone enables scan and fills passport fields',{skip:!process.env.ATLAS_HTML},async()=>{
+ const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:'paspoort',achternaam:'TEST',voornamen:'AMINE',document_nummer:'RX1234567',geboortedatum:'1991-02-03',geldig_tot:'2031-02-03',land:'MAR',mrz:[]}]}};
  const {page}=await notificationPage('nl','/',mock);
  try{
   await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';});await page.click('#nwScanKaart');
-  await chooseScanPhoto(page,2,'library','passport.jpg');
+  await chooseScanPhotos(page,['passport.jpg']);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.docNumber==='RX1234567');
   assert.equal(await page.evaluate(()=>SNELKLANT.docType),'passport');assert.equal(mock.calls,1);
  }finally{await page.close();}
@@ -126,14 +124,14 @@ test('Additional licence upload opens guide, rejects unreadable file and accepts
  try{
   await page.evaluate(()=>{openNew();SNELKLANT={name:'TEST',docNumber:'AB123456'};document.getElementById('nwScanLic').hidden=false;window.extraScan=[];snelScan=async files=>{window.extraScan=files.map(f=>f.name);};});
   await page.click('#nwScanLic');await page.waitForSelector('.guided-scan');
-  await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['broken'],'broken.heic',{type:'image/heic'}));const input=document.querySelectorAll('.guided-library')[3];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['broken'],'broken.heic',{type:'image/heic'}));const input=document.querySelector('.guided-files');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));});
   await page.waitForFunction(()=>document.querySelector('.guided-error').textContent.includes('niet worden geopend'));
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
-  await chooseScanPhoto(page,3,'library','licence.jpg');assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
+  await chooseScanPhotos(page,['licence.jpg']);assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
   await page.click('.guided-go');await page.waitForFunction(()=>window.extraScan.length===1);assert.deepEqual(await page.evaluate(()=>window.extraScan),['licence.jpg']);
  }finally{await page.close();}
 });
-for(const source of ['camera','library'])for(const kind of ['passport','licence'])test('Native picker → thumbnail → JPEG request → '+kind+' fields: '+source,{skip:!process.env.ATLAS_HTML},async()=>{
+for(const kind of ['passport','licence'])test('Native picker → thumbnail → JPEG request → '+kind+' fields',{skip:!process.env.ATLAS_HTML},async()=>{
  const licence=kind==='licence',number=licence?'07/182101':'RX1234567';
  const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:licence?'rijbewijs_voor':'paspoort',achternaam:'SPECIMEN',voornamen:'TEST',document_nummer:licence?'':number,geboortedatum:'1990-03-04',geldig_tot:licence?'':'2031-04-05',land:'MAR',nationaliteit:'MAR',adres:'',rijbewijs_nummer:licence?number:'',rijbewijs_afgifte:licence?'2020-06-01':'',rijbewijs_geldig_tot:licence?'2030-06-01':'',mrz:[]}]}};
  const {page,fouten}=await notificationPage('nl','/',mock);
@@ -141,9 +139,8 @@ for(const source of ['camera','library'])for(const kind of ['passport','licence'
   await page.evaluate(()=>openNew());await page.click('#nwScanKaart');
   const jpeg=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=900;c.height=600;const ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,900,600);ctx.fillStyle='black';ctx.font='30px Arial';ctx.fillText('SPECIMEN TEST ONLY — FICTIONAL',30,80);return c.toDataURL('image/jpeg',.9).split(',')[1];});
   const fixture=join(mkdtempSync(join(tmpdir(),'atlas-native-scan-')),kind+'.jpg');writeFileSync(fixture,Buffer.from(jpeg,'base64'));
-  const input=(await page.$$('.guided-'+source))[licence?3:2];
-  const chooser=page.waitForFileChooser();await input.click();await(await chooser).accept([fixture]);
-  await page.waitForFunction(index=>document.querySelectorAll('.guided-row')[index].querySelector('.guided-ok img')?.naturalWidth>0,{},licence?3:2);
+  const chooser=page.waitForFileChooser();await page.click('.guided-files');await(await chooser).accept([fixture]);
+  await page.waitForFunction(()=>document.querySelector('.guided-card img')?.naturalWidth>0);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);await page.click('.guided-go');
   await page.waitForFunction(({licence,number})=>(licence?SNELKLANT?.licenceNumber:SNELKLANT?.docNumber)===number,{}, {licence,number});
   const values=await page.evaluate(()=>({name:SNELKLANT.name,birth:SNELKLANT.birth,docExpiry:SNELKLANT.docExpiry,licenceIssue:SNELKLANT.licenceIssue,licenceExpiry:SNELKLANT.licenceExpiry,scans:Object.keys(SNELKLANT.scans||{})}));
