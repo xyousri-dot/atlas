@@ -3,7 +3,7 @@
 const OFFLINE_CACHE='atlas-scan-20261018';
 let offlineListPromise;
 function offlineList(){return offlineListPromise||(offlineListPromise=fetch(new URL('./offline-manifest.json',self.registration.scope),{cache:'no-store',credentials:'same-origin'}).then(r=>{if(!r.ok)throw Error('manifest');return r.json();}).then(x=>x.files).catch(e=>{offlineListPromise=null;throw e;}));}
-function safeOfflinePath(path){return /^\.\/(?:index\.html|paid-scanner\.js|offline-scanner\.js|offline-cache\.js|offline-manifest\.json|scan-quality\.js|vehicle-warranties\.js|warranty-rules\.mjs|manifest\.webmanifest|atlas-icon\.svg|scan-assets\/[a-zA-Z0-9_./-]+)$/.test(path)&&!path.includes('..');}
+function safeOfflinePath(path){return /^\.\/(?:index\.html|paid-scanner\.js|guided-scanner\.js|offline-scanner\.js|offline-cache\.js|offline-manifest\.json|scan-quality\.js|vehicle-warranties\.js|warranty-rules\.mjs|manifest\.webmanifest|atlas-icon\.svg|scan-assets\/[a-zA-Z0-9_./-]+)$/.test(path)&&!path.includes('..');}
 self.addEventListener('message',event=>{
  if(!['atlas-offline-prepare','atlas-offline-status'].includes(event.data?.type)||!event.ports?.[0])return;
  event.waitUntil((async()=>{try{
@@ -27,8 +27,10 @@ self.addEventListener('fetch',event=>{
  if(req.method!=='GET'||url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||url.search)return;
  const relative='./'+url.pathname.slice(base.pathname.length);
  if(req.mode==='navigate'&&(relative==='./'||relative==='./index.html')){
-  event.respondWith(fetch(req).catch(async()=>{const r=await caches.match(new URL('./index.html',base),{cacheName:OFFLINE_CACHE});return r||Response.error();}));return;
+  event.respondWith(caches.open(OFFLINE_CACHE).then(async cache=>{try{const fresh=await fetch(req,{cache:'no-cache'});if(fresh.ok&&!fresh.redirected)await cache.put(new URL('./index.html',base),fresh.clone());return fresh;}catch{const saved=await cache.match(new URL('./index.html',base));return saved||Response.error();}}));return;
  }
  if(!safeOfflinePath(relative))return;
- event.respondWith(caches.open(OFFLINE_CACHE).then(async cache=>(await cache.match(req))||fetch(req)));
+ // With internet, update the installed app automatically. Cached public files
+ // are only the fallback; they must never pin an old Atlas release.
+ event.respondWith(caches.open(OFFLINE_CACHE).then(async cache=>{try{const fresh=await fetch(req,{cache:'no-cache'});if(fresh.ok&&!fresh.redirected)await cache.put(req,fresh.clone());return fresh;}catch{const saved=await cache.match(req);return saved||Response.error();}}));
 });

@@ -41,5 +41,5 @@ test('Prepared test scanner survives network loss and reload, performs real OCR 
 test('Build lists pinned files and has no private cache routes',()=>{
  const lock=JSON.parse(readFileSync(new URL('../scripts/scan-assets-lock.json',import.meta.url)));
  assert.ok(lock.length>=12);for(const a of lock){assert.ok(a.sha256&&a.bytes>0);assert.match(a.url,/^https:\/\/cdn.jsdelivr.net\/npm\//);}
- const sw=readFileSync(new URL('../offline-cache.js',import.meta.url),'utf8');assert.ok(sw.includes("req.method!=='GET'"));assert.ok(sw.includes('url.search'));
+ const sw=readFileSync(new URL('../offline-cache.js',import.meta.url),'utf8');assert.ok(sw.includes("req.method!=='GET'"));assert.ok(sw.includes('url.search'));assert.ok(sw.includes("fetch(req,{cache:'no-cache'})"));assert.ok(sw.indexOf("fetch(req,{cache:'no-cache'})")<sw.indexOf('cache.match(req)'),'Online must check for an update before using the offline copy');
 });

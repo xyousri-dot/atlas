@@ -18,11 +18,11 @@ writeFileSync(new URL('admin.html',out),testAdmin(readFileSync(new URL('../admin
 for(const file of ['manifest.webmanifest','push-sw.js','atlas-icon.svg','vehicle-warranties.js','scan-quality.js'])copyFileSync(new URL('../'+file,import.meta.url),new URL(file,out));
 copyFileSync(new URL('../supabase/functions/_shared/warranty.mjs',import.meta.url),new URL('warranty-rules.mjs',out));
 const assets=await prepareAssets();cpSync(assetRoot,new URL('scan-assets/',out),{recursive:true});
-for(const file of ['offline-scanner.js','offline-cache.js','paid-scanner.js'])copyFileSync(new URL('../'+file,import.meta.url),new URL(file,out));
+for(const file of ['offline-scanner.js','offline-cache.js','paid-scanner.js','guided-scanner.js'])copyFileSync(new URL('../'+file,import.meta.url),new URL(file,out));
 const releaseHash=createHash('sha256');
-for(const file of ['index.html','offline-scanner.js','offline-cache.js','paid-scanner.js','scan-quality.js','vehicle-warranties.js','warranty-rules.mjs','manifest.webmanifest','atlas-icon.svg'])releaseHash.update(readFileSync(new URL(file,out)));
+for(const file of ['index.html','offline-scanner.js','offline-cache.js','paid-scanner.js','guided-scanner.js','scan-quality.js','vehicle-warranties.js','warranty-rules.mjs','manifest.webmanifest','atlas-icon.svg'])releaseHash.update(readFileSync(new URL(file,out)));
 const scanVersion=releaseHash.update(readFileSync(new URL('./scan-assets-lock.json',import.meta.url))).digest('hex').slice(0,12);
 writeFileSync(new URL('offline-cache.js',out),readFileSync(new URL('../offline-cache.js',import.meta.url),'utf8').replace('atlas-scan-20261018','atlas-test-scan-'+scanVersion));
 writeFileSync(new URL('push-sw.js',out),readFileSync(new URL('../push-sw.js',import.meta.url),'utf8').replace('atlas-scan-20261018','atlas-test-scan-'+scanVersion)+"\n// Scanner release "+scanVersion+"\n");
-writeFileSync(new URL('offline-manifest.json',out),JSON.stringify({files:['./index.html','./offline-scanner.js','./offline-cache.js','./paid-scanner.js','./scan-quality.js','./vehicle-warranties.js','./warranty-rules.mjs','./manifest.webmanifest','./atlas-icon.svg',...assets.map(a=>'./scan-assets/'+a.path)]}));
+writeFileSync(new URL('offline-manifest.json',out),JSON.stringify({files:['./index.html','./offline-scanner.js','./offline-cache.js','./paid-scanner.js','./guided-scanner.js','./scan-quality.js','./vehicle-warranties.js','./warranty-rules.mjs','./manifest.webmanifest','./atlas-icon.svg',...assets.map(a=>'./scan-assets/'+a.path)]}));
 console.log('Pilot built: tests passed; only explicitly listed public app files copied.');

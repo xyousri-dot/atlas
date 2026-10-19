@@ -54,7 +54,7 @@ let server, browser, poort, STOPT = false;
 export async function start() {
   server = createServer((req, res) => {
     const pad = decodeURIComponent(req.url.split("?")[0]);
-    if(process.env.ATLAS_HTML&&(/^\/scan-assets\/[a-zA-Z0-9_.\/-]+$/.test(pad)||['/push-sw.js','/offline-cache.js','/offline-scanner.js','/paid-scanner.js','/offline-manifest.json'].includes(pad))&&!pad.includes('..')){
+    if(process.env.ATLAS_HTML&&(/^\/scan-assets\/[a-zA-Z0-9_.\/-]+$/.test(pad)||['/push-sw.js','/offline-cache.js','/offline-scanner.js','/paid-scanner.js','/guided-scanner.js','/offline-manifest.json'].includes(pad))&&!pad.includes('..')){
       if(process.env.ATLAS_SIMULATE_PREVIEW_AUTH==='1'&&!(req.headers.cookie||'').includes('atlas-preview-fixture=1')){res.writeHead(302,{location:'/preview-login'});res.end();return;}
       try{const type=pad.endsWith('.wasm')?'application/wasm':pad.endsWith('.json')?'application/json':pad.endsWith('.js')?'application/javascript':'application/octet-stream';res.writeHead(200,{'content-type':type});res.end(readFileSync(resolve(dirname(process.env.ATLAS_HTML),'.'+pad)));}catch{res.writeHead(404);res.end();}return;
     }

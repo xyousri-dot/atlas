@@ -72,6 +72,24 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Guided scan requires both ID sides and sends ID plus optional licence in one batch',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page,fouten}=await B.open({taal:'nl'});
+ try{
+  await page.evaluate(()=>{openNew();window.guidedBatch=[];snelScan=async files=>{window.guidedBatch=files.map(file=>file.name);};});
+  await page.click('#nwScanKaart');await page.waitForSelector('.guided-scan');
+  assert.match(await page.$eval('.guided-intro',e=>e.textContent),/hele kaart/);
+  assert.equal(await page.$$eval('.guided-row',rows=>rows.length),4);
+  assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
+  for(const [index,name] of [[0,'id-front.jpg'],[1,'id-back.jpg'],[2,'licence-front.jpg'],[3,'licence-back.jpg']]){
+   await page.evaluate(({index,name})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-row input[type=file]')[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name});
+   if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
+  }
+  assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
+  await page.click('.guided-go');await page.waitForFunction(()=>window.guidedBatch.length===4);
+  assert.deepEqual(await page.evaluate(()=>window.guidedBatch),['id-front.jpg','id-back.jpg','licence-front.jpg','licence-back.jpg']);
+  assert.equal(await page.$('.guided-scan'),null);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
 test('Paid scan prepares multiple photos in parallel and keeps images inside the fast vision budget',{skip:!process.env.ATLAS_HTML},async()=>{
  const mock={calls:0,status:200,body:{fotos:[]}};const {page}=await notificationPage('fr','/',mock);
  try{
