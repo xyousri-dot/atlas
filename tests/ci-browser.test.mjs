@@ -75,9 +75,38 @@ test('Closed app restores destination saved by background worker, even when laun
 });
 before(B.start);after(B.stop);
 async function chooseScanPhotos(page,names){
+ const before=await page.$$eval('.guided-card',cards=>cards.length);
  await page.evaluate(async names=>{const transfer=new DataTransfer();for(const name of names){const canvas=document.createElement('canvas');canvas.width=640;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,640,400);ctx.fillStyle='black';ctx.font='24px Arial';ctx.fillText('SPECIMEN TEST ONLY',20,60);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.9));transfer.items.add(new File([blob],name,{type:'image/jpeg'}));}const input=document.querySelector('.guided-files');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},names);
- await page.waitForFunction(count=>document.querySelectorAll('.guided-card img').length===count&&[...document.querySelectorAll('.guided-card img')].every(img=>img.naturalWidth>0),{},names.length);
+ await page.waitForFunction(count=>document.querySelectorAll('.guided-card img').length===count&&[...document.querySelectorAll('.guided-card img')].every(img=>img.naturalWidth>0)&&!document.querySelector('.guided-go').disabled,{},before+names.length);
 }
+for(const sequential of [false,true])test('Four ID and licence photos survive '+(sequential?'successive additions':'one selection')+' and one scan request',{skip:!process.env.ATLAS_HTML},async()=>{
+ const mock={calls:0,status:200,body:{fotos:[
+  {foto:0,soort:'id_voor',achternaam:'SPECIMEN',voornamen:'TEST',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]},
+  {foto:1,soort:'id_achter',document_nummer:'AB123456',land:'MAR',mrz:[]},
+  {foto:2,soort:'rijbewijs_voor',rijbewijs_nummer:'07/182101',rijbewijs_afgifte:'2020-06-01',rijbewijs_geldig_tot:'2032-06-30',land:'MAR',mrz:[]},
+  {foto:3,soort:'rijbewijs_achter',rijbewijs_nummer:'07/182101',land:'MAR',mrz:[]}
+ ]}};
+ const {page,fouten}=await notificationPage('nl','/',mock);
+ try{
+  await page.evaluate(()=>openNew());await page.click('#nwScanKaart');
+  const names=['id-front.jpg','id-back.jpg','licence-front.jpg','licence-back.jpg'];
+  if(sequential){for(const name of names)await chooseScanPhotos(page,[name]);}else await chooseScanPhotos(page,names);
+  assert.deepEqual(await page.$$eval('.guided-card-info span',nodes=>nodes.map(node=>node.textContent)),names);
+  await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.licenceNumber==='07/182101');
+  assert.deepEqual(await page.evaluate(()=>({id:SNELKLANT.docNumber,expiry:SNELKLANT.docExpiry,licence:SNELKLANT.licenceNumber,licenceExpiry:SNELKLANT.licenceExpiry,scans:Object.keys(SNELKLANT.scans||{}).sort()})),{id:'AB123456',expiry:'2031-04-05',licence:'07/182101',licenceExpiry:'2032-06-30',scans:['cin','cin-voor','licence','licence-voor']});
+  assert.equal(mock.calls,1);assert.equal(mock.sent.fotos.length,4);assert.ok(mock.sent.fotos.every(photo=>photo.type==='image/jpeg'&&photo.data.startsWith('/9j/')));assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
+test('An unreadable photo does not discard the four valid document photos',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page}=await B.open({taal:'nl'});
+ try{
+  await page.evaluate(()=>{openNew();window.keptPhotos=[];snelScan=async files=>{window.keptPhotos=files.map(file=>file.name);};});await page.click('#nwScanKaart');
+  const names=['id-front.jpg','id-back.jpg','licence-front.jpg','licence-back.jpg'];await chooseScanPhotos(page,names);
+  await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['broken'],'broken.heic',{type:'image/heic'}));const input=document.querySelector('.guided-files');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.waitForFunction(()=>document.querySelector('.guided-error').textContent.includes('niet worden geopend')&&!document.querySelector('.guided-go').disabled);
+  assert.equal(await page.$$eval('.guided-card',cards=>cards.length),4);await page.click('.guided-go');await page.waitForFunction(()=>window.keptPhotos.length===4);assert.deepEqual(await page.evaluate(()=>window.keptPhotos),names);
+ }finally{await page.close();}
+});
 test('Simple scan adds multiple photos, removes one and sends the remaining batch',{skip:!process.env.ATLAS_HTML},async()=>{
  const {page,fouten}=await B.open({taal:'nl'});
  try{

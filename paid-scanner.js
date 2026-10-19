@@ -38,6 +38,13 @@
      maps a licence number returned in the generic document fields into the
      licence fields, so a saved iPhone photo cannot silently disappear. */
   if(j?.fotos&&files)j.fotos.forEach(p=>{const hint=files[p.foto]?.atlasScanHint;if(!hint)return;p.soort=hint;if(hint.startsWith('rijbewijs_')){if(!p.rijbewijs_nummer)p.rijbewijs_nummer=p.document_nummer||'';if(!p.rijbewijs_geldig_tot)p.rijbewijs_geldig_tot=p.geldig_tot||'';}});
+  // The base reader may prefer the reverse side. Complete its empty fields
+  // from the matching side, without overwriting disagreements or other IDs.
+  const identityPhotos=(j?.fotos||[]).filter(p=>/^id_/.test(p.soort));
+  for(const photo of identityPhotos)for(const other of identityPhotos){
+   if(!photo.document_nummer||!other.document_nummer||photo.document_nummer!==other.document_nummer)continue;
+   for(const field of ['achternaam','voornamen','geboortedatum','geldig_tot','land','nationaliteit','adres'])if(!photo[field]&&other[field])photo[field]=other[field];
+  }
   const result=await fillBase(j,files);
   // A licence-only scan may contain usable dates and a printed name even when
   // its number is unreadable. Preserve existing ID data and require review.
