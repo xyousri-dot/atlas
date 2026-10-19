@@ -72,6 +72,24 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Paid scan prepares multiple photos in parallel and keeps images inside the fast vision budget',{skip:!process.env.ATLAS_HTML},async()=>{
+ const mock={calls:0,status:200,body:{fotos:[]}};const {page}=await notificationPage('fr','/',mock);
+ try{
+  await page.waitForFunction(()=>window.ATLAS_AI_SCAN_ENABLED===true);
+  const image=await page.evaluate(async()=>{
+   const source=document.createElement('canvas');source.width=2400;source.height=1600;const sourceCtx=source.getContext('2d');const noisy=sourceCtx.createImageData(2400,1600);for(let i=0;i<noisy.data.length;i+=4){noisy.data[i]=(i*17)%256;noisy.data[i+1]=(i*31)%256;noisy.data[i+2]=(i*47)%256;noisy.data[i+3]=255;}sourceCtx.putImageData(noisy,0,0);
+   const blob=await new Promise(resolve=>source.toBlob(resolve,'image/jpeg',.95));const data=await fotoVoorAI(new File([blob],'fictional-document.jpg',{type:'image/jpeg'}));
+   const decoded=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve({width:img.width,height:img.height});img.onerror=reject;img.src='data:image/jpeg;base64,'+data;});
+   return {...decoded,bytes:Math.floor(data.length*3/4)};
+  });
+  assert.ok(image.width<=1500&&image.height<=1500);assert.ok(image.width*image.height<=1100000);assert.ok(image.bytes<990000);
+  const concurrency=await page.evaluate(async()=>{
+   let active=0,maximum=0;fotoVoorAI=async()=>{active++;maximum=Math.max(maximum,active);await new Promise(r=>setTimeout(r,40));active--;return '/9j/AAAAAAAAAAAAAAAAAAAA';};
+   await aiLees([new File(['a'],'a.jpg'),new File(['b'],'b.jpg')]);return maximum;
+  });
+  assert.equal(concurrency,2);assert.equal(mock.calls,1);
+ }finally{await page.close();}
+});
 test('Paid scan first; one attempt; outage falls back to local; correction and human review preserved',{skip:!process.env.ATLAS_HTML},async()=>{
  const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:'id_voor',achternaam:'TEST',voornamen:'SAMIRA',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]}]}};
  const {page}=await notificationPage('fr','/',mock);
