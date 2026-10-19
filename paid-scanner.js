@@ -21,7 +21,7 @@
   AIFOUT='';window.ATLAS_PAID_SCAN_OK=false;window.ATLAS_SCAN_CONFLICT=false;
   if(!navigator.onLine){AIFOUT='offline';return null;}if(!sbKlaar()){AIFOUT='uit';return null;}
   if(!files?.length||files.length>6){AIFOUT='aantal';return null;}
-  if(paidAttempts>=1){AIFOUT='retry-limit';return null;}paidAttempts++;
+  if(paidAttempts>=1){if(!window.ATLAS_PAID_SCAN_OK)AIFOUT='retry-limit';return null;}paidAttempts++;
   try{
    const fotos=await Promise.all(Array.from(files,f=>fotoVoorAI(f).then(data=>({type:'image/jpeg',data}))));
    const stop=new AbortController(),timer=setTimeout(()=>stop.abort(),25000);let response;
@@ -38,6 +38,15 @@
      maps a licence number returned in the generic document fields into the
      licence fields, so a saved iPhone photo cannot silently disappear. */
   if(j?.fotos&&files)j.fotos.forEach(p=>{const hint=files[p.foto]?.atlasScanHint;if(!hint)return;p.soort=hint;if(hint.startsWith('rijbewijs_')){if(!p.rijbewijs_nummer)p.rijbewijs_nummer=p.document_nummer||'';if(!p.rijbewijs_geldig_tot)p.rijbewijs_geldig_tot=p.geldig_tot||'';}});
-  return fillBase(j,files);};
+  const result=await fillBase(j,files);
+  // A licence-only scan may contain usable dates and a printed name even when
+  // its number is unreadable. Preserve existing ID data and require review.
+  for(const p of j?.fotos||[]){if(!/^rijbewijs_/.test(p.soort))continue;
+   const values={cvLicIssue:aiDatum(p.rijbewijs_afgifte),cvLicExp:aiDatum(p.rijbewijs_geldig_tot),cvName:aiSchoon((p.achternaam||'')+' '+(p.voornamen||'')),cvBirth:aiDatum(p.geboortedatum)};
+   for(const [key,value] of Object.entries(values))if(value&&$(key)&&!$(key).value){$(key).value=value;result.iets=true;result.twijfelLic=true;}
+  }
+  return result;};
+ const classifyBase=soortVanFoto;
+ soortVanFoto=async function(file){const hint=file?.atlasScanHint;if(!hint)return classifyBase(file);if(hint.startsWith('rijbewijs_'))return {soort:'licence',zijde:''};if(hint==='paspoort')return {soort:'passport',zijde:'achter'};return {soort:'cin',zijde:hint==='id_voor'?'voorkant':'achter'};};
  tekenAILamp=function(){const lamp=$('nwAILamp');if(!lamp)return;lamp.textContent=({fr:'Scan intelligent en premier · lecteur local en secours',nl:'Slimme scan eerst · lokale lezer als reserve',ar:'المسح الذكي أولاً · القارئ المحلي احتياطي'})[L];lamp.onclick=null;};
 })();

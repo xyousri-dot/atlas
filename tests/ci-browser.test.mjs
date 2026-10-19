@@ -2,7 +2,9 @@ import {test,before,after} from 'node:test';
 import assert from 'node:assert/strict';
 import * as B from './browser.mjs';
 import {TEST_PROJECT} from '../scripts/test-environment.mjs';
-import {readFileSync} from 'node:fs';
+import {readFileSync,mkdtempSync,writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 const appSource=readFileSync(process.env.ATLAS_HTML||new URL('../index.html',import.meta.url),'utf8');
 const sessionKey=appSource.match(/SBSKEY="([^"]+)"/)?.[1];
 async function notificationPage(language='fr',pad='/',scanMock=null){
@@ -86,7 +88,7 @@ test('Guided scan requires both ID sides and sends ID plus optional licence in o
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[3,'licence-front.jpg','library'],[4,'licence-back.jpg','library']]){
    await chooseScanPhoto(page,index,source,name);
-   if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
+   if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
   }
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
   assert.deepEqual(await page.$$eval('.guided-ok',states=>states.map(s=>s.textContent)),['✓ Gereed · id-front.jpg','✓ Gereed · id-back.jpg','✓ Gereed · licence-front.jpg','✓ Gereed · licence-back.jpg']);
@@ -129,6 +131,25 @@ test('Additional licence upload opens guide, rejects unreadable file and accepts
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   await chooseScanPhoto(page,3,'library','licence.jpg');assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
   await page.click('.guided-go');await page.waitForFunction(()=>window.extraScan.length===1);assert.deepEqual(await page.evaluate(()=>window.extraScan),['licence.jpg']);
+ }finally{await page.close();}
+});
+for(const source of ['camera','library'])for(const kind of ['passport','licence'])test('Native picker → thumbnail → JPEG request → '+kind+' fields: '+source,{skip:!process.env.ATLAS_HTML},async()=>{
+ const licence=kind==='licence',number=licence?'07/182101':'RX1234567';
+ const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:licence?'rijbewijs_voor':'paspoort',achternaam:'SPECIMEN',voornamen:'TEST',document_nummer:licence?'':number,geboortedatum:'1990-03-04',geldig_tot:licence?'':'2031-04-05',land:'MAR',nationaliteit:'MAR',adres:'',rijbewijs_nummer:licence?number:'',rijbewijs_afgifte:licence?'2020-06-01':'',rijbewijs_geldig_tot:licence?'2030-06-01':'',mrz:[]}]}};
+ const {page,fouten}=await notificationPage('nl','/',mock);
+ try{
+  await page.evaluate(()=>openNew());await page.click('#nwScanKaart');
+  const jpeg=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=900;c.height=600;const ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,900,600);ctx.fillStyle='black';ctx.font='30px Arial';ctx.fillText('SPECIMEN TEST ONLY — FICTIONAL',30,80);return c.toDataURL('image/jpeg',.9).split(',')[1];});
+  const fixture=join(mkdtempSync(join(tmpdir(),'atlas-native-scan-')),kind+'.jpg');writeFileSync(fixture,Buffer.from(jpeg,'base64'));
+  const input=(await page.$$('.guided-'+source))[licence?3:2];
+  const chooser=page.waitForFileChooser();await input.click();await(await chooser).accept([fixture]);
+  await page.waitForFunction(index=>document.querySelectorAll('.guided-row')[index].querySelector('.guided-ok img')?.naturalWidth>0,{},licence?3:2);
+  assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);await page.click('.guided-go');
+  await page.waitForFunction(({licence,number})=>(licence?SNELKLANT?.licenceNumber:SNELKLANT?.docNumber)===number,{}, {licence,number});
+  const values=await page.evaluate(()=>({name:SNELKLANT.name,birth:SNELKLANT.birth,docExpiry:SNELKLANT.docExpiry,licenceIssue:SNELKLANT.licenceIssue,licenceExpiry:SNELKLANT.licenceExpiry,scans:Object.keys(SNELKLANT.scans||{})}));
+  assert.equal(values.name,'SPECIMEN TEST');assert.equal(values.birth,'1990-03-04');
+  if(licence){assert.equal(values.licenceIssue,'2020-06-01');assert.equal(values.licenceExpiry,'2030-06-01');assert.ok(values.scans.includes('licence-voor'));}else{assert.equal(values.docExpiry,'2031-04-05');assert.ok(values.scans.includes('passport'));}
+  assert.equal(mock.calls,1);assert.equal(mock.sent.fotos.length,1);assert.ok(mock.sent.fotos[0].data.startsWith('/9j/'));assert.deepEqual(fouten,[]);
  }finally{await page.close();}
 });
 test('Paid scan prepares multiple photos in parallel and keeps images inside the fast vision budget',{skip:!process.env.ATLAS_HTML},async()=>{
