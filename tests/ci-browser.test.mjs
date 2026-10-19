@@ -80,8 +80,8 @@ test('Guided scan requires both ID sides and sends ID plus optional licence in o
   assert.match(await page.$eval('.guided-intro',e=>e.textContent),/hele kaart/);
   assert.equal(await page.$$eval('.guided-row',rows=>rows.length),4);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
-  for(const [index,name] of [[0,'id-front.jpg'],[1,'id-back.jpg'],[2,'licence-front.jpg'],[3,'licence-back.jpg']]){
-   await page.evaluate(({index,name})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-row input[type=file]')[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name});
+  for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[2,'licence-front.jpg','library'],[3,'licence-back.jpg','library']]){
+   await page.evaluate(({index,name,source})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-'+source)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,source});
    if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   }
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
