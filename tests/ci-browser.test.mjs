@@ -85,9 +85,24 @@ test('Guided scan requires both ID sides and sends ID plus optional licence in o
    if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   }
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
+  assert.deepEqual(await page.$$eval('.guided-ok',states=>states.map(s=>s.textContent)),['✓ Gereed · id-front.jpg','✓ Gereed · id-back.jpg','✓ Gereed · licence-front.jpg','✓ Gereed · licence-back.jpg']);
   await page.click('.guided-go');await page.waitForFunction(()=>window.guidedBatch.length===4);
   assert.deepEqual(await page.evaluate(()=>window.guidedBatch),['id-front.jpg','id-back.jpg','licence-front.jpg','licence-back.jpg']);
   assert.equal(await page.$('.guided-scan'),null);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
+test('Guided licence file fills licence fields even when the model labels it generically',{skip:!process.env.ATLAS_HTML},async()=>{
+ const mock={calls:0,status:200,body:{fotos:[
+  {foto:0,soort:'id_voor',achternaam:'TEST',voornamen:'SAMIRA',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]},
+  {foto:1,soort:'id_achter',achternaam:'',voornamen:'',document_nummer:'AB123456',geboortedatum:'',geldig_tot:'',land:'MAR',mrz:[]},
+  {foto:2,soort:'ander',achternaam:'',voornamen:'',document_nummer:'07/182101',geboortedatum:'',geldig_tot:'2032-06-30',land:'MAR',mrz:[]}
+ ]}};
+ const {page}=await notificationPage('nl','/',mock);
+ try{
+  await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';});await page.click('#nwScanKaart');
+  for(const [index,name,selector] of [[0,'id-front.jpg','.guided-camera'],[1,'id-back.jpg','.guided-camera'],[2,'licence-front.heic','.guided-library']])await page.evaluate(({index,name,selector})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:name.endsWith('.heic')?'image/heic':'image/jpeg'}));const input=document.querySelectorAll(selector)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,selector});
+  await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.licenceNumber==='07/182101');
+  assert.equal(await page.evaluate(()=>SNELKLANT.licenceExpiry),'2032-06-30');assert.equal(mock.calls,1);
  }finally{await page.close();}
 });
 test('Paid scan prepares multiple photos in parallel and keeps images inside the fast vision budget',{skip:!process.env.ATLAS_HTML},async()=>{

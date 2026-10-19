@@ -29,6 +29,11 @@
  const scanBase=snelScan;
  snelScan=async function(){if(SCAN_RUNNING)return;paidAttempts=0;const result=await scanBase.apply(this,arguments);if(window.ATLAS_SCAN_CONFLICT)scanQualityNotice(({fr:'Documents contradictoires : scannez une seule personne à la fois.',nl:'Tegenstrijdige documenten: scan één persoon tegelijk.',ar:'وثائق متعارضة. امسح وثائق شخص واحد فقط.'})[L]);return result;};
  const fillBase=aiVul;
- aiVul=async function(j,files){if(j?.identityConflict){scanQualityNotice(({fr:'Documents contradictoires : scannez une seule personne à la fois.',nl:'Tegenstrijdige documenten: scan één persoon tegelijk.',ar:'وثائق متعارضة. امسح وثائق شخص واحد فقط.'})[L]);return {iets:true,twijfelDoc:true,twijfelLic:true};}return fillBase(j,files);};
+ aiVul=async function(j,files){if(j?.identityConflict){scanQualityNotice(({fr:'Documents contradictoires : scannez une seule personne à la fois.',nl:'Tegenstrijdige documenten: scan één persoon tegelijk.',ar:'وثائق متعارضة. امسح وثائق شخص واحد فقط.'})[L]);return {iets:true,twijfelDoc:true,twijfelLic:true};}
+  /* The guided slots are stronger evidence than model classification. This also
+     maps a licence number returned in the generic document fields into the
+     licence fields, so a saved iPhone photo cannot silently disappear. */
+  if(j?.fotos&&files)j.fotos.forEach(p=>{const hint=files[p.foto]?.atlasScanHint;if(!hint)return;p.soort=hint;if(hint.startsWith('rijbewijs_')){if(!p.rijbewijs_nummer)p.rijbewijs_nummer=p.document_nummer||'';if(!p.rijbewijs_geldig_tot)p.rijbewijs_geldig_tot=p.geldig_tot||'';}});
+  return fillBase(j,files);};
  tekenAILamp=function(){const lamp=$('nwAILamp');if(!lamp)return;lamp.textContent=({fr:'Scan intelligent en premier · lecteur local en secours',nl:'Slimme scan eerst · lokale lezer als reserve',ar:'المسح الذكي أولاً · القارئ المحلي احتياطي'})[L];lamp.onclick=null;};
 })();
