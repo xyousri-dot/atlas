@@ -2,15 +2,19 @@
 (function(){
  if(!/(manikkusokwysmdfhxtu|mimpyfbitoiotxuqoymj)/.test(SBSTANDAARD.url)||location.protocol==='file:')return;
  window.ATLAS_AI_SCAN_ENABLED=true;
+ const prepared=new WeakMap();
  /* Keep enough detail for small document text without making Anthropic resize a
     multi-megapixel phone photo again. That server-side resize only adds delay. */
  fotoVoorAI=async function(f){
+  if(prepared.has(f))return prepared.get(f);
+  const result=(async()=>{
   const img=await laadBeeld(f),maxSide=1500,maxPixels=1100000;
   const scale=Math.min(1,maxSide/Math.max(img.width,img.height),Math.sqrt(maxPixels/(img.width*img.height)));
   const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
   const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,canvas.width,canvas.height);
   let data='';for(const quality of [.93,.89,.85,.81,.78]){data=canvas.toDataURL('image/jpeg',quality).split(',')[1];if(data.length<=1320000)break;}
   return data;
+  })();prepared.set(f,result);try{return await result;}catch(e){prepared.delete(f);throw e;}
  };
  let paidAttempts=0;
  aiLees=async function(files){

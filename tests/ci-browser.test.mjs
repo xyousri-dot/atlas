@@ -12,7 +12,7 @@ async function notificationPage(language='fr',pad='/',scanMock=null){
     await page.setRequestInterception(true);
     page.on('request',req=>{
       if(req.url().includes('.supabase.co/')){
-        if(req.url().includes('/functions/v1/atlas-scan')&&scanMock){if(req.method()==='POST')scanMock.calls++;return req.respond({status:req.method()==='OPTIONS'?200:scanMock.status,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(scanMock.body)});}
+        if(req.url().includes('/functions/v1/atlas-scan')&&scanMock){if(req.method()==='POST'){scanMock.calls++;scanMock.sent=JSON.parse(req.postData());}return req.respond({status:req.method()==='OPTIONS'?200:scanMock.status,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(scanMock.body)});}
         const json=req.url().includes('/rest/v1/atlas')?Object.entries(data).map(([path,value])=>({path,data:value})):req.url().includes('/functions/v1/atlas-push')?{items:[{kind:'documents',label:'Dacia Logan',doc:'inspectionUntil',url:'./#atlas=vehicle&id=c1&section=documents&doc=inspectionUntil'}]}:{};
         return req.respond({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(json)});
       }return req.continue();
@@ -72,6 +72,10 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+async function chooseScanPhoto(page,index,source,name){
+ await page.evaluate(async({index,source,name})=>{const canvas=document.createElement('canvas');canvas.width=640;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,640,400);ctx.fillStyle='black';ctx.font='24px Arial';ctx.fillText('SPECIMEN TEST ONLY',20,60);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.9));const transfer=new DataTransfer();transfer.items.add(new File([blob],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-'+source)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,source,name});
+ await page.waitForFunction(index=>document.querySelectorAll('.guided-row')[index].querySelector('.guided-ok img')?.naturalWidth>0,{},index);
+}
 test('Guided scan requires both ID sides and sends ID plus optional licence in one batch',{skip:!process.env.ATLAS_HTML},async()=>{
  const {page,fouten}=await B.open({taal:'nl'});
  try{
@@ -81,7 +85,7 @@ test('Guided scan requires both ID sides and sends ID plus optional licence in o
   assert.equal(await page.$$eval('.guided-row',rows=>rows.length),5);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[3,'licence-front.jpg','library'],[4,'licence-back.jpg','library']]){
-   await page.evaluate(({index,name,source})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-'+source)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,source});
+   await chooseScanPhoto(page,index,source,name);
    if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   }
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
@@ -99,10 +103,10 @@ test('Guided licence file fills licence fields even when the model labels it gen
  ]}};
  const {page}=await notificationPage('nl','/',mock);
  try{
-  await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';});await page.click('#nwScanKaart');
-  for(const [index,name,selector] of [[0,'id-front.jpg','.guided-camera'],[1,'id-back.jpg','.guided-camera'],[3,'licence-front.heic','.guided-library']])await page.evaluate(({index,name,selector})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:name.endsWith('.heic')?'image/heic':'image/jpeg'}));const input=document.querySelectorAll(selector)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,selector});
+  await page.evaluate(()=>openNew());await page.click('#nwScanKaart');
+  for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[3,'licence-front.jpg','library']])await chooseScanPhoto(page,index,source,name);
   await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.licenceNumber==='07/182101');
-  assert.equal(await page.evaluate(()=>SNELKLANT.licenceExpiry),'2032-06-30');assert.equal(mock.calls,1);
+  assert.equal(await page.evaluate(()=>SNELKLANT.licenceExpiry),'2032-06-30');assert.equal(mock.calls,1);assert.equal(mock.sent.fotos.length,3);for(const photo of mock.sent.fotos){assert.equal(photo.type,'image/jpeg');assert.ok(photo.data.startsWith('/9j/'));assert.ok(photo.data.length>1000);}
  }finally{await page.close();}
 });
 test('Guided passport photo alone enables scan and fills passport fields',{skip:!process.env.ATLAS_HTML},async()=>{
@@ -110,9 +114,21 @@ test('Guided passport photo alone enables scan and fills passport fields',{skip:
  const {page}=await notificationPage('nl','/',mock);
  try{
   await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';});await page.click('#nwScanKaart');
-  await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],'passport.jpg',{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-library')[2];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));});
+  await chooseScanPhoto(page,2,'library','passport.jpg');
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.docNumber==='RX1234567');
   assert.equal(await page.evaluate(()=>SNELKLANT.docType),'passport');assert.equal(mock.calls,1);
+ }finally{await page.close();}
+});
+test('Additional licence upload opens guide, rejects unreadable file and accepts a real photo without rescanning ID',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page}=await B.open({taal:'nl'});
+ try{
+  await page.evaluate(()=>{openNew();SNELKLANT={name:'TEST',docNumber:'AB123456'};document.getElementById('nwScanLic').hidden=false;window.extraScan=[];snelScan=async files=>{window.extraScan=files.map(f=>f.name);};});
+  await page.click('#nwScanLic');await page.waitForSelector('.guided-scan');
+  await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['broken'],'broken.heic',{type:'image/heic'}));const input=document.querySelectorAll('.guided-library')[3];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.waitForFunction(()=>document.querySelector('.guided-error').textContent.includes('niet worden geopend'));
+  assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
+  await chooseScanPhoto(page,3,'library','licence.jpg');assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);
+  await page.click('.guided-go');await page.waitForFunction(()=>window.extraScan.length===1);assert.deepEqual(await page.evaluate(()=>window.extraScan),['licence.jpg']);
  }finally{await page.close();}
 });
 test('Paid scan prepares multiple photos in parallel and keeps images inside the fast vision budget',{skip:!process.env.ATLAS_HTML},async()=>{
