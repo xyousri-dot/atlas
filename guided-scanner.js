@@ -2,9 +2,9 @@
 (function(){
  const button=document.getElementById('nwScanKaart');if(!button)return;
  const copy={
-  nl:{title:'Documenten scannen',intro:'Gebruik per zijde de camera of kies een bestaande foto. De hele kaart en alle vier hoeken moeten zichtbaar zijn.',front:'1. ID · voorkant',back:'2. ID · achterkant met code',licFront:'Rijbewijs · voorkant (optioneel)',licBack:'Rijbewijs · achterkant (optioneel)',take:'Camera',choose:'Kies foto',replace:'Andere',ready:'Gereed',go:n=>'Lees '+n+' foto'+(n===1?'':'\'s'),cancel:'Annuleren',need:'Voeg eerst de voor- én achterkant van het ID toe.'},
-  fr:{title:'Scanner les documents',intro:'Pour chaque face, utilisez la caméra ou choisissez une photo existante. Toute la carte et les quatre coins doivent être visibles.',front:'1. CIN · recto',back:'2. CIN · verso avec le code',licFront:'Permis · recto (facultatif)',licBack:'Permis · verso (facultatif)',take:'Caméra',choose:'Choisir',replace:'Changer',ready:'Prêt',go:n=>'Lire '+n+' photo'+(n===1?'':'s'),cancel:'Annuler',need:'Ajoutez d’abord le recto et le verso de la CIN.'},
-  ar:{title:'مسح الوثائق',intro:'لكل وجه، استخدم الكاميرا أو اختر صورة محفوظة. يجب أن تظهر البطاقة كاملة والزوايا الأربع.',front:'1. البطاقة · الوجه الأمامي',back:'2. البطاقة · الوجه الخلفي مع الرمز',licFront:'الرخصة · الوجه الأمامي (اختياري)',licBack:'الرخصة · الوجه الخلفي (اختياري)',take:'الكاميرا',choose:'اختيار صورة',replace:'تغيير',ready:'جاهز',go:n=>'قراءة '+n+' صور',cancel:'إلغاء',need:'أضف أولا الوجه الأمامي والخلفي للبطاقة.'}
+  nl:{title:'Documenten scannen',intro:'Kies ID voor+achter óf de fotopagina van het paspoort. Voeg het rijbewijs toe als dat nodig is.',front:'ID · voorkant',back:'ID · achterkant met code',passport:'Paspoort · fotopagina',licFront:'Rijbewijs · voorkant (optioneel)',licBack:'Rijbewijs · achterkant (optioneel)',take:'Camera',choose:'Kies foto',replace:'Andere',ready:'Gereed',go:n=>'Lees '+n+' foto'+(n===1?'':'\'s'),cancel:'Annuleren',need:'Voeg ID voor+achter óf de fotopagina van het paspoort toe.'},
+  fr:{title:'Scanner les documents',intro:'Ajoutez la CIN recto+verso ou la page photo du passeport. Ajoutez le permis si nécessaire.',front:'CIN · recto',back:'CIN · verso avec le code',passport:'Passeport · page photo',licFront:'Permis · recto (facultatif)',licBack:'Permis · verso (facultatif)',take:'Caméra',choose:'Choisir',replace:'Changer',ready:'Prêt',go:n=>'Lire '+n+' photo'+(n===1?'':'s'),cancel:'Annuler',need:'Ajoutez la CIN recto+verso ou la page photo du passeport.'},
+  ar:{title:'مسح الوثائق',intro:'أضف وجهي البطاقة أو صفحة الصورة في جواز السفر. أضف الرخصة عند الحاجة.',front:'البطاقة · الوجه الأمامي',back:'البطاقة · الوجه الخلفي مع الرمز',passport:'جواز السفر · صفحة الصورة',licFront:'الرخصة · الوجه الأمامي (اختياري)',licBack:'الرخصة · الوجه الخلفي (اختياري)',take:'الكاميرا',choose:'اختيار صورة',replace:'تغيير',ready:'جاهز',go:n=>'قراءة '+n+' صور',cancel:'إلغاء',need:'أضف وجهي البطاقة أو صفحة الصورة في جواز السفر.'}
  };
  function text(){return copy[window.L]||copy.fr;}
  function openGuide(){
@@ -13,22 +13,22 @@
   panel.innerHTML='<h2></h2><p class="fine guided-intro"></p><div class="guided-list"></div><p class="fine guided-error" role="status"></p><button type="button" class="btn guided-go" disabled></button><button type="button" class="btn ghost sm guided-cancel"></button>';
   panel.querySelector('h2').textContent=t.title;panel.querySelector('.guided-intro').textContent=t.intro;
   const list=panel.querySelector('.guided-list'),go=panel.querySelector('.guided-go'),error=panel.querySelector('.guided-error');
-  const rows=[['front',t.front,true],['back',t.back,true],['licFront',t.licFront,false],['licBack',t.licBack,false]];
-  function refresh(){const chosen=Object.keys(files).length;go.disabled=!(files.front&&files.back);go.textContent=t.go(chosen);}
-  rows.forEach(([key,label,required])=>{
+  const rows=[['front',t.front],['back',t.back],['passport',t.passport],['licFront',t.licFront],['licBack',t.licBack]];
+  function refresh(){const chosen=Object.keys(files).length;go.disabled=!((files.front&&files.back)||files.passport);go.textContent=t.go(chosen);}
+  rows.forEach(([key,label])=>{
    const row=document.createElement('div');row.className='guided-row';
-   const info=document.createElement('div');info.className='guided-info';const name=document.createElement('b');name.textContent=label;const state=document.createElement('span');state.textContent=required?'—':'';info.append(name,state);
+   const info=document.createElement('div');info.className='guided-info';const name=document.createElement('b');name.textContent=label;const state=document.createElement('span');state.textContent='—';info.append(name,state);
    const actions=document.createElement('div');actions.className='guided-actions';
    const take=document.createElement('button');take.type='button';take.className='btn sm';take.textContent=t.take;
    const choose=document.createElement('button');choose.type='button';choose.className='btn ghost sm';choose.textContent=t.choose;
    const camera=document.createElement('input');camera.type='file';camera.accept='image/*,.heic,.heif';camera.setAttribute('capture','environment');camera.className='guided-camera';camera.hidden=true;
    const library=document.createElement('input');library.type='file';library.accept='image/*,.heic,.heif';library.className='guided-library';library.hidden=true;
-   function selected(input){const file=input.files?.[0];if(!file)return;const allowed=/^image\//.test(file.type)||/\.(?:heic|heif)$/i.test(file.name);if(!allowed){error.textContent=t.need;input.value='';return;}file.atlasScanHint=key==='front'?'id_voor':key==='back'?'id_achter':key==='licFront'?'rijbewijs_voor':'rijbewijs_achter';files[key]=file;if(previews[key])URL.revokeObjectURL(previews[key]);previews[key]=URL.createObjectURL(file);state.replaceChildren();const mark=document.createElement('span');mark.textContent='✓ '+t.ready+' · '+file.name;const thumb=document.createElement('img');thumb.src=previews[key];thumb.alt='';state.append(mark,thumb);state.className='guided-ok';take.textContent=t.replace;choose.textContent=t.replace;error.textContent='';refresh();}
+   function selected(input){const file=input.files?.[0];if(!file)return;const allowed=/^image\//.test(file.type)||/\.(?:heic|heif)$/i.test(file.name);if(!allowed){error.textContent=t.need;input.value='';return;}file.atlasScanHint=key==='front'?'id_voor':key==='back'?'id_achter':key==='passport'?'paspoort':key==='licFront'?'rijbewijs_voor':'rijbewijs_achter';files[key]=file;if(previews[key])URL.revokeObjectURL(previews[key]);previews[key]=URL.createObjectURL(file);state.replaceChildren();const mark=document.createElement('span');mark.textContent='✓ '+t.ready+' · '+file.name;const thumb=document.createElement('img');thumb.src=previews[key];thumb.alt='';state.append(mark,thumb);state.className='guided-ok';take.textContent=t.replace;choose.textContent=t.replace;error.textContent='';refresh();}
    take.addEventListener('click',()=>camera.click());choose.addEventListener('click',()=>library.click());camera.addEventListener('change',()=>selected(camera));library.addEventListener('change',()=>selected(library));
    actions.append(take,choose,camera,library);row.append(info,actions);list.appendChild(row);
   });
   function close(){Object.values(previews).forEach(url=>URL.revokeObjectURL(url));shade.remove();}
-  go.addEventListener('click',()=>{if(!(files.front&&files.back)){error.textContent=t.need;return;}const batch=rows.map(x=>files[x[0]]).filter(Boolean);close();snelScan(batch,'auto');});
+  go.addEventListener('click',()=>{if(!((files.front&&files.back)||files.passport)){error.textContent=t.need;return;}const batch=rows.map(x=>files[x[0]]).filter(Boolean);close();snelScan(batch,'auto');});
   panel.querySelector('.guided-cancel').textContent=t.cancel;panel.querySelector('.guided-cancel').addEventListener('click',close);shade.addEventListener('click',e=>{if(e.target===shade)close();});
   document.body.appendChild(shade);refresh();
  }

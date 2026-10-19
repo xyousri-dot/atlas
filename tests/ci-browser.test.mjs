@@ -77,10 +77,10 @@ test('Guided scan requires both ID sides and sends ID plus optional licence in o
  try{
   await page.evaluate(()=>{openNew();window.guidedBatch=[];snelScan=async files=>{window.guidedBatch=files.map(file=>file.name);};});
   await page.click('#nwScanKaart');await page.waitForSelector('.guided-scan');
-  assert.match(await page.$eval('.guided-intro',e=>e.textContent),/hele kaart/);
-  assert.equal(await page.$$eval('.guided-row',rows=>rows.length),4);
+  assert.match(await page.$eval('.guided-intro',e=>e.textContent),/ID voor\+achter/);
+  assert.equal(await page.$$eval('.guided-row',rows=>rows.length),5);
   assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
-  for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[2,'licence-front.jpg','library'],[3,'licence-back.jpg','library']]){
+  for(const [index,name,source] of [[0,'id-front.jpg','camera'],[1,'id-back.jpg','camera'],[3,'licence-front.jpg','library'],[4,'licence-back.jpg','library']]){
    await page.evaluate(({index,name,source})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-'+source)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,source});
    if(index===0)assert.equal(await page.$eval('.guided-go',e=>e.disabled),true);
   }
@@ -100,9 +100,19 @@ test('Guided licence file fills licence fields even when the model labels it gen
  const {page}=await notificationPage('nl','/',mock);
  try{
   await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';});await page.click('#nwScanKaart');
-  for(const [index,name,selector] of [[0,'id-front.jpg','.guided-camera'],[1,'id-back.jpg','.guided-camera'],[2,'licence-front.heic','.guided-library']])await page.evaluate(({index,name,selector})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:name.endsWith('.heic')?'image/heic':'image/jpeg'}));const input=document.querySelectorAll(selector)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,selector});
+  for(const [index,name,selector] of [[0,'id-front.jpg','.guided-camera'],[1,'id-back.jpg','.guided-camera'],[3,'licence-front.heic','.guided-library']])await page.evaluate(({index,name,selector})=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],name,{type:name.endsWith('.heic')?'image/heic':'image/jpeg'}));const input=document.querySelectorAll(selector)[index];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},{index,name,selector});
   await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.licenceNumber==='07/182101');
   assert.equal(await page.evaluate(()=>SNELKLANT.licenceExpiry),'2032-06-30');assert.equal(mock.calls,1);
+ }finally{await page.close();}
+});
+test('Guided passport photo alone enables scan and fills passport fields',{skip:!process.env.ATLAS_HTML},async()=>{
+ const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:'ander',achternaam:'TEST',voornamen:'AMINE',document_nummer:'RX1234567',geboortedatum:'1991-02-03',geldig_tot:'2031-02-03',land:'MAR',mrz:[]}]}};
+ const {page}=await notificationPage('nl','/',mock);
+ try{
+  await page.evaluate(()=>{openNew();fotoVoorAI=async()=>'/9j/AAAAAAAAAAAAAAAAAAAA';});await page.click('#nwScanKaart');
+  await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['fictional'],'passport.jpg',{type:'image/jpeg'}));const input=document.querySelectorAll('.guided-library')[2];input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));});
+  assert.equal(await page.$eval('.guided-go',e=>e.disabled),false);await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.docNumber==='RX1234567');
+  assert.equal(await page.evaluate(()=>SNELKLANT.docType),'passport');assert.equal(mock.calls,1);
  }finally{await page.close();}
 });
 test('Paid scan prepares multiple photos in parallel and keeps images inside the fast vision budget',{skip:!process.env.ATLAS_HTML},async()=>{
