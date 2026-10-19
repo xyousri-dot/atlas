@@ -23,26 +23,27 @@
    list.replaceChildren();
    items.forEach((item,index)=>{const card=document.createElement('div');card.className='guided-card';
     const img=document.createElement('img');img.src=item.url;img.alt='';
-    const info=document.createElement('div');info.className='guided-card-info';const mark=document.createElement('b');mark.textContent='✓ '+t.ready+' · '+(index+1);const name=document.createElement('span');name.textContent=item.file.name;info.append(mark,name);
+    const info=document.createElement('div');info.className='guided-card-info';const mark=document.createElement('b');mark.textContent=(item.ready?'✓ '+t.ready:t.opening)+' · '+(index+1);const name=document.createElement('span');name.textContent=item.file.name;info.append(mark,name);
     const removeButton=document.createElement('button');removeButton.type='button';removeButton.className='btn ghost sm guided-remove';removeButton.textContent=t.remove;removeButton.setAttribute('aria-label',t.remove+' '+item.file.name);removeButton.addEventListener('click',()=>remove(item.id));
     card.append(img,info,removeButton);list.append(card);
    });
    refresh();
   }
-  async function decode(file){
-   if(!file.size)throw Error(t.zero);const url=URL.createObjectURL(file),img=new Image();
-   try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(t.error)),8000);img.onload=()=>{clearTimeout(timer);resolve();};img.onerror=()=>{clearTimeout(timer);reject(Error(t.error));};img.src=url;});return url;}catch(e){URL.revokeObjectURL(url);throw e;}
+  async function decode(item){
+   if(!item.file.size)throw Error(t.zero);const img=new Image();
+   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(t.error)),12000);img.onload=()=>{clearTimeout(timer);resolve();};img.onerror=()=>{clearTimeout(timer);reject(Error(t.error));};img.src=item.url;});
   }
   async function selected(){
-   const chosen=[...(input.files||[])];input.value='';if(!chosen.length)return;
-   if(items.length+chosen.length>6){error.textContent=t.limit;return;}
-   error.textContent=t.opening;pending+=chosen.length;refresh();
-   for(const file of chosen){
-    try{const url=await decode(file);if(additional)file.atlasScanHint='rijbewijs_onbekend';items.push({id:++sequence,file,url});render();if(window.ATLAS_AI_SCAN_ENABLED&&navigator.onLine)fotoVoorAI(file).catch(()=>{});}
-    catch(e){error.textContent=e.message||t.error;}
-    finally{pending--;refresh();}
-   }
-   if(items.length)error.textContent='';
+   const chosen=[...(input.files||[])];if(!chosen.length)return;
+   if(items.length+chosen.length>6){error.textContent=t.limit;input.value='';return;}
+   error.textContent='';pending+=chosen.length;
+   const added=chosen.map(file=>{if(additional)file.atlasScanHint='rijbewijs_onbekend';const item={id:++sequence,file,url:URL.createObjectURL(file),ready:false};items.push(item);return item;});
+   render();input.value='';
+   await Promise.all(added.map(async item=>{
+    try{await decode(item);item.ready=true;if(window.ATLAS_AI_SCAN_ENABLED&&navigator.onLine)fotoVoorAI(item.file).catch(()=>{});}
+    catch(e){const index=items.findIndex(current=>current.id===item.id);if(index>=0){revoke(items[index]);items.splice(index,1);}error.textContent=e.message||t.error;}
+    finally{pending--;render();}
+   }));
   }
   input.addEventListener('change',selected);
   function close(){items.forEach(revoke);shade.remove();}

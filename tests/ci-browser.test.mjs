@@ -95,6 +95,16 @@ test('Simple scan adds multiple photos, removes one and sends the remaining batc
   assert.equal(await page.$('.guided-scan'),null);assert.deepEqual(fouten,[]);
  }finally{await page.close();}
 });
+test('Chosen phone photo is shown immediately before decoding finishes',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page,fouten}=await B.open({taal:'nl'});
+ try{
+  await page.evaluate(()=>openNew());await page.click('#nwScanKaart');
+  const visible=await page.evaluate(()=>{const transfer=new DataTransfer();transfer.items.add(new File(['not decoded yet'],'rijbewijs-uit-fotos.heic',{type:'image/heic'}));const input=document.querySelector('.guided-files');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));return {cards:document.querySelectorAll('.guided-card').length,name:document.querySelector('.guided-card-info span')?.textContent};});
+  assert.deepEqual(visible,{cards:1,name:'rijbewijs-uit-fotos.heic'});
+  await page.waitForFunction(()=>document.querySelector('.guided-error').textContent.includes('niet worden geopend'));
+  assert.equal(await page.$$eval('.guided-card',cards=>cards.length),0);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
 test('Automatically recognised licence fills its licence fields',{skip:!process.env.ATLAS_HTML},async()=>{
  const mock={calls:0,status:200,body:{fotos:[
   {foto:0,soort:'id_voor',achternaam:'TEST',voornamen:'SAMIRA',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]},
