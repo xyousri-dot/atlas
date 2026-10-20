@@ -26,7 +26,7 @@
    const fotos=await Promise.all(Array.from(files,f=>fotoVoorAI(f).then(data=>({type:'image/jpeg',data}))));
    const stop=new AbortController(),timer=setTimeout(()=>stop.abort(),25000);let response;
    try{response=await fetch(sbBasis()+'/functions/v1/atlas-scan',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+SBSES.access_token,'x-atlas-user-token':SBSES.access_token,'Content-Type':'application/json'},body:JSON.stringify({fotos,requestId:crypto.randomUUID()}),signal:stop.signal});}finally{clearTimeout(timer);}
-   if(!response.ok){AIFOUT=String(response.status);if(SBSTANDAARD.url.includes('manikkusokwysmdfhxtu')){const detail=await response.json().catch(()=>({}));const code=String(detail.error||'').replace(/[^a-z-]/g,'').slice(0,40);if(code)AIFOUT+=' '+code;if(Number.isInteger(detail.providerStatus))AIFOUT+=' '+detail.providerStatus;}if(response.status===409){window.ATLAS_SCAN_CONFLICT=true;return {fotos:[],identityConflict:true};}return null;}
+   if(!response.ok){AIFOUT=String(response.status);if(SBSTANDAARD.url.includes('manikkusokwysmdfhxtu')){const detail=await response.json().catch(()=>({}));const code=String(detail.error||'').replace(/[^a-z-]/g,'').slice(0,40);if(code)AIFOUT+=' '+code;if(Number.isInteger(detail.providerStatus))AIFOUT+=' '+detail.providerStatus;scanQualityNotice('Test scan: '+AIFOUT);}if(response.status===409){window.ATLAS_SCAN_CONFLICT=true;return {fotos:[],identityConflict:true};}return null;}
    const j=await response.json();if(!j||!Array.isArray(j.fotos)){AIFOUT='leeg';return null;}window.ATLAS_PAID_SCAN_OK=true;return j;
   }catch{AIFOUT='net';return null;}
  };
