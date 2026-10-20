@@ -46,6 +46,13 @@
    for(const field of ['achternaam','voornamen','geboortedatum','geldig_tot','land','nationaliteit','adres'])if(!photo[field]&&other[field])photo[field]=other[field];
   }
   const result=await fillBase(j,files);
+  // Moroccan TD1 stores the national CIN in the optional field; the first
+  // checked number is the card serial. Keep the two identifiers distinct.
+  for(const photo of identityPhotos){
+   if(photo.soort!=='id_achter'||!Array.isArray(photo.mrz)||!/^IDMAR/.test(photo.mrz[0]||''))continue;
+   const hit=aiMrz(photo.mrz),national=hit?.altNumber;
+   if(hit?.kind==='id'&&CINNR.test(national||'')){$('cvDocNo').value=national;result.iets=true;result.twijfelDoc=true;}
+  }
   // A licence-only scan may contain usable dates and a printed name even when
   // its number is unreadable. Preserve existing ID data and require review.
   for(const p of j?.fotos||[]){if(!/^rijbewijs_/.test(p.soort))continue;

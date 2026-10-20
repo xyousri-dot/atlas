@@ -31,7 +31,9 @@ export function createScanHandler({env,authenticate,reserve,fetcher=fetch}){
    const reader=req.body?.getReader();if(!reader)return reply({error:'input'},400);const chunks=[];let size=0;while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>8500000){await reader.cancel();return reply({error:'size'},413);}chunks.push(r.value);}const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}let body;try{body=JSON.parse(new TextDecoder().decode(bytes));}catch{return reply({error:'input'},400);}
    if(!validatePhotos(body))return reply({error:'input'},400);if(!env('ANTHROPIC_API_KEY'))return reply({error:'not-configured'},503);
    const claim=await reserve(owner,body.requestId);if(claim!=='allowed')return reply({error:claim==='duplicate'?'duplicate':'limit'},429);
-   const response=await fetcher('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','anthropic-version':'2023-06-01','x-api-key':env('ANTHROPIC_API_KEY')},body:JSON.stringify(scanRequestBody(body.fotos)),signal:AbortSignal.timeout(22000)});
+   const providerBody=scanRequestBody(body.fotos);
+   if(isTest){providerBody.max_tokens=Math.max(1600,body.fotos.length*800);providerBody.thinking={type:'disabled'};providerBody.output_config.effort='low';}
+   const response=await fetcher('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','anthropic-version':'2023-06-01','x-api-key':env('ANTHROPIC_API_KEY')},body:JSON.stringify(providerBody),signal:AbortSignal.timeout(22000)});
    if(!response.ok)return reply({error:'provider-unavailable',providerStatus:response.status},502);
    const result=await response.json();if(result.stop_reason!=='end_turn')return reply({error:'incomplete'},502);
    const text=(result.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('');let reading;try{reading=validatedReading(JSON.parse(text),body.fotos.length);}catch(e){return reply({error:e.message==='identity-conflict'?'identity-conflict':'invalid-reading'},e.message==='identity-conflict'?409:502);}

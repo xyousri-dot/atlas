@@ -134,6 +134,12 @@ test('Chosen phone photo is shown immediately before decoding finishes',{skip:!p
   assert.equal(await page.$$eval('.guided-card',cards=>cards.length),0);assert.deepEqual(fouten,[]);
  }finally{await page.close();}
 });
+test('Moroccan checked MRZ uses national CIN rather than internal card serial',{skip:!process.env.ATLAS_HTML},async()=>{
+ const truth=JSON.parse(readFileSync(new URL('./scanbank/waarheid.json',import.meta.url),'utf8')).cin1;
+ const mock={calls:0,status:200,body:{fotos:[{foto:0,soort:'id_achter',achternaam:'EL FASSI',voornamen:'SAMIRA',document_nummer:truth.docNumber,geboortedatum:truth.birth,geldig_tot:truth.docExpiry,land:'MAR',mrz:truth.mrz}]}};
+ const {page}=await notificationPage('nl','/',mock);
+ try{await page.evaluate(()=>openNew());await page.click('#nwScanKaart');await chooseScanPhotos(page,['cin-back.jpg']);await page.click('.guided-go');await page.waitForFunction(()=>SNELKLANT?.docNumber==='BK123456');assert.equal(mock.calls,1);assert.equal(await page.evaluate(()=>SNELKLANT.docExpiry),truth.docExpiry);}finally{await page.close();}
+});
 test('Automatically recognised licence fills its licence fields',{skip:!process.env.ATLAS_HTML},async()=>{
  const mock={calls:0,status:200,body:{fotos:[
   {foto:0,soort:'id_voor',achternaam:'TEST',voornamen:'SAMIRA',document_nummer:'AB123456',geboortedatum:'1990-03-04',geldig_tot:'2031-04-05',land:'MAR',mrz:[]},

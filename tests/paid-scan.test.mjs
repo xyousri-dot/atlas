@@ -12,4 +12,10 @@ test('Production accepts only the Atlas GitHub origin',async()=>{const s=setup({
 test('Quota and duplicates never cause another provider call',async()=>{for(const claim of ['limit','duplicate']){const s=setup({claim});assert.equal((await s.handler(req())).status,429);assert.equal(s.calls(),0);}});
 test('One paid request returns only validated data and usage, not secrets',async()=>{const s=setup();const r=await s.handler(req());assert.equal(r.status,200);const text=await r.text();assert.equal(s.calls(),1);assert.ok(!text.includes('fake-unit-test-key'));assert.equal(JSON.parse(text).fotos[0].achternaam,'TEST');});
 test('Provider failure is explicit and not retried on server',async()=>{const s=setup({status:429});assert.equal((await s.handler(req())).status,502);assert.equal(s.calls(),1);});
+test('Only test scans reserve output space for every photo and disable extra thinking',async()=>{
+ for(const [url,isTest] of [['https://manikkusokwysmdfhxtu.supabase.co',true],['https://mimpyfbitoiotxuqoymj.supabase.co',false]]){
+  let sent;const handler=createScanHandler({env:key=>({SUPABASE_URL:url,ANTHROPIC_API_KEY:'fake'}[key]),authenticate:async()=> 'owner',reserve:async()=> 'allowed',fetcher:async(_url,options)=>{sent=JSON.parse(options.body);return new Response('{}',{status:503});}});
+  await handler(req({...input,fotos:Array(4).fill(photo)}));assert.equal(sent.max_tokens,isTest?3200:1600);assert.deepEqual(sent.thinking,isTest?{type:'disabled'}:undefined);assert.equal(sent.output_config.effort,isTest?'low':undefined);
+ }
+});
 test('Invalid calendar dates cleared and conflicting document numbers rejected',()=>{const a=structuredClone(reading);a.fotos[0].geboortedatum='2026-02-30';assert.equal(validatedReading(a,1).fotos[0].geboortedatum,'');const b=structuredClone(reading);b.fotos[0].document_nummer='AB123456';b.fotos.push({...b.fotos[0],foto:1,document_nummer:'XX987654'});assert.throws(()=>validatedReading(b,2),/identity-conflict/);});
