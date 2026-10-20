@@ -94,5 +94,23 @@
     "url": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/fra@1.0.0/4.0.0_best_int/fra.traineddata.gz",
     "sha256": "1hETlnKzdSxwl+Zx5KHZIJ39N/KusIHvZIf7ozUeklU=",
     "bytes": 707406
+  },
+  {
+    "path": "heic/heic-to.js",
+    "url": "https://cdn.jsdelivr.net/npm/heic-to@1.6.6/dist/csp/heic-to.js",
+    "sha256": "9mV6qUcKYGjm5ZcTgYyL/iGII2X86sd8WX+bC/7T4Mg=",
+    "bytes": 3151186
+  },
+  {
+    "path": "heic/LICENSE",
+    "url": "https://cdn.jsdelivr.net/npm/heic-to@1.6.6/LICENSE",
+    "sha256": "29ciLYAm5dbKaZHR5qIF3pJ/MAhAQzwukKYGRKmYDHU=",
+    "bytes": 8177
+  },
+  {
+    "path": "heic/README.md",
+    "url": "https://cdn.jsdelivr.net/npm/heic-to@1.6.6/README.md",
+    "sha256": "cLCPFDQtejyBEDRgBCf+yxp7h04d7D6PbcdVtZF0JDE=",
+    "bytes": 4099
   }
 ]

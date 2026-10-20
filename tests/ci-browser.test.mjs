@@ -97,6 +97,25 @@ for(const sequential of [false,true])test('Four ID and licence photos survive '+
   assert.equal(mock.calls,1);assert.equal(mock.sent.fotos.length,4);assert.ok(mock.sent.fotos.every(photo=>photo.type==='image/jpeg'&&photo.data.startsWith('/9j/')));assert.deepEqual(fouten,[]);
  }finally{await page.close();}
 });
+test('Four genuine HEIC documents decode locally on a phone-sized screen and send JPEGs',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page,fouten}=await B.open({taal:'fr'});
+ try{
+  await page.setViewport({width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:2});
+  await page.evaluate(()=>{openNew();window.heicBatch=[];snelScan=async files=>{window.heicBatch=await Promise.all(files.map(async file=>({name:file.name,type:file.type,header:[...new Uint8Array(await file.slice(0,3).arrayBuffer())]})));};});
+  await page.click('#nwScanKaart');
+  const names=['cin1-voor.heic','cin1-achter.heic','lic1-voor-rotated.heic','lic1-achter.heic'];
+  const chooser=page.waitForFileChooser();await page.click('.guided-files');await(await chooser).accept(names.map(name=>new URL('./scanbank/heic/'+name,import.meta.url).pathname));
+  await page.waitForFunction(()=>document.querySelectorAll('.guided-card').length===4&&!document.querySelector('.guided-go').disabled,{timeout:30000});
+  assert.deepEqual(await page.$$eval('.guided-card-info span',nodes=>nodes.map(node=>node.textContent)),names);
+  assert.ok(await page.$$eval('.guided-card img',images=>images.every(image=>image.naturalWidth>0)));
+  assert.equal(await page.$$eval('.guided-card img',images=>images[2].naturalHeight>images[2].naturalWidth),true);
+  assert.equal(await page.$eval('.guided-error',node=>node.textContent),'');
+  assert.equal(await page.$eval('.guided-panel',node=>node.getBoundingClientRect().right<=innerWidth),true);
+  await page.click('.guided-go');await page.waitForFunction(()=>window.heicBatch.length===4);
+  assert.deepEqual(await page.evaluate(()=>window.heicBatch.map(file=>file.type)),Array(4).fill('image/jpeg'));
+  assert.ok(await page.evaluate(()=>window.heicBatch.every(file=>file.header.join(',')==='255,216,255')));assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
 test('An unreadable photo does not discard the four valid document photos',{skip:!process.env.ATLAS_HTML},async()=>{
  const {page}=await B.open({taal:'nl'});
  try{

@@ -7,6 +7,17 @@
   ar:{title:'مسح الوثائق',intro:'أضف صوراً واضحة. يتعرف أطلس تلقائياً على البطاقة والجواز والرخصة.',tip:'البطاقة أو الرخصة؟ أضف الوجه الأمامي والخلفي.',add:'إضافة صورة',ready:'تمت الإضافة',remove:'حذف',go:n=>'قراءة البيانات من '+n+' صور',cancel:'إلغاء',empty:'أضف صورة أولاً.',opening:'جار فتح الصورة…',error:'تعذر فتح هذه الصورة. اختر صورة JPG/PNG أو التقط صورة جديدة.',zero:'الملف فارغ. نزّله أولاً على هاتفك.',limit:'الحد الأقصى 6 صور لكل عملية.'}
  };
  function text(){return copy[window.L]||copy.fr;}
+ let heicModule,conversionQueue=Promise.resolve();
+ async function isHeic(file){const brand=new TextDecoder().decode(await file.slice(8,12).arrayBuffer());return /^(heic|heix|hevc|hevx|mif1|msf1)$/.test(brand);}
+ function convertHeic(file){
+  const task=conversionQueue.then(async()=>{
+   if(!heicModule)heicModule=import('./scan-assets/heic/heic-to.js').catch(error=>{heicModule=null;throw error;});
+   const {heicTo}=await heicModule;
+   let timer;const blob=await Promise.race([heicTo({blob:file,type:'image/jpeg',quality:.95}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('image-timeout')),20000);})]).finally(()=>clearTimeout(timer));
+   const converted=new File([blob],file.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg',lastModified:file.lastModified});
+   if(file.atlasScanHint)converted.atlasScanHint=file.atlasScanHint;return converted;
+  });conversionQueue=task.catch(()=>{});return task;
+ }
  function openGuide(additional=false){
   const t=text(),items=[],shade=document.createElement('div');shade.className='ask guided-scan';
   const panel=document.createElement('div');panel.className='guided-panel';shade.appendChild(panel);
@@ -15,7 +26,7 @@
   const picker=panel.querySelector('.guided-picker'),list=panel.querySelector('.guided-list'),go=panel.querySelector('.guided-go'),error=panel.querySelector('.guided-error');
   const label=document.createElement('label');label.className='btn guided-add';const addText=document.createElement('span');addText.textContent='+ '+t.add;
   const input=document.createElement('input');input.type='file';input.accept='image/*,.heic,.heif';input.multiple=true;input.className='guided-files';input.setAttribute('aria-label',t.add);label.append(addText,input);picker.append(label);
-  let pending=0,sequence=0;
+  let pending=0,sequence=0,closed=false;
   function refresh(){go.disabled=!!pending||!items.length;go.textContent=items.length?t.go(items.length):t.empty;}
   function revoke(item){if(item?.url)URL.revokeObjectURL(item.url);}
   function remove(id){const index=items.findIndex(item=>item.id===id);if(index<0)return;revoke(items[index]);items.splice(index,1);render();}
@@ -23,30 +34,34 @@
    list.replaceChildren();
    items.forEach((item,index)=>{const card=document.createElement('div');card.className='guided-card';
     const img=document.createElement('img');img.src=item.url;img.alt='';
-    const info=document.createElement('div');info.className='guided-card-info';const mark=document.createElement('b');mark.textContent=(item.ready?'✓ '+t.ready:t.opening)+' · '+(index+1);const name=document.createElement('span');name.textContent=item.file.name;info.append(mark,name);
+    const info=document.createElement('div');info.className='guided-card-info';const mark=document.createElement('b');mark.textContent=(item.ready?'✓ '+t.ready:t.opening)+' · '+(index+1);const name=document.createElement('span');name.textContent=item.name;info.append(mark,name);
     const removeButton=document.createElement('button');removeButton.type='button';removeButton.className='btn ghost sm guided-remove';removeButton.textContent=t.remove;removeButton.setAttribute('aria-label',t.remove+' '+item.file.name);removeButton.addEventListener('click',()=>remove(item.id));
     card.append(img,info,removeButton);list.append(card);
    });
    refresh();
   }
   async function decode(item){
-   if(!item.file.size)throw Error(t.zero);const img=new Image();
-   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(t.error)),12000);img.onload=()=>{clearTimeout(timer);resolve();};img.onerror=()=>{clearTimeout(timer);reject(Error(t.error));};img.src=item.url;});
+   if(!item.file.size)throw Error(t.zero);
+   const load=url=>new Promise((resolve,reject)=>{const img=new Image(),timer=setTimeout(()=>reject(Error(t.error)),12000);img.onload=()=>{clearTimeout(timer);resolve();};img.onerror=()=>{clearTimeout(timer);reject(Error(t.error));};img.src=url;});
+   try{await load(item.url);return;}catch(error){if(!await isHeic(item.file))throw error;}
+   const converted=await convertHeic(item.file);
+   if(closed||!items.includes(item))return;
+   revoke(item);item.file=converted;item.url=URL.createObjectURL(converted);await load(item.url);
   }
   async function selected(){
    const chosen=[...(input.files||[])];if(!chosen.length)return;
    if(items.length+chosen.length>6){error.textContent=t.limit;input.value='';return;}
    error.textContent='';pending+=chosen.length;
-   const added=chosen.map(file=>{if(additional)file.atlasScanHint='rijbewijs_onbekend';const item={id:++sequence,file,url:URL.createObjectURL(file),ready:false};items.push(item);return item;});
+   const added=chosen.map(file=>{if(additional)file.atlasScanHint='rijbewijs_onbekend';const item={id:++sequence,file,name:file.name,url:URL.createObjectURL(file),ready:false};items.push(item);return item;});
    render();input.value='';
    await Promise.all(added.map(async item=>{
-    try{await decode(item);item.ready=true;if(window.ATLAS_AI_SCAN_ENABLED&&navigator.onLine)fotoVoorAI(item.file).catch(()=>{});}
-    catch(e){const index=items.findIndex(current=>current.id===item.id);if(index>=0){revoke(items[index]);items.splice(index,1);}error.textContent=e.message||t.error;}
-    finally{pending--;render();}
+    try{await decode(item);if(closed||!items.includes(item))return;item.ready=true;if(window.ATLAS_AI_SCAN_ENABLED&&navigator.onLine)fotoVoorAI(item.file).catch(()=>{});}
+    catch(e){const index=items.findIndex(current=>current.id===item.id);if(index>=0){revoke(items[index]);items.splice(index,1);}if(!closed)error.textContent=e.message===t.zero?t.zero:t.error;}
+    finally{pending--;if(!closed)render();}
    }));
   }
   input.addEventListener('change',selected);
-  function close(){items.forEach(revoke);shade.remove();}
+  function close(){closed=true;items.forEach(revoke);shade.remove();}
   go.addEventListener('click',()=>{if(go.disabled)return;const batch=items.map(item=>item.file);close();snelScan(batch,'auto');});
   panel.querySelector('.guided-cancel').textContent=t.cancel;panel.querySelector('.guided-cancel').addEventListener('click',close);shade.addEventListener('click',event=>{if(event.target===shade)close();});
   document.body.appendChild(shade);refresh();
