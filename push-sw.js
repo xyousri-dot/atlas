@@ -74,7 +74,7 @@ self.addEventListener('message',event=>{
     if(event.data.local===true){try{
       await self.registration.showNotification('Atlas · Diagnostic',{body:'Test local / Lokale test — pas une preuve de réception push.',tag:'atlas-local-diagnostic',data:{url:self.registration.scope}});local='accepted';
     }catch(e){local=String(e.name||'Error');}}
-    event.ports[0].postMessage({version:2,local,receipt:await atlasPushReceipt()});
+    event.ports[0].postMessage({version:3,monitoring:!!ATLAS_RECEIPT_CONFIG,local,receipt:await atlasPushReceipt()});
   })());
 });
 function atlasPushURL(value,scope){

@@ -12,7 +12,7 @@ export function createPushMonitor(db,provider,settings){
  async function deliver(id){
   const job=await rpc('atlas_push_claim',{p_id:id});if(!job)return 'duplicate';
   const receipt={id:job.id,token:job.receipt_token};
-  const payload={...job.payload,receipt};
+  const payload={...job.payload,receipt,url:(job.payload.url||'./#atlas=alerts')+'&notice='+encodeURIComponent(job.id)};
   let outcome={state:'accepted',code:null};
   try{
    await provider.sendNotification(job.subscription,JSON.stringify(payload),{

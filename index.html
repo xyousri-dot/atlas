@@ -9067,6 +9067,9 @@ async function openNotificationTarget(){
     }else if(section==='balances'||section==='deposits'){receipt(item,item.retour?'retour':'depart');$('rTitle').textContent=tx[section];}
     else if(section==='dossiers')openNew(null,item);
     else openCard(item);
+    // Authenticated fallback for a click handled by an older iPhone worker.
+    // Only the delivery id is in the link; the server checks the account again.
+    var notice=p.get('notice');if(notice&&/^[0-9a-f-]{36}$/i.test(notice))phoneAPI('opened',{id:notice}).catch(function(){});
   }catch(e){NOTIFICATION_RETRY=true;notificationProblem(tx.retry,true);}finally{NOTIFICATION_BUSY=false;if(location.hash!==targetHash&&location.hash.indexOf('#atlas=')===0)openNotificationTarget();}
 }
 window.addEventListener('hashchange',openNotificationTarget);

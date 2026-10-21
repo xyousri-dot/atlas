@@ -19,6 +19,7 @@ test('Meldingslink wacht op aanmelden, weigert ander account en opent juiste act
  calls.length=0;a.sbKlaar=()=>true;a.SBSES={user:{id:'owner1'}};a.location.hash+='&owner=other';await a.openNotificationTarget();assert.deepEqual(calls,['login','notice']);
  calls.length=0;a.location.hash='#atlas=vehicle&id=c1&section=documents';a.sbHaal=async()=>{calls.push('cloud');return true;};a.reload=async()=>{};a.CARS=[{id:'c1'}];a.$=id=>id==='cwIns'?{scrollIntoView(){calls.push('documents');},setAttribute(){},focus(){}}:null;a.openCar=x=>calls.push(x.id);
  await a.openNotificationTarget();assert.deepEqual(calls,['cloud','c1','documents']);
+ const seen=[];a.phoneAPI=async(action,data)=>{seen.push({action,id:data.id});return {recorded:true};};a.location.hash+='&notice=11111111-1111-1111-1111-111111111111';await a.openNotificationTarget();assert.deepEqual(seen,[{action:'opened',id:'11111111-1111-1111-1111-111111111111'}]);
  calls.length=0;a.location.hash='#atlas=rental&id=r1&section=balances';a.RENTALS=[{id:'r1',retour:{}}];a.$=id=>id==='rTitle'?{textContent:''}:null;a.receipt=(r,k)=>calls.push(r.id+':'+k);await a.openNotificationTarget();assert.deepEqual(calls,['cloud','r1:retour']);
  calls.length=0;a.location.hash='#atlas=vehicle&id=deleted';await a.openNotificationTarget();assert.deepEqual(calls,['cloud','notice']);
  calls.length=0;a.sbHaal=async()=>false;await a.openNotificationTarget();assert.deepEqual(calls,['notice']);

@@ -79,6 +79,11 @@ Deno.serve(async(req:Request)=>{
     const {data,error}=await db.auth.getUser(token);
     if(error||!data.user)return reply({error:'unauthorized'},401);
     const owner=data.user.id;
+    if(body.action==='opened'&&monitor){
+      if(!/^[0-9a-f-]{36}$/i.test(body.id||''))return reply({recorded:false});
+      const notice=check(await db.from('atlas_push_outbox').select('id,receipt_token').eq('id',body.id).eq('owner_id',owner).maybeSingle());
+      return reply({recorded:!!notice&&await monitor.ack({id:notice.id,token:notice.receipt_token,event:'opened'})});
+    }
     if(body.action==='reminders'){
       const rows=check(await db.from('atlas').select('path,data').eq('owner_id',owner).limit(1001));
       if(rows.length>1000)return reply({error:'agency-limit'},503);
