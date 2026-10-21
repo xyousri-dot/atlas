@@ -446,7 +446,7 @@ test('Admin monitoring distinguishes unknown receipt, safe retry and unavailable
  await page.evaluateOnNewDocument(key=>{if(!location.pathname.endsWith('/admin.html'))return;localStorage.setItem(key,JSON.stringify({access_token:'FAKE-TEST-TOKEN'}));window.retryCalls=0;window.confirm=()=>true;
  window.fetch=async(url,options)=>({ok:true,json:async()=>url.endsWith('atlas_admin_accounts')?{total:1,signed_in_7_days:1,accounts:[]}:url.endsWith('atlas_admin_push_retry')?(window.retryCalls++,true):{without_device:1,items:[{id:'TEST-ID',email:'test@example.invalid',delivery_key:'daily:TEST',created_at:'2026-10-21',attempts:1,status:window.retryCalls?'queued':'unconfirmed',can_retry:!window.retryCalls}]}});},`atlas-test-${TEST_PROJECT}-session`);
  await page.goto(new URL('/admin.html',page.url()).href);await page.waitForFunction(()=>document.querySelector('#pushRows').textContent.includes('Ontvangst onbekend'));
- await page.click('#pushRows button');await page.waitForFunction(()=>document.querySelector('#pushRows').textContent.includes('In wachtrij'));assert.equal(await page.evaluate(()=>retryCalls),1);
+ await page.click('#pushRows button');assert.equal(await page.evaluate(()=>retryCalls),0);assert.equal(await page.$eval('#pushRows p',x=>x.hidden),false);await page.click('#pushRows button');await page.waitForFunction(()=>document.querySelector('#pushRows').textContent.includes('In wachtrij'));assert.equal(await page.evaluate(()=>retryCalls),1);
  await page.evaluate(()=>{window.fetch=async()=>({ok:false});return loadPush({access_token:'FAKE'});});assert.equal(await page.$$eval('#pushRows tr',x=>x.length),0);assert.match(await page.$eval('#pushStatus',e=>e.textContent),/niet bereikbaar/);
  }finally{await page.close();}
 });

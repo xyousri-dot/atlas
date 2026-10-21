@@ -19,8 +19,14 @@ telefooninstelling, internetverbinding of zichtbaarheid van pushmeldingen.
 - Ontvangst zonder bevestiging na tien minuten heet onbekend, nooit geslaagd.
 - Foutproeven: push-monitor.test.mjs, push.test.mjs, push-monitor-db.sql,
   beheerscherm in ci-browser.test.mjs. De SQL-proef draait in een rollbacktransactie.
-- Nog fysiek te bevestigen na preview-update: iPhone-ontvangst én verschijnen van
-  toestel-/openbevestiging in beheer. Oude appworkers geven nog geen bevestiging.
+- Live geverifieerd: nieuwe testmelding krijgt `Toestel bevestigd` in het echte
+  testbeheer. De eerste melding via de oude worker bleef eerlijk onbekend.
+  Openbevestiging van de nieuwste melding vraagt nog een fysieke iPhone-klik;
+  het worker-/serverpad is daarnaast geïsoleerd getest. Oude appworkers geven
+  nog geen bevestiging. Een extra aangemelde-linkbevestiging helpt bij updates.
+- Echte SQL-proef geslaagd: claim, dubbele claim, backoff, retrymaximum,
+  ontvangsttoken, beheerdersafscherming, verlopen toestel en cron-herhaalplanning.
+  De fictieve databasegegevens zijn teruggedraaid. Geen klantomgeving gewijzigd.
 
 ## Brede vrijgavecheck — niet automatisch als afgerond beschouwen
 
