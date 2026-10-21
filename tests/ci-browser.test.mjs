@@ -8,8 +8,9 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 const appSource=readFileSync(process.env.ATLAS_HTML||new URL('../index.html',import.meta.url),'utf8');
 const sessionKey=appSource.match(/SBSKEY="([^"]+)"/)?.[1];
-async function notificationPage(language='fr',pad='/',scanMock=null){
+async function notificationPage(language='fr',pad='/',scanMock=null,extraData={}){
   const data=B.testgegevens();data['vehicles/c1'].maintenance=[{id:'m1',label:'Courroie test',dueKm:120000}];data['rentals/cancelled']={...data['rentals/r1'],cancelled:true};
+  Object.assign(data,extraData);
   return B.open({taal:language,gegevens:data,pad,beforeNavigate:async page=>{
     await page.evaluateOnNewDocument(key=>{localStorage.setItem(key,JSON.stringify({access_token:'FAKE-TEST-TOKEN',user:{id:'test-owner'}}));},sessionKey);
     await page.setRequestInterception(true);
@@ -75,6 +76,38 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Retry after interrupted repair save reuses the same expense and history ids',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page}=await B.open({taal:'fr',gegevens:B.testgegevens()});try{
+  await page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await page.evaluate(()=>openCar(car('c1')));await page.click('#careDone');await page.type('#warrantyAdd input[aria-label="Pièce ou réparation"]','RETRY TEST');await page.click('#replacementInvoice summary');await page.type('#warrantyAdd input[aria-label="Prix payé (DH, facultatif)"]','500');
+  await page.evaluate(()=>{window.savedSet=S.set;window.failVehicleOnce=true;S.set=async(path,value)=>{if(path.startsWith('vehicles/')&&window.failVehicleOnce){window.failVehicleOnce=false;throw Error('TEST interrupted write');}return window.savedSet(path,value);};});await page.click('#warrantySave');await page.waitForFunction(()=>!document.querySelector('#warrantySave').disabled);assert.equal(await page.evaluate(async()=>(await S.list('expenses')).length),2);await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').maintenance?.length===1);assert.equal(await page.evaluate(()=>EXP.length),2);assert.equal(await page.evaluate(()=>carPL(car('c1')).cost),1400);
+ }finally{await page.close();}
+});
+test('Warranty alert opens its history record; closed claims remain history without active warning',{skip:!process.env.ATLAS_HTML},async()=>{
+ const c={...B.testgegevens()['vehicles/c1'],warranties:[{id:'w1',label:'Accu TEST',part:'battery',supplier:'Garage TEST',purchased:'2026-01-01',until:'2026-11-01'}]};
+ const {page,fouten}=await notificationPage('nl','/#atlas=vehicle&id=c1&section=warranty&wid=w1&owner=test-owner',null,{'vehicles/c1':c});
+ try{await page.waitForFunction(()=>document.activeElement?.id==='warranty-w1');assert.equal(await page.$eval('#careHistory',e=>e.open),true);assert.equal(await page.$eval('.care-warning',e=>e.textContent.includes('Accu')),true);await page.evaluate(()=>{carEdit.warranties[0].claim={status:'closed',date:'2026-10-01',note:'TEST',resolution:'Vervangen TEST'};paintCarSide();});assert.equal(await page.$('.care-warning'),null);assert.equal(await page.$eval('#careHistory',e=>e.open),false);assert.match(await page.$eval('#careHistory',e=>e.textContent),/Vervangen TEST/);assert.deepEqual(fouten,[]);}finally{await page.close();}
+});
+test('Expanded parts stay synchronized in diagram and form; repair cost updates profit once on phone',{skip:!process.env.ATLAS_HTML},async()=>{
+ const {page,fouten}=await B.open({taal:'nl',gegevens:B.testgegevens()});
+ try{
+  await page.setViewport({width:390,height:844,isMobile:true,hasTouch:true});await page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await page.evaluate(()=>openCar(car('c1')));
+  assert.equal(await page.$$eval('.vehicle-map .parts button',nodes=>nodes.length),13);assert.equal(await page.$eval('.vehicle-map .parts button:last-child',e=>e.textContent),'Overig');assert.equal(await page.$eval('.vehicle-map svg',e=>e.innerHTML.includes('undefined')),false);
+  await page.click('#careDone');await page.select('#warrantyAdd select[aria-label="Onderdeel van de auto"]','filters');assert.equal(await page.$eval('.vehicle-map',e=>e.dataset.part),'filters');
+  await page.$eval('.vehicle-map [data-part="ac"]',e=>e.scrollIntoView({block:'center'}));await page.tap('.vehicle-map [data-part="ac"]');assert.equal(await page.$eval('#warrantyAdd select',e=>e.value),'ac');
+  await page.type('#warrantyAdd input[aria-label="Onderdeel of reparatie"]','Airco TEST');await page.click('#replacementInvoice summary');await page.type('#warrantyAdd input[aria-label="Betaalde prijs (DH, optioneel)"]','600');await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').maintenance?.some(t=>t.label==='Airco TEST'));
+  const id=await page.evaluate(()=>car('c1').maintenance.find(t=>t.label==='Airco TEST').id);assert.equal(await page.evaluate(()=>EXP.length),2);assert.equal(await page.evaluate(()=>carPL(car('c1')).cost),1500);assert.equal(await page.$eval('#careHistory',e=>e.open),false);
+  await page.evaluate(id=>openMaintenanceWarranty('c1',id),id);await page.click('#replacementInvoice summary');await page.$eval('#warrantyAdd input[aria-label="Betaalde prijs (DH, optioneel)"]',e=>{e.value='650';e.dispatchEvent(new Event('input',{bubbles:true}));});await page.click('#warrantySave');await page.waitForFunction(()=>carPL(car('c1')).cost===1550);assert.equal(await page.evaluate(()=>EXP.length),2);assert.equal(await page.evaluate(()=>car('c1').maintenance.length),1);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
+test('Existing invoice can be linked without double cost; old warranty amounts are not silently booked',{skip:!process.env.ATLAS_HTML},async()=>{
+ const data=B.testgegevens();data['expenses/e1'].date=new Date().toISOString().slice(0,10);const {page,fouten}=await B.open({taal:'fr',gegevens:data});
+ try{
+  await page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await page.evaluate(()=>openCar(car('c1')));await page.click('#careDone');await page.type('#warrantyAdd input[aria-label="Pièce ou réparation"]','Facture existante TEST');await page.click('#replacementInvoice summary');await page.type('#warrantyAdd input[aria-label="Prix payé (DH, facultatif)"]','900');assert.equal(await page.$eval('#replacementCost',e=>e.value),'check');await page.click('#warrantySave');assert.equal(await page.evaluate(()=>(car('c1').maintenance||[]).length),0);
+  await page.select('#replacementCost','existing:e1');await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').maintenance?.length===1);assert.equal(await page.evaluate(()=>EXP.length),1);assert.equal(await page.evaluate(()=>carPL(car('c1')).cost),900);assert.equal(await page.evaluate(()=>car('c1').maintenance[0].expenseId),'e1');assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+ const legacy=B.testgegevens();legacy['vehicles/c1'].warranties=[{id:'legacy',label:'Batterie TEST',supplier:'Garage TEST',purchased:'2026-01-01',until:'2028-01-01',amount:950}];const second=await B.open({taal:'fr',gegevens:legacy});
+ try{await second.page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await second.page.evaluate(()=>openCar(car('c1')));await second.page.click('#careHistory>summary');await second.page.click('#careHistory .card button.link');assert.equal(await second.page.$eval('#replacementCost',e=>e.value),'skip');await second.page.click('#warrantySave');await second.page.waitForFunction(()=>!document.querySelector('#warrantyAdd').open);assert.equal(await second.page.evaluate(()=>EXP.length),1);}finally{await second.page.close();}
+});
 test('Background refresh preserves form nodes, draft, focus and scroll on desktop and phone',{skip:!process.env.ATLAS_HTML},async()=>{
  for(const mobile of [false,true]){
   const {page,fouten}=await notificationPage('fr');
@@ -139,7 +172,7 @@ test('Interactive car selects parts, prefills maintenance and opens linked warra
   try{
    await page.setViewport(mobile?{width:390,height:844,isMobile:true,hasTouch:true}:{width:1280,height:900});await page.waitForFunction(()=>typeof showPartWarranties==='function');await page.evaluate(()=>openCar(car('c1')));
    const shape='.vehicle-map [data-part="battery"]';await page.$eval(shape,e=>e.scrollIntoView({block:'center'}));if(mobile)await page.tap(shape);else{await page.hover(shape);assert.match(await page.$eval(shape+' title',e=>e.textContent),/Batterie/);await page.click(shape);}
-   assert.equal(await page.$eval(shape,e=>e.getAttribute('aria-pressed')),'true');assert.match(await page.$eval('.care-selection',e=>e.textContent),/Batterie remplacée/);
+   assert.equal(await page.$eval(shape,e=>e.getAttribute('aria-pressed')),'true',JSON.stringify({mobile,hit:await page.$eval(shape,e=>{const r=e.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.outerHTML;}),selected:await page.$eval('.vehicle-map',e=>e.dataset.part)}));assert.match(await page.$eval('.care-selection',e=>e.textContent),/Batterie remplacée/);
    await page.evaluate(()=>[...document.querySelectorAll('.care-selection button')].find(e=>e.textContent.includes('Garantie enregistrée')).click());assert.equal(await page.evaluate(()=>document.activeElement.id),'warranty-w1');
    assert.equal(await page.$eval('.warranty-proof',e=>e.open),false);
    await page.$eval('.vehicle-map [data-part="brakes"]',e=>{e.focus();});await page.keyboard.press('Enter');assert.match(await page.$eval('.care-selection',e=>e.textContent),/Freins à contrôler/);assert.equal(await page.$eval('.vehicle-map [data-part="brakes"]',e=>e.classList.contains('overdue')),true);
@@ -355,16 +388,16 @@ test('Battery warranty: invoice, correction, defect, claim and resolution surviv
     await page.evaluate(()=>{document.querySelector('#warrantyAdd input[aria-label="Acheté ou remplacé le"]').value=plus(today(),-90);document.querySelector('#warrantyAdd input[aria-label="Garantie jusqu’au"]').value=plus(today(),30);const transfer=new DataTransfer();transfer.items.add(new File(['%PDF-1.4\nTEST ONLY'],'facture-test.pdf',{type:'application/pdf'}));document.querySelector('#warrantyAdd input[type=file]').files=transfer.files;});
     await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').warranties?.length===1);
     let saved=await page.evaluate(()=>car('c1').warranties[0]);assert.equal(saved.amount,950);assert.equal(saved.invoice.name,'facture-test.pdf');assert.match(saved.invoice.data,/^data:application\/pdf;base64,/);
-    assert.equal(await page.evaluate(()=>EXP.length),1);
-    await page.click('#notificationWarranty > .card button.link');
+    assert.equal(await page.evaluate(()=>EXP.length),2);assert.equal(await page.evaluate(()=>carPL(car('c1')).cost),1850);
+    await page.click('#careHistory>summary');await page.click('#careHistory > .card button.link');
     await page.$eval('#warrantyAdd input[aria-label="Fournisseur / garage"]',e=>e.value='Garage CORRIGÉ');await page.click('#warrantySave');await page.waitForFunction(()=>car('c1').warranties[0].supplier==='Garage CORRIGÉ');
     assert.equal(await page.evaluate(()=>car('c1').warranties.length),1);assert.equal(await page.evaluate(()=>car('c1').warranties[0].invoice.name),'facture-test.pdf');
-    await page.click('#notificationWarranty > .card details:not(.warranty-proof) summary');
+    await page.click('#careHistory>summary');await page.click('#careHistory > .card details:not(.warranty-proof) summary');
     await page.evaluate(()=>{document.querySelector('#notificationWarranty input[aria-label="Date réelle de la panne"]').value=today();document.querySelector('#notificationWarranty input[aria-label="Kilométrage à la panne"]').value='40100';});
-    await page.type('#notificationWarranty input[aria-label="Panne constatée"]','Ne démarre plus');await page.click('#notificationWarranty > .card details button');
+    await page.type('#notificationWarranty input[aria-label="Panne constatée"]','Ne démarre plus');await page.click('#careHistory > .card details button');
     await page.waitForFunction(()=>car('c1').warranties[0].claim?.status==='open');
-    await page.click('#notificationWarranty > .card details:not(.warranty-proof) summary');await page.type('#notificationWarranty input[aria-label="Résultat : remplacé, remboursé ou refusé"]','Remplacée sous garantie');await page.click('#notificationWarranty > .card details button');await page.waitForFunction(()=>car('c1').warranties[0].claim.status==='closed');
-    await page.evaluate(async()=>{await reload();openCar(car('c1'));});assert.match(await page.$eval('#notificationWarranty',e=>e.textContent),/Remplacée sous garantie/);assert.equal(await page.evaluate(()=>EXP.length),1);assert.deepEqual(fouten,[]);
+    await page.click('#careHistory>summary');await page.click('#careHistory > .card details:not(.warranty-proof) summary');await page.type('#notificationWarranty input[aria-label="Résultat : remplacé, remboursé ou refusé"]','Remplacée sous garantie');await page.click('#careHistory > .card details button');await page.waitForFunction(()=>car('c1').warranties[0].claim.status==='closed');
+    await page.evaluate(async()=>{await reload();openCar(car('c1'));});assert.match(await page.$eval('#notificationWarranty',e=>e.textContent),/Remplacée sous garantie/);assert.equal(await page.evaluate(()=>EXP.length),2);assert.deepEqual(fouten,[]);
   }finally{await page.close();}
 });
 test('Account buttons explain missing fields without sending credentials',async()=>{

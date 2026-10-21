@@ -965,7 +965,7 @@ input[type="date"]{min-width:0;max-width:100%}
 .vehicle-map .care-selection{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
 .vehicle-map .care-selection p{margin:6px 0}
 .toast{pointer-events:none}
-.vehicle-map svg [role=button]{pointer-events:all}
+.vehicle-map svg [role=button]{pointer-events:visiblePainted}
 .vehicle-map .care-selection .btn{margin:6px 6px 0 0;min-height:44px}
 #notificationWarranty>.card{padding:16px;margin:10px 0;box-shadow:none}
 #notificationWarranty>.card h3{margin:0 0 6px}
@@ -978,6 +978,16 @@ input[type="date"]{min-width:0;max-width:100%}
 .care-action{display:flex;flex-direction:column;gap:6px;text-align:start;font:inherit;color:var(--ink);background:white;border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer}
 .care-action span{font-size:14px;color:var(--ink2)}
 .care-action[aria-pressed=true]{border-color:var(--brand,#3049d8);box-shadow:inset 0 0 0 1px var(--brand,#3049d8)}
+.vehicle-map .parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+.vehicle-map .parts button{font-size:13px;text-align:start;min-height:42px}
+.vehicle-map svg{height:300px;max-width:230px}
+.care-warning{display:flex;flex-direction:column;gap:6px;width:100%;text-align:start;padding:16px;margin:12px 0;border-radius:12px;border:1px solid #dfa94c;background:#fff6e6;color:#684200;font:inherit;cursor:pointer}
+.care-warning.claim{border-color:#c45c50;background:#fff0ed;color:#8a2920}
+.care-warning span,.care-notice{font-size:14px}
+#careHistory{border-top:1px solid var(--line);margin-top:18px;padding-top:12px}
+#careHistory>summary{font-weight:700}
+#careHistory>.card{padding:16px;border:1px solid var(--line);margin-top:12px;box-shadow:none}
+#careHistory [data-state=soon]>p:first-of-type{color:#8a5700;font-weight:600}
 #notificationWarranty>#warrantyAdd:not([open]),.care-entry:not([open]){display:none}
 @media(max-width:480px){.care-actions{grid-template-columns:1fr}}
 #notificationWarranty details,#notificationMaintenance>details{padding:12px 0}
@@ -8987,7 +8997,7 @@ function businessRisks(day){
   return out.sort(function(a,b){return Number(b.urgent)-Number(a.urgent);});
 }
 function vehicleText(){return ({fr:{part:"Partie de la voiture",title:"Votre voiture, en un regard",help:"Gris : non évalué · Bleu : échéance enregistrée · Orange : bientôt · Rouge : échéance atteinte. Ce n’est pas un diagnostic mécanique.",none:"Aucun contrôle enregistré pour cette partie."},nl:{part:"Onderdeel van de auto",title:"Je auto in één oogopslag",help:"Grijs: niet beoordeeld · Blauw: termijn vastgelegd · Oranje: binnenkort · Rood: grens bereikt. Dit is geen mechanische diagnose.",none:"Geen controle voor dit onderdeel geregistreerd."},ar:{part:"جزء السيارة",title:"سيارتك بنظرة واحدة",help:"رمادي: غير مفحوص · أزرق: موعد مسجل · برتقالي: قريب · أحمر: حان الموعد. ليس تشخيصاً ميكانيكياً.",none:"لا فحص مسجل لهذا الجزء."}})[L];}
-function vehicleParts(){return ['engine','brakes','tires','battery','other'].map(function(id,i){return {id:id,label:({fr:['Moteur et distribution','Freins','Pneus','Batterie','Autre'],nl:['Motor en distributie','Remmen','Banden','Accu','Overig'],ar:['المحرك والتوزيع','الفرامل','الإطارات','البطارية','أخرى']})[L][i]};});}
+function vehicleParts(){return ['engine','oil','filters','brakes','tires','battery','cooling','transmission','suspension','lighting','ac','body','other'].map(function(id,i){return {id:id,label:({fr:['Moteur et distribution','Huile et vidange','Filtres','Freins','Pneus','Batterie','Refroidissement','Boîte et embrayage','Suspension et direction','Éclairage','Climatisation','Carrosserie et vitres','Autre'],nl:['Motor en distributie','Olie en oliewissel','Filters','Remmen','Banden','Accu','Koeling','Versnellingsbak en koppeling','Ophanging en stuurinrichting','Verlichting','Airco','Carrosserie en ruiten','Overig'],ar:['المحرك والتوزيع','الزيت','الفلاتر','الفرامل','الإطارات','البطارية','التبريد','السرعة والقابض','التعليق والتوجيه','الإضاءة','التكييف','الهيكل والزجاج','أخرى']})[L][i]};});}
 function vehiclePartState(c,id){
   var tasks=(c.maintenance||[]).filter(function(t){return !t.completedAt&&(t.part||'other')===id;});
   var ranks={overdue:0,soon:1,unknown:2,planned:3};
@@ -8997,14 +9007,16 @@ function vehiclePartState(c,id){
 function vehicleVisual(c){
   var tx=vehicleText(),root=el('div','vehicle-map');root.appendChild(el('h3',null,tx.title));root.appendChild(el('p','fine',tx.help));
   var shapes={engine:'<rect x="66" y="45" width="88" height="48" rx="10"/>',battery:'<rect x="132" y="100" width="25" height="30" rx="5"/>',brakes:'<circle cx="52" cy="82" r="8"/><circle cx="168" cy="82" r="8"/><circle cx="52" cy="213" r="8"/><circle cx="168" cy="213" r="8"/>',tires:'<rect x="34" y="57" width="17" height="48" rx="6"/><rect x="169" y="57" width="17" height="48" rx="6"/><rect x="34" y="188" width="17" height="48" rx="6"/><rect x="169" y="188" width="17" height="48" rx="6"/>',other:'<rect x="68" y="203" width="84" height="40" rx="8"/>'};
-  var svg='<svg viewBox="0 0 220 290" role="group"><path d="M66 18Q110 3 154 18L170 60V232Q169 265 146 274H74Q51 265 50 232V60Z" fill="#e0e5e0" stroke="#67796d" stroke-width="3"/><path d="M70 108H150L145 180H75Z" fill="#c0cfc8"/>';
+  Object.assign(shapes,{battery:'<rect x="131" y="73" width="24" height="21" rx="5"/>',brakes:'<circle cx="61" cy="83" r="7"/><circle cx="159" cy="83" r="7"/><circle cx="61" cy="214" r="7"/><circle cx="159" cy="214" r="7"/>',engine:'<rect x="76" y="40" width="66" height="28" rx="7"/>',oil:'<rect x="72" y="74" width="22" height="19" rx="5"/>',filters:'<rect x="101" y="74" width="22" height="19" rx="5"/>',cooling:'<rect x="75" y="23" width="70" height="10" rx="4"/>',transmission:'<rect x="99" y="103" width="23" height="36" rx="5"/>',suspension:'<path d="M56 116h22v10H56zM143 116h22v10h-22z"/>',lighting:'<path d="M56 36l12-8v13H56zM152 28l12 8v5h-12z"/>',ac:'<rect x="76" y="145" width="19" height="30" rx="5"/>',body:'<path d="M62 146h8v63h-8zM151 146h8v63h-8z"/>',other:'<rect x="98" y="219" width="26" height="22" rx="6"/>'});
+  var svg='<svg viewBox="0 0 220 290" role="group"><defs><linearGradient id="atlas-car-body" x1="0" x2="1"><stop stop-color="#dce3ed"/><stop offset=".48" stop-color="#fafcff"/><stop offset="1" stop-color="#bac6d6"/></linearGradient></defs><ellipse cx="110" cy="150" rx="79" ry="130" fill="#d9e1ed" opacity=".4"/><path d="M68 17Q110 3 152 17L169 60V230Q169 258 147 274H73Q51 258 51 230V60Z" fill="url(#atlas-car-body)" stroke="#75859b" stroke-width="2"/><path d="M74 98L146 98L151 135H69Z M70 184H150L143 211H77Z" fill="#263d5a" opacity=".8"/><path d="M72 139H148V180H72Z" fill="#d2dce9"/><path d="M59 64V229M161 64V229" stroke="#8f9eb2" fill="none"/>';
   var parts=vehicleParts();parts.forEach(function(p){var state=vehiclePartState(c,p.id);svg+='<g data-part="'+p.id+'" role="button" tabindex="0" class="part '+state.status+(state.status==='overdue'?' pulse':'')+'">'+shapes[p.id]+'</g>';});svg+='</svg>';var drawing=el('div');drawing.innerHTML=svg;root.appendChild(drawing);
   var buttons=el('div','parts'),info=el('div');info.setAttribute('aria-live','polite');
   info.className='care-selection';
-  parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+' · '+(state.tasks.length?(maintenanceText()[state.status]||p.label):'—')),shape=drawing.querySelector('[data-part="'+p.id+'"]');b.type='button';b.setAttribute('aria-pressed','false');shape.setAttribute('aria-label',b.textContent);var tip=document.createElementNS('http://www.w3.org/2000/svg','title');tip.textContent=b.textContent;shape.prepend(tip);
+  parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+(state.tasks.length?' · '+(maintenanceText()[state.status]||p.label):'')),shape=drawing.querySelector('[data-part="'+p.id+'"]');b.type='button';b.dataset.part=p.id;b.setAttribute('aria-pressed','false');shape.setAttribute('aria-label',b.textContent);var tip=document.createElementNS('http://www.w3.org/2000/svg','title');tip.textContent=b.textContent;shape.prepend(tip);
     function selectPart(){root.dataset.part=p.id;Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});drawing.querySelectorAll('.part').forEach(function(x){x.classList.remove('selected');x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');shape.classList.add('selected');shape.setAttribute('aria-pressed','true');info.replaceChildren(el('b',null,p.label));if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});
       var completed=(c.maintenance||[]).filter(function(t){return t.completedAt&&(t.part||'other')===p.id&&!(c.warranties||[]).some(function(w){return w.maintenanceId===t.id;});});completed.forEach(function(t){var action=el('button','btn ghost sm',t.label+' · '+dShort(t.completedAt));action.type='button';action.onclick=function(){if(typeof openMaintenanceWarranty==='function')openMaintenanceWarranty(c.id,t.id);};info.appendChild(action);});
       if(typeof showPartWarranties==='function')showPartWarranties(c,p.id,info);
+      var panel=root.closest('#notificationMaintenance');if(panel)panel.querySelectorAll('select[aria-label="'+tx.part+'"]').forEach(function(select){if(!select.disabled)select.value=p.id;});
     }
     b.addEventListener('click',selectPart);shape.addEventListener('click',selectPart);shape.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPart();}});buttons.appendChild(b);});root.appendChild(buttons);root.appendChild(info);return {root:root};
 }
@@ -9051,7 +9063,7 @@ async function openNotificationTarget(){
     if(!item||item.cancelled){notificationProblem(tx.missing,false);return;}
     if(type==='vehicle'){
       openCar(item);var docFields={insuranceUntil:'cwIns',inspectionUntil:'cwInsp',vignetteUntil:'cwVig'};var focus=section==='documents'?$(docFields[p.get('doc')]||'cwIns'):section==='warranty'?($('warranty-'+p.get('wid'))||$('notificationWarranty')):$('notificationMaintenance');
-      if(focus){focus.scrollIntoView({block:'center'});focus.setAttribute('tabindex','-1');focus.focus();}
+      if(focus){if(typeof revealCareRecord==='function')revealCareRecord(focus);focus.scrollIntoView({block:'center'});focus.setAttribute('tabindex','-1');focus.focus();}
     }else if(section==='balances'||section==='deposits'){receipt(item,item.retour?'retour':'depart');$('rTitle').textContent=tx[section];}
     else if(section==='dossiers')openNew(null,item);
     else openCard(item);
