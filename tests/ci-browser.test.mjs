@@ -74,6 +74,31 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Completed maintenance prefills a linked warranty and reopens it without duplicating',{skip:!process.env.ATLAS_HTML},async()=>{
+ const data=B.testgegevens();data['vehicles/c1'].maintenance=[{id:'battery-change',label:'Batterie remplacée',part:'battery',dueKm:40000,completedAt:'2026-01-10',completedKm:40000}];
+ const {page,fouten}=await B.open({taal:'fr',gegevens:data});
+ try{
+  await page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await page.evaluate(()=>{openCar(car('c1'));openMaintenanceWarranty('c1','battery-change');});
+  assert.equal(await page.$eval('#warrantyMaintenance',node=>node.value),'battery-change');
+  assert.equal(await page.$eval('[aria-label="Pièce ou réparation"]',node=>node.value),'Batterie remplacée');
+  assert.equal(await page.$eval('[aria-label="Acheté ou remplacé le"]',node=>node.value),'2026-01-10');
+  assert.equal(await page.$eval('[aria-label="Pièce ou réparation"]',node=>node.readOnly),true);
+  await page.type('[aria-label="Fournisseur / garage"]','Garage test');await page.$eval('[aria-label="Garantie jusqu’au"]',node=>{node.value='2028-01-10';});await page.type('[aria-label="Référence de facture"]','FACT-TEST-1');await page.click('#warrantySave');
+  await page.waitForFunction(()=>car('c1').warranties?.length===1);
+  const saved=await page.evaluate(()=>car('c1').warranties[0]);assert.equal(saved.maintenanceId,'battery-change');assert.equal(saved.label,'Batterie remplacée');assert.equal(saved.purchased,'2026-01-10');assert.equal(saved.reference,'FACT-TEST-1');
+  await page.evaluate(()=>openMaintenanceWarranty('c1','battery-change'));assert.equal(await page.$eval('[aria-label="Fournisseur / garage"]',node=>node.value),'Garage test');await page.click('#warrantySave');
+  await page.waitForFunction(()=>!document.getElementById('warrantyAdd').open);assert.equal(await page.evaluate(()=>car('c1').warranties.length),1);assert.equal(await page.evaluate(()=>car('c1').maintenance.length),1);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
+test('Completing maintenance opens its optional warranty with the actual completion date',{skip:!process.env.ATLAS_HTML},async()=>{
+ const data=B.testgegevens();data['vehicles/c1'].maintenance=[{id:'brakes',label:'Remmen vervangen',part:'brakes',dueKm:40000}];const {page,fouten}=await B.open({taal:'nl',gegevens:data});
+ try{
+  await page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await page.evaluate(()=>{openCar(car('c1'));ask=async()=>true;});
+  await page.evaluate(()=>[...document.querySelectorAll('#notificationMaintenance button')].find(button=>button.textContent==='Onderhoud uitgevoerd').click());
+  await page.waitForFunction(()=>document.getElementById('warrantyAdd')?.open);
+  assert.equal(await page.$eval('#warrantyMaintenance',node=>node.value),'brakes');assert.equal(await page.$eval('[aria-label="Onderdeel of reparatie"]',node=>node.value),'Remmen vervangen');assert.equal(await page.$eval('[aria-label="Gekocht of vervangen op"]',node=>node.value),await page.evaluate(()=>today()));assert.equal(await page.evaluate(()=>car('c1').maintenance[0].completedKm),40000);assert.equal(await page.evaluate(()=>(car('c1').warranties||[]).length),0);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
 async function chooseScanPhotos(page,names){
  const before=await page.$$eval('.guided-card',cards=>cards.length);
  await page.evaluate(async names=>{const transfer=new DataTransfer();for(const name of names){const canvas=document.createElement('canvas');canvas.width=640;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,640,400);ctx.fillStyle='black';ctx.font='24px Arial';ctx.fillText('SPECIMEN TEST ONLY',20,60);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.9));transfer.items.add(new File([blob],name,{type:'image/jpeg'}));}const input=document.querySelector('.guided-files');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));},names);
