@@ -18,7 +18,6 @@ function careWords(){return ({fr:{title:'Suivi de la voiture',help:'À faire ou 
 function warrantyPart(c,w){const task=(c.maintenance||[]).find(t=>t.id===w.maintenanceId);return task?.part||w.part||'other';}
 window.showPartWarranties=function(c,part,container){
  for(const w of c.warranties||[]){if(warrantyPart(c,w)!==part)continue;const button=el('button','btn ghost sm',w.label+' · '+words()[warrantyStatus(c,w,today())]);button.type='button';button.onclick=()=>{const target=document.getElementById('warranty-'+w.id);target?.scrollIntoView({block:'center',behavior:'auto'});target?.focus({preventScroll:true});};container.append(button);}
- const add=el('button','btn ghost sm',careWords().done);add.type='button';add.onclick=()=>warrantyOpener?.('',part);container.append(add);
 };
 window.openMaintenanceWarranty=function(carId,taskId){if(carEdit?.id!==carId)return;warrantyOpener?.(taskId);};
 async function update(carId,id,patch){
@@ -51,6 +50,7 @@ window.warrantyPanel=function(c){
   box.appendChild(item);
  }
  const details=document.createElement('details');details.id='warrantyAdd';details.appendChild(el('summary',null,ct.done));
+ details.classList.add('care-entry');details.querySelector('summary').hidden=true;
  const linkLabel=el('label','f');linkLabel.appendChild(el('span','lbl',cx.link));const maintenance=document.createElement('select');maintenance.id='warrantyMaintenance';maintenance.setAttribute('aria-label',cx.link);const noLink=document.createElement('option');noLink.value='';noLink.textContent=cx.none;maintenance.append(noLink);for(const task of c.maintenance||[]){if(!task.completedAt)continue;const option=document.createElement('option');option.value=task.id;option.textContent=task.label+' · '+dShort(task.completedAt);maintenance.append(option);}linkLabel.append(maintenance);details.append(linkLabel);
  const label=field(details,t.label),supplier=field(details,t.supplier),purchased=field(details,t.purchased,'date'),until=field(details,t.until,'date'),km=field(details,t.km,'number'),amount=field(details,t.amount,'number'),reference=field(details,t.ref),file=field(details,t.file,'file');
  const partWrap=el('label','f');partWrap.appendChild(el('span','lbl',vehicleText().part));const part=document.createElement('select');part.setAttribute('aria-label',vehicleText().part);for(const p of vehicleParts()){const option=document.createElement('option');option.value=p.id;option.textContent=p.label;part.append(option);}part.value='other';partWrap.append(part);details.insertBefore(partWrap,linkLabel);
@@ -97,5 +97,16 @@ window.warrantyPanel=function(c){
 const maintenanceTextBase=maintenanceText;
 maintenanceText=function(){return {...maintenanceTextBase(),add:careWords().plan,done:careWords().done};};
 const maintenancePanelBase=maintenancePanel;
-maintenancePanel=function(c){const box=maintenancePanelBase(c),ct=careWords();box.querySelector('h2').textContent=ct.title;box.insertBefore(el('p','fine',ct.help),box.children[1]||null);const forms=[...box.children].filter(node=>node.tagName==='DETAILS');if(forms[1])forms[1].remove();box.append(el('p','fine',ct.notice));return box;};
+maintenancePanel=function(c){
+ const box=maintenancePanelBase(c),ct=careWords(),ui=({fr:{title:'Entretien de la voiture',help:'Choisissez la pièce sur la voiture, puis indiquez si le travail reste à faire ou est terminé.',plan:'À faire',planHelp:'Fixer la prochaine date ou le kilométrage.',done:'Déjà effectué',doneHelp:'Noter une réparation. Rappel et garantie facultatifs.'},nl:{title:'Onderhoud van de auto',help:'Kies het onderdeel op de auto. Geef daarna aan of het werk nog moet gebeuren of al gedaan is.',plan:'Nog te doen',planHelp:'Plan een datum of kilometerstand.',done:'Al uitgevoerd',doneHelp:'Noteer de reparatie. Herinnering en garantie zijn optioneel.'},ar:{title:'صيانة السيارة',help:'اختر القطعة ثم حدد هل العمل مطلوب أم تم بالفعل.',plan:'لم ينجز بعد',planHelp:'حدد تاريخاً أو عداداً للصيانة.',done:'تم بالفعل',doneHelp:'سجل الإصلاح، مع تذكير وضمان اختياريين.'}})[L];
+ box.querySelector('h2').textContent=ui.title;box.insertBefore(el('p','fine',ui.help),box.children[1]||null);
+ const forms=[...box.children].filter(node=>node.tagName==='DETAILS'),plan=forms[0];if(forms[1])forms[1].remove();plan.classList.add('care-entry');plan.querySelector('summary').hidden=true;
+ const actions=el('div','care-actions');for(const kind of ['plan','done']){const button=el('button','care-action');button.type='button';button.id=kind==='plan'?'carePlan':'careDone';button.append(el('b',null,ui[kind]),el('span',null,ui[kind+'Help']));button.onclick=()=>{
+   const record=box.querySelector('#warrantyAdd'),selected=box.querySelector('.vehicle-map')?.dataset.part||'other';
+   if(kind==='plan'){if(record)record.open=false;if(!plan.dataset.started){plan.querySelector('select').value=selected;plan.dataset.started='true';}plan.open=true;plan.querySelector('input')?.focus({preventScroll:true});}
+   else{plan.open=false;if(record?.open||record?.dataset.started){record.open=true;}else{warrantyOpener?.('',selected);if(record)record.dataset.started='true';}}
+   actions.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
+ };actions.append(button);}
+ const visual=box.querySelector('.vehicle-map');visual.after(actions);box.append(el('p','fine',ct.notice));return box;
+};
 if(typeof view!=='undefined'&&view==='vCar'&&carEdit){paintCarSide();const route=new URLSearchParams(location.hash.slice(1));if(route.get('section')==='warranty'){const target=document.getElementById('warranty-'+route.get('wid'))||document.getElementById('notificationWarranty');target?.scrollIntoView({block:'center'});}}

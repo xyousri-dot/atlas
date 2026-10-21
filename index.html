@@ -974,6 +974,12 @@ input[type="date"]{min-width:0;max-width:100%}
 #notificationWarranty>#warrantyAdd{padding:14px;border:1px solid var(--line);border-radius:12px;background:white;margin-bottom:16px}
 .care-choice{display:flex;align-items:center;gap:12px;min-height:48px;margin:10px 0;cursor:pointer;font-weight:600}
 .care-choice input[type=checkbox]{width:22px;height:22px;flex:0 0 22px;accent-color:var(--brand,#3049d8)}
+.care-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.care-action{display:flex;flex-direction:column;gap:6px;text-align:start;font:inherit;color:var(--ink);background:white;border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer}
+.care-action span{font-size:14px;color:var(--ink2)}
+.care-action[aria-pressed=true]{border-color:var(--brand,#3049d8);box-shadow:inset 0 0 0 1px var(--brand,#3049d8)}
+#notificationWarranty>#warrantyAdd:not([open]),.care-entry:not([open]){display:none}
+@media(max-width:480px){.care-actions{grid-template-columns:1fr}}
 #notificationWarranty details,#notificationMaintenance>details{padding:12px 0}
 #notificationWarranty summary,#notificationMaintenance summary{cursor:pointer;min-height:32px}
 /* While entering care details, the vehicle save bar must not cover the form's own save action. */
@@ -3356,7 +3362,7 @@ var TABOF={vDay:"vDay",vNew:"vDay",vForm:"vDay",vDone:"vDay",vCard:"vDay",vTrust
 var LAATSTEBON=null, LAATSTEKAART=null;
 var GETOOND="", VIA_POP=false, DIEPTE=1, NWOPEN=false, TERUGNA="", STAPEL=["vDay","vDay"], IDX=1, KLAARNAV=false, WAARSCHUWD=0;
 var ZELFSTANDIG=["vDay","vPlan","vClients","vLed","vCash","vFleet","vSet"];
-function show(v){
+function show(v,keepScroll){
   if(!VIA_POP && v!==GETOOND && GETOOND){ try{ STAPEL=STAPEL.slice(0,IDX+1); STAPEL.push(v); IDX++; history.pushState({ v:v, i:IDX },""); DIEPTE++; }catch(e){} }
   GETOOND=v;
   view=v;
@@ -3365,7 +3371,7 @@ function show(v){
   $("dock").hidden = ["vDay","vLed","vCash","vFleet","vClients","vPlan","vCard","vTrust"].indexOf(v)>=0;
   $("tabs").hidden = !$("dock").hidden;
   Array.prototype.forEach.call($("tabs").children,function(b){ b.setAttribute("aria-current", b.dataset.v===TABOF[v]); });
-  window.scrollTo(0,0);
+  if(keepScroll!==true)window.scrollTo(0,0);
 }
 /* Onderaan staat een "wachtpost": wie op Vandaag nog eens terug drukt, krijgt eerst een
    melding in plaats van dat Atlas zomaar verdwijnt. Twee keer snel terug = Atlas sluiten. */
@@ -3425,7 +3431,8 @@ function eenTerug(){
   if(DIEPTE>1){ history.back(); return; }
   view="vDay"; render();
 }
-function render(){
+function render(keepScroll){
+  var position=keepScroll===true?{x:window.scrollX,y:window.scrollY}:null;
   if(view==="vDay") renderDay();
   if(view==="vPlan") renderPlan();
   if(view==="vClients") renderClients();
@@ -3433,9 +3440,26 @@ function render(){
   if(view==="vCash") renderCash();
   if(view==="vFleet") renderFleet();
   if(view==="vSet"){ fillSettings(); paintTools(); sbVerf(); }
-  show(view);
+  show(view,keepScroll===true);
+  if(position)window.scrollTo(position.x,position.y);
 }
 /* ===== Menu onderaan: iconen en het blad "Meer" ===== */
+/* UI-only refresh policy: keep the frozen cloud/storage implementation intact. */
+var SBROND=false;
+function sbMagVerversen(){
+  if(['vDay','vPlan','vClients','vLed','vCash','vFleet','vTrust'].indexOf(view)<0)return false;
+  var active=document.activeElement,panel=$(view);
+  if(active&&active.closest&&active.closest('input,textarea,select,[contenteditable="true"]'))return false;
+  if(typeof MODALSTAAT!=='undefined'&&MODALSTAAT)return false;
+  return !panel||!panel.querySelector('details[open],dialog[open],[role="dialog"]');
+}
+sbRond=async function(){
+  if(!sbKlaar()||SBROND)return;
+  SBROND=true;var screen=view;
+  try{await sbWerk();if(await sbHaal()){await reload();if(view===screen&&sbMagVerversen())render(true);}}
+  catch(e){/* Background errors must not interrupt the draft. */}
+  finally{SBROND=false;}
+};
 var TABICOON={
   vDay:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
   vPlan:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
@@ -8978,10 +9002,9 @@ function vehicleVisual(c){
   var buttons=el('div','parts'),info=el('div');info.setAttribute('aria-live','polite');
   info.className='care-selection';
   parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+' · '+(state.tasks.length?(maintenanceText()[state.status]||p.label):'—')),shape=drawing.querySelector('[data-part="'+p.id+'"]');b.type='button';b.setAttribute('aria-pressed','false');shape.setAttribute('aria-label',b.textContent);var tip=document.createElementNS('http://www.w3.org/2000/svg','title');tip.textContent=b.textContent;shape.prepend(tip);
-    function selectPart(){Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});drawing.querySelectorAll('.part').forEach(function(x){x.classList.remove('selected');x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');shape.classList.add('selected');shape.setAttribute('aria-pressed','true');info.replaceChildren(el('b',null,p.label));if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});
+    function selectPart(){root.dataset.part=p.id;Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});drawing.querySelectorAll('.part').forEach(function(x){x.classList.remove('selected');x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');shape.classList.add('selected');shape.setAttribute('aria-pressed','true');info.replaceChildren(el('b',null,p.label));if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});
       var completed=(c.maintenance||[]).filter(function(t){return t.completedAt&&(t.part||'other')===p.id&&!(c.warranties||[]).some(function(w){return w.maintenanceId===t.id;});});completed.forEach(function(t){var action=el('button','btn ghost sm',t.label+' · '+dShort(t.completedAt));action.type='button';action.onclick=function(){if(typeof openMaintenanceWarranty==='function')openMaintenanceWarranty(c.id,t.id);};info.appendChild(action);});
       if(typeof showPartWarranties==='function')showPartWarranties(c,p.id,info);
-      var add=el('button','btn ghost sm',maintenanceText().add);add.type='button';add.onclick=function(){var panel=root.closest('#notificationMaintenance'),form=panel&&Array.from(panel.children).find(function(x){return x.tagName==='DETAILS';});if(!form)return;form.open=true;var choice=form.querySelector('select');if(choice)choice.value=p.id;var input=form.querySelector('input');if(input)input.focus();};info.appendChild(add);
     }
     b.addEventListener('click',selectPart);shape.addEventListener('click',selectPart);shape.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPart();}});buttons.appendChild(b);});root.appendChild(buttons);root.appendChild(info);return {root:root};
 }
