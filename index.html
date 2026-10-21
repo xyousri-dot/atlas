@@ -960,6 +960,21 @@ input[type="date"]{min-width:0;max-width:100%}
 @media(prefers-reduced-motion:reduce){.vehicle-map .pulse{animation:none}}
 .vehicle-map .parts{display:flex;flex-wrap:wrap;gap:6px}.vehicle-map .parts button{border:1px solid var(--line);border-radius:12px;padding:9px;background:white;color:var(--ink);font:inherit}
 .vehicle-map .parts button[aria-pressed=true]{outline:2px solid var(--ink)}
+.vehicle-map .part{cursor:pointer;outline:none;transition:fill .2s,filter .2s}
+.vehicle-map .part:hover,.vehicle-map .part:focus,.vehicle-map .part.selected{filter:drop-shadow(0 0 4px #2449db);stroke:#2449db;stroke-width:3}
+.vehicle-map .care-selection{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.vehicle-map .care-selection p{margin:6px 0}
+.toast{pointer-events:none}
+.vehicle-map svg [role=button]{pointer-events:all}
+.vehicle-map .care-selection .btn{margin:6px 6px 0 0;min-height:44px}
+#notificationWarranty>.card{padding:16px;margin:10px 0;box-shadow:none}
+#notificationWarranty>.card h3{margin:0 0 6px}
+#notificationWarranty>.card p{margin:8px 0}
+#notificationWarranty details,#notificationMaintenance>details{padding:12px 0}
+#notificationWarranty summary,#notificationMaintenance summary{cursor:pointer;min-height:32px}
+/* While entering care details, the vehicle save bar must not cover the form's own save action. */
+body:has(#vCar:not([hidden]) #notificationMaintenance details[open]) .dock{position:static;margin-top:16px}
+@media(min-width:720px){.vehicle-map{display:grid;grid-template-columns:220px 1fr;gap:10px 20px}.vehicle-map>h3,.vehicle-map>p{grid-column:1/-1;margin:0}.vehicle-map>div:has(>svg){grid-column:1;grid-row:3/5}.vehicle-map>.parts{grid-column:2;align-content:start}.vehicle-map>.care-selection{grid-column:2;margin-top:0}}
 </style>
 
 <div class="bar">
@@ -8954,10 +8969,17 @@ function vehiclePartState(c,id){
 function vehicleVisual(c){
   var tx=vehicleText(),root=el('div','vehicle-map');root.appendChild(el('h3',null,tx.title));root.appendChild(el('p','fine',tx.help));
   var shapes={engine:'<rect x="66" y="45" width="88" height="48" rx="10"/>',battery:'<rect x="132" y="100" width="25" height="30" rx="5"/>',brakes:'<circle cx="52" cy="82" r="8"/><circle cx="168" cy="82" r="8"/><circle cx="52" cy="213" r="8"/><circle cx="168" cy="213" r="8"/>',tires:'<rect x="34" y="57" width="17" height="48" rx="6"/><rect x="169" y="57" width="17" height="48" rx="6"/><rect x="34" y="188" width="17" height="48" rx="6"/><rect x="169" y="188" width="17" height="48" rx="6"/>',other:'<rect x="68" y="203" width="84" height="40" rx="8"/>'};
-  var svg='<svg viewBox="0 0 220 290" aria-hidden="true"><path d="M66 18Q110 3 154 18L170 60V232Q169 265 146 274H74Q51 265 50 232V60Z" fill="#e0e5e0" stroke="#67796d" stroke-width="3"/><path d="M70 108H150L145 180H75Z" fill="#c0cfc8"/>';
-  var parts=vehicleParts();parts.forEach(function(p){var state=vehiclePartState(c,p.id);svg+='<g class="part '+state.status+(state.status==='overdue'?' pulse':'')+'">'+shapes[p.id]+'</g>';});svg+='</svg>';var drawing=el('div');drawing.innerHTML=svg;root.appendChild(drawing);
+  var svg='<svg viewBox="0 0 220 290" role="group"><path d="M66 18Q110 3 154 18L170 60V232Q169 265 146 274H74Q51 265 50 232V60Z" fill="#e0e5e0" stroke="#67796d" stroke-width="3"/><path d="M70 108H150L145 180H75Z" fill="#c0cfc8"/>';
+  var parts=vehicleParts();parts.forEach(function(p){var state=vehiclePartState(c,p.id);svg+='<g data-part="'+p.id+'" role="button" tabindex="0" class="part '+state.status+(state.status==='overdue'?' pulse':'')+'">'+shapes[p.id]+'</g>';});svg+='</svg>';var drawing=el('div');drawing.innerHTML=svg;root.appendChild(drawing);
   var buttons=el('div','parts'),info=el('div');info.setAttribute('aria-live','polite');
-  parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+' · '+(state.tasks.length?(maintenanceText()[state.status]||p.label):'—'));b.type='button';b.setAttribute('aria-pressed','false');b.addEventListener('click',function(){Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');info.innerHTML='';if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});});buttons.appendChild(b);});root.appendChild(buttons);root.appendChild(info);return {root:root};
+  info.className='care-selection';
+  parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+' · '+(state.tasks.length?(maintenanceText()[state.status]||p.label):'—')),shape=drawing.querySelector('[data-part="'+p.id+'"]');b.type='button';b.setAttribute('aria-pressed','false');shape.setAttribute('aria-label',b.textContent);var tip=document.createElementNS('http://www.w3.org/2000/svg','title');tip.textContent=b.textContent;shape.prepend(tip);
+    function selectPart(){Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});drawing.querySelectorAll('.part').forEach(function(x){x.classList.remove('selected');x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');shape.classList.add('selected');shape.setAttribute('aria-pressed','true');info.replaceChildren(el('b',null,p.label));if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});
+      var completed=(c.maintenance||[]).filter(function(t){return t.completedAt&&(t.part||'other')===p.id;});completed.forEach(function(t){var action=el('button','btn ghost sm',t.label+' · '+({fr:'Facture / garantie',nl:'Factuur / garantie',ar:'فاتورة / ضمان'})[L]);action.type='button';action.onclick=function(){if(typeof openMaintenanceWarranty==='function')openMaintenanceWarranty(c.id,t.id);};info.appendChild(action);});
+      if(typeof showPartWarranties==='function')showPartWarranties(c,p.id,info);
+      var add=el('button','btn ghost sm',maintenanceText().add);add.type='button';add.onclick=function(){var panel=root.closest('#notificationMaintenance'),form=panel&&Array.from(panel.children).find(function(x){return x.tagName==='DETAILS';});if(!form)return;form.open=true;var choice=form.querySelector('select');if(choice)choice.value=p.id;var input=form.querySelector('input');if(input)input.focus();};info.appendChild(add);
+    }
+    b.addEventListener('click',selectPart);shape.addEventListener('click',selectPart);shape.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPart();}});buttons.appendChild(b);});root.appendChild(buttons);root.appendChild(info);return {root:root};
 }
 function phoneText(){return ({fr:{title:'Alertes sur votre téléphone',enable:'Activer sur cet appareil',test:'Envoyer un test',off:'Désactiver sur cet appareil',help:'Un résumé par jour : départs, dossiers incomplets, paiements, cautions, entretien, documents et retours en retard. Aucun nom de client sur l’écran verrouillé.',local:'Ouvrez Atlas via une adresse HTTPS. Un fichier local ne reçoit pas les alertes.',unsupported:'Notifications non disponibles ici. Sur iPhone, ajoutez Atlas à l’écran d’accueil puis ouvrez son icône.',pending:'Service de notifications pas encore configuré. Rien n’est activé.',login:'Connectez-vous pour associer ce téléphone à votre agence.',active:'Appareil inscrit. La réception réelle reste à confirmer sur le téléphone.',sent:'Test programmé dans environ 2 minutes. Fermez Atlas et verrouillez votre téléphone.',denied:'Notifications refusées. Modifiez l’autorisation dans les réglages du téléphone.',removed:'Alertes désactivées sur cet appareil.'},nl:{title:'Meldingen op je telefoon',enable:'Activeren op dit apparaat',test:'Test versturen',off:'Uitzetten op dit apparaat',help:'Eén samenvatting per dag: vertrek, onvolledige dossiers, betalingen, borgen, onderhoud, documenten en te late retouren. Geen klantnamen op het vergrendelscherm.',local:'Open Atlas via HTTPS. Een lokaal bestand ontvangt geen meldingen.',unsupported:'Meldingen hier niet beschikbaar. Voeg Atlas op iPhone toe aan het beginscherm en open het pictogram.',pending:'Meldingendienst nog niet ingesteld. Er is niets geactiveerd.',login:'Log in om deze telefoon aan je bedrijf te koppelen.',active:'Apparaat aangemeld. Echte ontvangst moet nog op de telefoon worden bevestigd.',sent:'Test gepland over ongeveer 2 minuten. Sluit Atlas en vergrendel je telefoon.',denied:'Meldingen geweigerd. Pas de toestemming aan in je telefooninstellingen.',removed:'Meldingen uitgezet op dit apparaat.'},ar:{title:'تنبيهات على هاتفك',enable:'تفعيل على هذا الجهاز',test:'إرسال اختبار',off:'إيقاف على هذا الجهاز',help:'ملخص يومي للتسليم والملفات والدفعات والضمانات والصيانة والوثائق والتأخر. دون أسماء العملاء على شاشة القفل.',local:'افتح Atlas عبر HTTPS، وليس كملف محلي.',unsupported:'التنبيهات غير متاحة هنا. على iPhone أضف Atlas للشاشة الرئيسية.',pending:'خدمة التنبيهات غير مهيأة بعد. لم يتم التفعيل.',login:'سجل الدخول لربط الهاتف بوكالتك.',active:'تم تسجيل الجهاز. تحقق من الاستلام على الهاتف.',sent:'تمت برمجة الاختبار خلال دقيقتين تقريباً. أغلق Atlas واقفل الهاتف.',denied:'الإذن مرفوض. عدله في إعدادات الهاتف.',removed:'تم إيقاف التنبيهات على هذا الجهاز.'}})[L];}
 async function phoneAPI(action,data,retried){
@@ -9153,8 +9175,8 @@ function paintCarSide(){
   h.appendChild(g);
   if(pl.due>0){ var dl=el("div","row"); dl.style.cssText="margin-top:12px;border-top:1px solid rgba(255,255,255,.18);padding-top:10px"; dl.appendChild(el("span","k",t.plDue)); dl.appendChild(el("span","v",dh(pl.due))); h.appendChild(dl); }
   s.appendChild(h);
-  s.appendChild(maintenancePanel(c));
-  if(typeof warrantyPanel==='function')s.appendChild(warrantyPanel(c));
+  var care=maintenancePanel(c);s.appendChild(care);
+  if(typeof warrantyPanel==='function')care.appendChild(warrantyPanel(c));
   var more=el("button","link",CARMORE?t.plLess:t.plMore); more.type="button"; more.style.cssText="margin-top:10px";
   more.addEventListener("click",function(){ CARMORE=!CARMORE; paintCarSide(); });
   s.appendChild(more);

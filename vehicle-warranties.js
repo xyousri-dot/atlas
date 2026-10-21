@@ -14,6 +14,11 @@ function connectionWords(){return ({
  ar:{title:'الضمان — عند تعطل قطعة',help:'الصيانة: متى يجب التدخل؟ الضمان: بمن تتصل إذا تعطلت القطعة المستبدلة؟ اربط الضمان بصيانة منفذة لنقل القطعة والتاريخ تلقائياً.',link:'الصيانة المنفذة',none:'دون صيانة مرتبطة',linked:'مرتبط بصيانة منفذة',add:'إضافة فاتورة أو ضمان',duplicate:'يوجد ضمان لهذه الصيانة. يمكنك تعديله هنا.'}
  })[L];}
 let warrantyOpener;
+function warrantyPart(c,w){const task=(c.maintenance||[]).find(t=>t.id===w.maintenanceId);return task?.part||w.part||'other';}
+window.showPartWarranties=function(c,part,container){
+ for(const w of c.warranties||[]){if(warrantyPart(c,w)!==part)continue;const button=el('button','btn ghost sm',w.label+' · '+words()[warrantyStatus(c,w,today())]);button.type='button';button.onclick=()=>{const target=document.getElementById('warranty-'+w.id);target?.scrollIntoView({block:'center',behavior:'auto'});target?.focus({preventScroll:true});};container.append(button);}
+ const add=el('button','btn ghost sm',words().add);add.type='button';add.onclick=()=>warrantyOpener?.('',part);container.append(add);
+};
 window.openMaintenanceWarranty=function(carId,taskId){if(carEdit?.id!==carId)return;warrantyOpener?.(taskId);};
 async function update(carId,id,patch){
  const fresh=await S.get('vehicles/'+carId);if(!fresh)throw Error('missing vehicle');
@@ -26,15 +31,16 @@ async function invoice(file){
  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(Error(words().fileError));reader.onload=()=>resolve({name:file.name,type:file.type,data:reader.result});reader.readAsDataURL(file);});
 }
 window.warrantyPanel=function(c){
- const t=words(),cx=connectionWords(),box=el('div','card');let editing=null;box.id='notificationWarranty';box.style.marginTop='12px';box.append(el('h2','ch',cx.title),el('p','fine',cx.help));
+ const t=words(),cx=connectionWords(),box=el('div','card');let editing=null;box.id='notificationWarranty';box.style.marginTop='12px';box.append(el('h2','ch',({fr:'Garanties des pièces remplacées',nl:'Garantie op vervangen onderdelen',ar:'ضمان القطع المستبدلة'})[L]));
  if(!(c.warranties||[]).length)box.appendChild(el('p','fine',t.empty));
  for(const w of c.warranties||[]){
   const linked=(c.maintenance||[]).find(task=>task.id===w.maintenanceId&&task.completedAt);
-  const item=el('div','card'),state=warrantyStatus(c,w,today());item.id='warranty-'+w.id;item.append(el('h3',null,linked?.label||w.label),el('p',state==='claim'||state==='soon'?'neg':'fine',t[state]),el('p','fine',w.supplier+' · '+dShort(linked?.completedAt||w.purchased)+(w.until?' · '+t.until+' '+dShort(w.until):'')+(w.untilKm?' · '+kmf(w.untilKm):'')));
+  const item=el('div','card'),state=warrantyStatus(c,w,today());item.id='warranty-'+w.id;item.tabIndex=-1;item.append(el('h3',null,linked?.label||w.label),el('p',state==='claim'||state==='soon'?'neg':'fine',t[state]),el('p','fine',w.supplier+' · '+dShort(linked?.completedAt||w.purchased)+(w.until?' · '+t.until+' '+dShort(w.until):'')+(w.untilKm?' · '+kmf(w.untilKm):'')));
   if(linked)item.appendChild(el('p','fine',cx.linked+' · '+linked.label+' · '+dShort(linked.completedAt)));
   const edit=el('button','link',({fr:'Modifier la garantie',nl:'Garantie bewerken',ar:'تعديل الضمان'})[L]);edit.type='button';edit.onclick=()=>editWarranty(w);item.appendChild(edit);
-  if(w.reference)item.appendChild(el('p','fine',w.reference));if(w.amount)item.appendChild(el('p','fine',dh(w.amount)));
-  if(w.invoice&&/^data:(application\/pdf|image\/(jpeg|png));base64,/.test(w.invoice.data||'')){const link=el('a','link',t.proof);link.href=w.invoice.data;link.download=w.invoice.name||'facture';item.appendChild(link);}else item.appendChild(el('p','fine',t.noProof));
+  const proof=document.createElement('details');proof.className='warranty-proof';proof.appendChild(el('summary',null,({fr:'Facture et détails',nl:'Factuur en details',ar:'الفاتورة والتفاصيل'})[L]));
+  if(w.reference)proof.appendChild(el('p','fine',w.reference));if(w.amount)proof.appendChild(el('p','fine',dh(w.amount)));
+  if(w.invoice&&/^data:(application\/pdf|image\/(jpeg|png));base64,/.test(w.invoice.data||'')){const link=el('a','link',t.proof);link.href=w.invoice.data;link.download=w.invoice.name||'facture';proof.appendChild(link);}else proof.appendChild(el('p','fine',t.noProof));item.appendChild(proof);
   if(w.claim){item.appendChild(el('p',null,w.claim.note+' · '+dShort(w.claim.date)));const cover=warrantyStatus({km:w.claim.km},{...w,claim:null},w.claim.date);item.appendChild(el('p','fine',t.cover+t[cover]));if(w.claim.resolution)item.appendChild(el('p',null,w.claim.resolution));}
   if(w.claim?.status==='open'){
    const details=document.createElement('details');details.appendChild(el('summary',null,t.close));const note=field(details,t.resolution),save=el('button','btn ghost',t.resolutionSave);save.type='button';save.onclick=async()=>{if(save.disabled||!note.value.trim())return;save.disabled=true;try{await update(c.id,w.id,{claim:{...w.claim,status:'closed',resolution:note.value.trim(),closedAt:today()}});}catch(e){dbErr(e);}finally{save.disabled=false;}};details.appendChild(save);item.appendChild(details);
@@ -46,14 +52,15 @@ window.warrantyPanel=function(c){
  const details=document.createElement('details');details.id='warrantyAdd';details.appendChild(el('summary',null,t.add));
  const linkLabel=el('label','f');linkLabel.appendChild(el('span','lbl',cx.link));const maintenance=document.createElement('select');maintenance.id='warrantyMaintenance';maintenance.setAttribute('aria-label',cx.link);const noLink=document.createElement('option');noLink.value='';noLink.textContent=cx.none;maintenance.append(noLink);for(const task of c.maintenance||[]){if(!task.completedAt)continue;const option=document.createElement('option');option.value=task.id;option.textContent=task.label+' · '+dShort(task.completedAt);maintenance.append(option);}linkLabel.append(maintenance);details.append(linkLabel);
  const label=field(details,t.label),supplier=field(details,t.supplier),purchased=field(details,t.purchased,'date'),until=field(details,t.until,'date'),km=field(details,t.km,'number'),amount=field(details,t.amount,'number'),reference=field(details,t.ref),file=field(details,t.file,'file');
- function useMaintenance(){const task=(c.maintenance||[]).find(task=>task.id===maintenance.value&&task.completedAt);label.readOnly=purchased.readOnly=!!task;if(task){label.value=task.label;purchased.value=task.completedAt;}}
- function editWarranty(w){editing=w;maintenance.value=w.maintenanceId||'';label.value=w.label;supplier.value=w.supplier;purchased.value=w.purchased;until.value=w.until||'';km.value=w.untilKm||'';amount.value=w.amount??'';reference.value=w.reference||'';file.value='';useMaintenance();details.open=true;label.focus();}
+ const partWrap=el('label','f');partWrap.appendChild(el('span','lbl',vehicleText().part));const part=document.createElement('select');part.setAttribute('aria-label',vehicleText().part);for(const p of vehicleParts()){const option=document.createElement('option');option.value=p.id;option.textContent=p.label;part.append(option);}part.value='other';partWrap.append(part);details.insertBefore(partWrap,linkLabel);
+ function useMaintenance(){const task=(c.maintenance||[]).find(task=>task.id===maintenance.value&&task.completedAt);label.readOnly=purchased.readOnly=!!task;part.disabled=!!task;if(task){label.value=task.label;purchased.value=task.completedAt;part.value=task.part||'other';}}
+ function editWarranty(w){editing=w;maintenance.value=w.maintenanceId||'';part.value=warrantyPart(c,w);label.value=w.label;supplier.value=w.supplier;purchased.value=w.purchased;until.value=w.until||'';km.value=w.untilKm||'';amount.value=w.amount??'';reference.value=w.reference||'';file.value='';useMaintenance();details.open=true;label.focus();}
  maintenance.onchange=()=>{const existing=(c.warranties||[]).find(w=>w.maintenanceId===maintenance.value&&maintenance.value);if(existing){editWarranty(existing);return;}useMaintenance();};
- warrantyOpener=taskId=>{const existing=(c.warranties||[]).find(w=>w.maintenanceId===taskId);if(existing){editWarranty(existing);return;}editing=null;maintenance.value=taskId;supplier.value=until.value=km.value=amount.value=reference.value=file.value='';useMaintenance();details.open=true;details.scrollIntoView({block:'center'});supplier.focus();};
+ warrantyOpener=(taskId,partId)=>{const existing=taskId&&(c.warranties||[]).find(w=>w.maintenanceId===taskId);if(existing){editWarranty(existing);return;}editing=null;maintenance.value=taskId;label.value=purchased.value=supplier.value=until.value=km.value=amount.value=reference.value=file.value='';part.value=partId||'other';useMaintenance();details.open=true;details.scrollIntoView({block:'center'});(taskId?supplier:label).focus();};
  file.accept='application/pdf,image/jpeg,image/png';km.min='1';km.step='1';amount.min='0';amount.step='0.01';purchased.max=today();
  const save=el('button','btn',t.save);save.id='warrantySave';save.type='button';save.onclick=async()=>{
   if(save.disabled)return;const w={...(editing||{}),id:editing?.id||uid(),maintenanceId:maintenance.value||null,label:label.value.trim(),supplier:supplier.value.trim(),purchased:purchased.value,until:until.value,untilKm:km.value===''?null:Number(km.value),amount:amount.value===''?null:Number(amount.value),reference:reference.value.trim(),createdAt:editing?.createdAt||today()};
-  if(!warrantyValid(w)||w.purchased>today()){toast(t.invalid);return;}save.disabled=true;
+  w.part=part.value;if(!warrantyValid(w)||w.purchased>today()){toast(t.invalid);return;}save.disabled=true;
   try{w.invoice=file.files[0]?await invoice(file.files[0]):editing?.invoice||null;const fresh=await S.get('vehicles/'+c.id);if(!fresh)throw Error('missing vehicle');if(w.maintenanceId){const task=(fresh.maintenance||[]).find(task=>task.id===w.maintenanceId&&task.completedAt);if(!task)throw Error(t.invalid);w.label=task.label;w.purchased=task.completedAt;const duplicate=(fresh.warranties||[]).find(x=>x.maintenanceId===w.maintenanceId&&x.id!==w.id);if(duplicate)throw Error(cx.duplicate);if(!warrantyValid(w))throw Error(t.invalid);}await S.set('vehicles/'+c.id,{...fresh,warranties:editing?(fresh.warranties||[]).map(x=>x.id===w.id?w:x):[...(fresh.warranties||[]),w]});await reload();carEdit=car(c.id);paintCarSide();toast(T().saved);}catch(e){toast(e.message||t.invalid);}finally{save.disabled=false;}
  };details.appendChild(save);box.appendChild(details);return box;
 };
