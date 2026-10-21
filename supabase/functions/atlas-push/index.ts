@@ -52,6 +52,7 @@ Deno.serve(async(req:Request)=>{
       if(devices.length>100)return reply({error:'batch-limit'},503);
       const day=localDay(),results=monitor?await monitor.dispatch():[];
       for(const device of devices){
+        if(device.disabled_at)continue;
         if(device.test_due_at && Date.parse(device.test_due_at)<=Date.now() && validSubscription(device.subscription)){
           results.push(await send(device,{body:'Atlas · Test de notification / Testmelding',tag:'atlas-test',url:'./'},'test:'+day));
           check(await db.from('atlas_push_devices').update({test_due_at:null}).eq('id',device.id));
@@ -60,6 +61,7 @@ Deno.serve(async(req:Request)=>{
       if(hour!==9)return reply({skipped:'outside-morning-window',testResults:results});
       const byOwner=new Map();
       for(const device of devices){
+        if(device.disabled_at)continue;
         if(!validSubscription(device.subscription))continue;
         if(!byOwner.has(device.owner_id)){
           const rows=check(await db.from('atlas').select('path,data').eq('owner_id',device.owner_id).limit(1001));
@@ -98,6 +100,7 @@ Deno.serve(async(req:Request)=>{
       ];
       const results=[];
       for(const device of devices){
+        if(device.disabled_at)continue;
         if(!validSubscription(device.subscription))continue;
         for(const [i,message] of examples.entries()){
           if(body.example!==undefined&&body.example!==i)continue;
@@ -109,15 +112,15 @@ Deno.serve(async(req:Request)=>{
     }
     if(body.action==='config')return reply({publicKey:env('VAPID_PUBLIC_KEY')});
     if(body.action==='status'){
-      const device=check(await db.from('atlas_push_devices').select('id').eq('owner_id',owner).eq('endpoint',body.endpoint).maybeSingle());
-      return reply({registered:!!device});
+      const device=check(await db.from('atlas_push_devices').select(monitor?'id,disabled_at':'id').eq('owner_id',owner).eq('endpoint',body.endpoint).maybeSingle());
+      return reply({registered:!!device&&!device.disabled_at});
     }
     if(body.action==='subscribe'){
       if(!validSubscription(body.subscription))return reply({error:'subscription'},400);
       const endpoint=body.subscription.endpoint;
       const existing=check(await db.from('atlas_push_devices').select('id,owner_id').eq('endpoint',endpoint).maybeSingle());
       if(existing&&existing.owner_id!==owner)return reply({error:'device-already-linked'},409);
-      const fields={owner_id:owner,endpoint,subscription:body.subscription,language:['fr','nl','ar'].includes(body.language)?body.language:'fr'};
+      const fields={owner_id:owner,endpoint,subscription:body.subscription,language:['fr','nl','ar'].includes(body.language)?body.language:'fr',...(monitor?{disabled_at:null}:{})};
       if(existing)check(await db.from('atlas_push_devices').update(fields).eq('id',existing.id).eq('owner_id',owner));
       else check(await db.from('atlas_push_devices').insert(fields));
       return reply({registered:true});

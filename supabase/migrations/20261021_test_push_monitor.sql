@@ -3,6 +3,7 @@ begin;
 do $$ begin
  if to_regclass('atlas_private.admin_emails') is null then raise exception 'atlas-test admin prerequisite missing'; end if;
 end $$;
+alter table public.atlas_push_devices add column if not exists disabled_at timestamptz;
 create table if not exists public.atlas_push_outbox (
  id uuid primary key default gen_random_uuid(),
  owner_id uuid not null references auth.users(id) on delete cascade,
@@ -53,7 +54,7 @@ begin
  where id=p_id and state in ('queued','failed') and attempts<3 and received_at is null and opened_at is null
  and next_attempt_at<=now() and device_id is not null returning * into q;
  if q.id is null then return null; end if;
- select subscription into sub from public.atlas_push_devices where id=q.device_id and owner_id=q.owner_id;
+ select subscription into sub from public.atlas_push_devices where id=q.device_id and owner_id=q.owner_id and disabled_at is null;
  if sub is null then update public.atlas_push_outbox set state='gone',error_code='device-missing' where id=p_id;return null;end if;
  return to_jsonb(q)||jsonb_build_object('subscription',sub);
 end $$;
@@ -66,6 +67,7 @@ begin
  accepted_at=case when p_state='accepted' then now() else accepted_at end,
  next_attempt_at=case when p_state='failed' and attempts<3 then now()+case when attempts=1 then interval '1 minute' else interval '5 minutes' end else null end
  where id=p_id and attempts=p_attempt and state='sending';
+ if p_state='gone' then update public.atlas_push_devices set disabled_at=now() where id=(select device_id from public.atlas_push_outbox where id=p_id and attempts=p_attempt and state='gone');end if;
 end $$;
 
 create or replace function public.atlas_push_due() returns jsonb
@@ -99,7 +101,7 @@ declare result jsonb;
 begin
  if not exists(select 1 from auth.users u join atlas_private.admin_emails a on a.email=lower(u.email) where u.id=auth.uid() and u.email_confirmed_at is not null) then raise exception 'Admin access required' using errcode='42501';end if;
  select jsonb_build_object('items',coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb),'limited',true,
- 'without_device',(select count(*) from auth.users u where not exists(select 1 from public.atlas_push_devices d where d.owner_id=u.id))) into result from (
+ 'without_device',(select count(*) from auth.users u where not exists(select 1 from public.atlas_push_devices d where d.owner_id=u.id and d.disabled_at is null))) into result from (
  select q.id,u.email,q.delivery_key,q.created_at,q.attempts,q.accepted_at,q.received_at,q.opened_at,q.next_attempt_at,q.error_code,
  case when q.opened_at is not null then 'opened' when q.received_at is not null then 'received' when q.display_error_at is not null then 'display-error' when q.state='accepted' and q.accepted_at<now()-interval '10 minutes' then 'unconfirmed' else q.state end as status,
  (q.payload ? 'body' and q.device_id is not null and q.attempts<3 and q.received_at is null and q.opened_at is null and q.state in ('failed','unknown','accepted') and coalesce(q.attempted_at,q.created_at)<now()-interval '10 minutes') as can_retry

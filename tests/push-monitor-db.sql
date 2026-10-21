@@ -36,6 +36,9 @@ begin
  update public.atlas_push_outbox set next_attempt_at=now()-interval '1 second',attempted_at=now()-interval '11 minutes' where id=job;
  if public.atlas_push_claim(job) is not null or public.atlas_admin_push_retry(job) then raise exception 'Retry limit ignored';end if;
  if report::text like '%receipt_token%' or report::text like '%subscription%' then raise exception 'Admin report leaked capability';end if;
+ job:=public.atlas_push_enqueue(owner,device,'TEST-SQL-EXPIRED','{"body":"FICTITIOUS"}');
+ perform public.atlas_push_claim(job);perform public.atlas_push_result(job,1,'gone','410');
+ if (select disabled_at from public.atlas_push_devices where id=device) is null then raise exception 'Expired device not disabled';end if;
 end $$;
 select 'PASS: database claims, retry/backoff/limit, receipts, admin isolation; fixtures rolled back' as verification;
 rollback;
