@@ -5,7 +5,7 @@
 *{box-sizing:border-box}body{margin:0;background:#f7f4ee;color:#19212c;font:16px system-ui,sans-serif}header{padding:18px 24px;background:#fff;border-bottom:1px solid #dedbd4;display:flex;justify-content:space-between;gap:16px}a{color:#3046d5}main{max-width:1150px;margin:auto;padding:28px 24px}h1{margin:0 0 8px;font-size:28px}p{line-height:1.5}.tag{background:#fff0c2;padding:8px 12px;border-radius:8px}.cards{display:flex;gap:16px;flex-wrap:wrap;margin:24px 0}.card{background:#fff;border:1px solid #dedbd4;border-radius:14px;padding:20px;min-width:220px;flex:1}.card b{display:block;font-size:30px;margin-bottom:4px}button{font:inherit;font-weight:600;padding:12px 18px;border:1px solid #d5d8e1;border-radius:10px;background:#fff;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.table-wrap{overflow:auto;background:#fff;border:1px solid #dedbd4;border-radius:14px}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #eee}th{font-size:13px;color:#566070}#status{padding:16px;background:#fff;border-radius:12px}small{color:#566070}[hidden]{display:none!important}
 </style>
 <header><strong>Atlas · Beheer</strong><a href="./">Terug naar Atlas</a></header>
-<main><span class="tag">TESTOMGEVING · Alleen-lezen</span><h1 style="margin-top:20px">Accounts en aanmeldingen</h1>
+<main><span class="tag">TESTOMGEVING · Geen klantomgeving</span><h1 style="margin-top:20px">Accounts en aanmeldingen</h1>
 <p>Jouw eigen overzicht. Geen inzage in identiteitsdocumenten, contractinhoud of wachtwoorden.</p>
 <p id="status" role="status" aria-live="polite">Toegang controleren…</p>
 <div id="overview" hidden><div class="cards"><div class="card"><b id="total">—</b>Accounts</div><div class="card"><b id="recent">—</b>Ingelogd in afgelopen 7 dagen</div></div>
@@ -13,10 +13,27 @@
 <p><small>Laatste aanmelding is geen bewijs dat iemand nu actief is. Maximaal 200 nieuwste accounts; aantallen bovenaan gelden voor alle accounts.</small></p>
 <div class="table-wrap"><table><thead><tr><th>Account</th><th>Aangemaakt</th><th>Laatste aanmelding</th><th>E-mail bevestigd</th><th>Auto’s</th><th>Reserveringen</th></tr></thead><tbody id="accounts"></tbody></table></div></div>
 <p id="signin" hidden><a href="./">Open Atlas en log in met je beheerdersaccount</a>. Kom daarna terug naar deze pagina.</p>
+<section id="pushMonitor" hidden><h2>Meldingsbewaking</h2>
+<p>Waarschuwingen blijven bij de auto of het contract staan tot het werk is afgehandeld. Deze lijst bewaart de verzendpogingen, ook na een fout. Een geopende melding betekent niet dat het werk klaar is.</p>
+<p id="pushStatus" role="status" aria-live="polite"></p>
+<p><small>Geaccepteerd = aangenomen door de verzenddienst. Toestel bevestigd = het toestel heeft weergave aangevraagd, niet bewezen dat iemand de melding zag. Zonder bevestiging na 10 minuten: ontvangst onbekend. Oude appversies kunnen nog geen bevestiging sturen.</small></p>
+<div class="table-wrap"><table><thead><tr><th>Account</th><th>Melding</th><th>Aangemaakt</th><th>Status</th><th>Pogingen</th><th>Volgende poging</th><th>Actie</th></tr></thead><tbody id="pushRows"></tbody></table></div>
+<p><small>Maximaal 200 nieuwste verzendingen. Tijdelijke verzendfouten: maximaal 3 pogingen, na 1 en 5 minuten. Bij onbekende ontvangst wordt niet blind automatisch opnieuw verstuurd.</small></p></section>
 </main><script>
 const config=__ATLAS_TEST_ADMIN_CONFIG__;
 const $=id=>document.getElementById(id);
-function clearOverview(){ $('overview').hidden=true;$('accounts').replaceChildren();$('total').textContent='—';$('recent').textContent='—'; }
+function clearOverview(){ $('overview').hidden=true;$('accounts').replaceChildren();$('total').textContent='—';$('recent').textContent='—';$('pushMonitor').hidden=true;$('pushRows').replaceChildren(); }
+async function adminRPC(name,body,session){const stop=new AbortController(),timer=setTimeout(()=>stop.abort(),12000);try{const r=await fetch(config.url+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:config.key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body),signal:stop.signal,cache:'no-store'});if(!r.ok)throw Error('monitor');return await r.json();}finally{clearTimeout(timer);}}
+async function loadPush(session){
+ $('pushMonitor').hidden=false;$('pushRows').replaceChildren();$('pushStatus').textContent='Meldingen controleren…';
+ try{const data=await adminRPC('atlas_admin_push',{},session),labels={queued:'In wachtrij',sending:'Verzenden',accepted:'Geaccepteerd — wacht op toestel',received:'Toestel bevestigd',opened:'Geopend',failed:'Verzendfout',unknown:'Verzending onzeker',unconfirmed:'Ontvangst onbekend','display-error':'Weergavefout op toestel',gone:'Toestel niet meer bereikbaar',cancelled:'Niet meer nodig'};
+  const issues=data.items.filter(x=>['failed','unknown','unconfirmed','display-error','gone'].includes(x.status)).length;
+  $('pushStatus').textContent=issues+' te controleren in de nieuwste '+data.items.length+' verzendingen. '+data.without_device+' account(s) zonder aangemeld toestel.';
+  for(const item of data.items){const tr=document.createElement('tr');for(const value of [item.email||'Verwijderd account',item.delivery_key.startsWith('daily:')?'Dagelijkse waarschuwingen':item.delivery_key.includes('example')?'TEST-voorbeeld':'Testmelding',date(item.created_at),labels[item.status]||'Onbekend',item.attempts,item.next_attempt_at?date(item.next_attempt_at):'—']){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);}
+   const td=document.createElement('td');if(item.can_retry){const b=document.createElement('button');b.type='button';b.textContent='Opnieuw aanbieden';b.addEventListener('click',async()=>{if(!confirm('Ontvangst is niet bevestigd, maar de melding kan al zichtbaar zijn. Opnieuw aanbieden kan een herhaalde melding geven. Doorgaan?'))return;b.disabled=true;try{const queued=await adminRPC('atlas_admin_push_retry',{p_id:item.id},session);if(!queued)$('pushStatus').textContent='Niet opnieuw ingepland: inmiddels bevestigd, al ingepland of maximum bereikt.';else await loadPush(session);}catch{$('pushStatus').textContent='Opnieuw inplannen niet gelukt. Er wordt geen succes gemeld.';b.disabled=false;}});td.appendChild(b);}else td.textContent=item.error_code||'—';tr.appendChild(td);$('pushRows').appendChild(tr);
+  }
+ }catch{$('pushRows').replaceChildren();$('pushStatus').textContent='Meldingsbewaking niet bereikbaar. Dit betekent niet dat alle meldingen zijn aangekomen. Probeer Vernieuwen.';}
+}
 function date(value){if(!value)return 'Nog niet aangemeld';const d=new Date(value);return Number.isNaN(d.getTime())?'—':d.toLocaleString('nl-NL');}
 async function load(){
   clearOverview();$('signin').hidden=true;$('refresh').disabled=true;
@@ -30,6 +47,7 @@ async function load(){
     $('total').textContent=String(data.total);$('recent').textContent=String(data.signed_in_7_days);
     for(const u of data.accounts){const tr=document.createElement('tr');for(const value of [u.email,date(u.created_at),date(u.last_sign_in_at),u.verified?'Ja':'Nee',u.cars,u.rentals]){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);}$('accounts').appendChild(tr);}
     $('overview').hidden=false;$('status').textContent=data.accounts.length?'Beheertoegang bevestigd. Dit zijn uitsluitend accounts uit de testomgeving.':'Nog geen accounts in de testomgeving.';$('updated').textContent='Bijgewerkt om '+new Date().toLocaleTimeString('nl-NL');
+    await loadPush(session);
   }catch{$('status').textContent='Verbinding niet gelukt. Er worden geen oude accountgegevens getoond.';}
   finally{clearTimeout(timer);$('refresh').disabled=false;}
 }

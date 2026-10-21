@@ -2,14 +2,17 @@
 import {createClient} from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 import {localDay,reminderSummary,reminderItems,summaryPayload,validSubscription} from '../_shared/reminders.mjs';
+import {createPushMonitor} from '../_shared/push-monitor.mjs';
 
 const env=(name:string)=>Deno.env.get(name)||'';
 const db=createClient(env('SUPABASE_URL'),env('SUPABASE_SERVICE_ROLE_KEY'),{auth:{persistSession:false}});
 const origins=env('ATLAS_PUSH_ORIGINS').split(',').filter(Boolean);
 const allowed=()=>env('ATLAS_PUSH_ENABLED')==='true'&&!!env('VAPID_PUBLIC_KEY')&&!!env('VAPID_PRIVATE_KEY')&&!!env('VAPID_SUBJECT');
+const monitor=env('SUPABASE_URL')==='https://manikkusokwysmdfhxtu.supabase.co'?createPushMonitor(db,webpush,{vapid:{subject:env('VAPID_SUBJECT'),publicKey:env('VAPID_PUBLIC_KEY'),privateKey:env('VAPID_PRIVATE_KEY')}}):null;
 function check(result:any){if(result.error)throw new Error('storage');return result.data;}
 async function send(device:any,payload:any,key:string){
   payload={...payload,url:(payload.url||'./#atlas=alerts')+((payload.url||'').includes('#')?'&':'#')+'owner='+encodeURIComponent(device.owner_id)};
+  if(monitor)return monitor.send(device,payload,key);
   const claim=await db.from('atlas_push_deliveries').insert({device_id:device.id,delivery_key:key});
   if(claim.error?.code==='23505')return 'duplicate';
   check(claim);
@@ -37,6 +40,9 @@ Deno.serve(async(req:Request)=>{
   try{
     const text=await req.text();if(text.length>4096)return reply({error:'size'},413);
     const body=JSON.parse(text);
+    // A random, per-delivery capability can only confirm that single delivery.
+    // It cannot read accounts, customer data, subscriptions or resend messages.
+    if(body.action==='receipt'&&monitor)return reply({recorded:await monitor.ack(body)});
     if(body.action==='dispatch'){
       const secret=env('ATLAS_PUSH_CRON_SECRET');
       if(!secret||req.headers.get('x-atlas-cron-secret')!==secret)return reply({error:'unauthorized'},401);
@@ -44,7 +50,7 @@ Deno.serve(async(req:Request)=>{
       // Bound each draft invocation; larger fleets require paginated jobs before rollout.
       const devices=check(await db.from('atlas_push_devices').select('*').limit(101));
       if(devices.length>100)return reply({error:'batch-limit'},503);
-      const day=localDay(),results=[];
+      const day=localDay(),results=monitor?await monitor.dispatch():[];
       for(const device of devices){
         if(device.test_due_at && Date.parse(device.test_due_at)<=Date.now() && validSubscription(device.subscription)){
           results.push(await send(device,{body:'Atlas · Test de notification / Testmelding',tag:'atlas-test',url:'./'},'test:'+day));
@@ -96,7 +102,7 @@ Deno.serve(async(req:Request)=>{
         for(const [i,message] of examples.entries()){
           if(body.example!==undefined&&body.example!==i)continue;
           if(body.startup===true&&i!==2)continue;
-          results.push(await send(device,{title:['Atlas TEST · Entretien','Atlas TEST · Assurance','Atlas TEST · Paiement'][i],body:(body.startup===true?'TEST OUVERTURE · ':'')+message,tag:'atlas-linked-example-'+i,url:urls[i]},(body.startup===true?'startup-example:':'linked-example-v2:')+localDay()+':'+i));
+          results.push(await send(device,{title:['Atlas TEST · Entretien','Atlas TEST · Assurance','Atlas TEST · Paiement'][i],body:(body.startup===true?'TEST OUVERTURE · ':'')+message,tag:'atlas-linked-example-'+i,url:urls[i]},(body.startup===true?'startup-example:':monitor?'monitored-example-v1:':'linked-example-v2:')+localDay()+':'+i));
         }
       }
       return reply({accepted:results.filter(x=>x==='accepted').length,failed:results.filter(x=>x==='failed').length,duplicate:results.filter(x=>x==='duplicate').length});

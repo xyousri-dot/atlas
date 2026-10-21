@@ -33,7 +33,7 @@ function service({hour=9,providerError=null}={}){
  const now=Array.from({length:24},(_,h)=>Date.parse(`2026-10-18T${String(h).padStart(2,'0')}:05:00Z`)).find(t=>Number(zoneHour.format(new Date(t)))===hour);
  class Clock extends Date{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}}
  const db={from:t=>new Query(t),auth:{getUser:async token=>({data:{user:token==='owner-a'||token==='owner-b'?{id:token}:null},error:null})}};
- const context={...reminders,localDay:()=>reminders.localDay(new Date(now)),Date:Clock,Intl,Request,Response,URL,Map,JSON,encodeURIComponent,Deno:{env:{get:k=>env[k]},serve:f=>{handler=f;}},createClient:()=>db,webpush:{sendNotification:async(s,p,options)=>{if(providerError)throw providerError;sent.push({endpoint:s.endpoint,payload:JSON.parse(p),options});}}};
+ const context={...reminders,createPushMonitor:()=>null,localDay:()=>reminders.localDay(new Date(now)),Date:Clock,Intl,Request,Response,URL,Map,JSON,encodeURIComponent,Deno:{env:{get:k=>env[k]},serve:f=>{handler=f;}},createClient:()=>db,webpush:{sendNotification:async(s,p,options)=>{if(providerError)throw providerError;sent.push({endpoint:s.endpoint,payload:JSON.parse(p),options});}}};
  vm.createContext(context);
  const src=readFileSync(new URL('../supabase/functions/atlas-push/index.ts',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.runInContext(stripTypeScriptTypes(src),context);

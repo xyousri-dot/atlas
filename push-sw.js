@@ -1,6 +1,36 @@
 /* No fetch handler: never cache customer files, auth tokens or application HTML. */
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+// Replaced only by the isolated preview build. Production has no new endpoint.
+const ATLAS_RECEIPT_CONFIG=null;
+function atlasReceiptQueue(change){
+ return new Promise(resolve=>{
+  if(typeof indexedDB==='undefined')return resolve([]);
+  let db,done=false;const finish=x=>{if(done)return;done=true;clearTimeout(timer);if(db)db.close();resolve(x);};
+  const timer=setTimeout(()=>finish([]),2000),request=indexedDB.open('atlas-push-receipts',1);
+  request.onupgradeneeded=()=>request.result.createObjectStore('pending',{keyPath:'key'});
+  request.onerror=()=>finish([]);
+  request.onsuccess=()=>{db=request.result;if(done){db.close();return;}const tx=db.transaction('pending','readwrite'),store=tx.objectStore('pending');let rows=[];
+   if(change?.add)store.put(change.add);if(change?.remove)store.delete(change.remove);
+   const get=store.getAll();get.onsuccess=()=>{rows=get.result||[];for(const row of rows)if(Date.now()-row.at>30*86400000)store.delete(row.key);};
+   tx.oncomplete=()=>finish(rows.filter(x=>Date.now()-x.at<=30*86400000));tx.onerror=tx.onabort=()=>finish([]);
+  };
+ });
+}
+async function atlasFlushReceipts(){
+ if(!ATLAS_RECEIPT_CONFIG)return;
+ for(const row of (await atlasReceiptQueue()).slice(0,8)){
+  const stop=new AbortController(),timer=setTimeout(()=>stop.abort(),4000);
+  try{const r=await fetch(ATLAS_RECEIPT_CONFIG.url,{method:'POST',headers:{apikey:ATLAS_RECEIPT_CONFIG.key,Authorization:'Bearer '+ATLAS_RECEIPT_CONFIG.key,'Content-Type':'application/json'},body:JSON.stringify({action:'receipt',id:row.id,token:row.token,event:row.event}),signal:stop.signal,cache:'no-store'});
+   if(r.ok){await r.json();await atlasReceiptQueue({remove:row.key});}
+  }catch{}finally{clearTimeout(timer);}
+ }
+}
+async function atlasAcknowledge(receipt,event){
+ if(!ATLAS_RECEIPT_CONFIG||!receipt?.id||!receipt?.token)return;
+ await atlasReceiptQueue({add:{key:receipt.id+':'+event,id:receipt.id,token:receipt.token,event,at:Date.now()}});
+ await atlasFlushReceipts();
+}
 // Preserve the destination across an iPhone standalone-app launch.
 function atlasPushTarget(value){
   return new Promise(resolve=>{
@@ -33,6 +63,7 @@ function atlasPushReceipt(value){
   });
 }
 self.addEventListener('message',event=>{
+  if(event.data?.type==='atlas-flush-receipts'){event.waitUntil(atlasFlushReceipts());return;}
   if(['atlas-offline-prepare','atlas-offline-status'].includes(event.data?.type)){atlasOfflineMessage(event);return;}
   if(event.data?.type==='atlas-push-target'&&event.ports?.[0]){
     event.waitUntil((async()=>{const target=await atlasPushTarget();event.ports[0].postMessage(target&&Date.now()-target.at<300000?target:null);})());return;
@@ -61,14 +92,15 @@ self.addEventListener('push',event=>{
     body:typeof data.body==='string'?data.body.slice(0,180):'Ouvrez Atlas pour consulter vos rappels.',
     tag:typeof data.tag==='string'?data.tag:'atlas-reminders',
     icon:new URL('./atlas-icon.svg',self.registration.scope).href,
-    data:{url:atlasPushURL(data.url,self.registration.scope)},
-  });await atlasPushReceipt({receivedAt,state:'display-request-accepted'});}
-  catch(e){await atlasPushReceipt({receivedAt,state:'display-error',error:String(e.name||'Error')});throw e;}
+    data:{url:atlasPushURL(data.url,self.registration.scope),receipt:data.receipt},
+  });await Promise.all([atlasAcknowledge(data.receipt,'received'),atlasPushReceipt({receivedAt,state:'display-request-accepted'})]);}
+  catch(e){await Promise.all([atlasAcknowledge(data.receipt,'display-error'),atlasPushReceipt({receivedAt,state:'display-error',error:String(e.name||'Error')})]);throw e;}
   })());
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   event.waitUntil((async()=>{
+    const ack=atlasAcknowledge(event.notification.data?.receipt,'opened');
     const url=atlasPushURL(event.notification.data?.url,self.registration.scope);
     await atlasPushTarget({url,at:Date.now()});
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
@@ -76,9 +108,9 @@ self.addEventListener('notificationclick',event=>{
     if(existing){
       try{await existing.navigate(url);}catch{}
       if(existing.postMessage)existing.postMessage({type:'atlas-open-target',url});
-      return existing.focus();
+      const focused=existing.focus();await ack;return focused;
     }
-    return self.clients.openWindow(url);
+    const opened=self.clients.openWindow(url);await ack;return opened;
   })());
 });
 

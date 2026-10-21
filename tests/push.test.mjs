@@ -161,6 +161,17 @@ test('Push display never waits for diagnostic storage; three examples retain dis
  for(let i=0;i<3;i++){handlers.push({data:{json:()=>({title:'Atlas TEST '+i,tag:'example-'+i,body:'FICTITIOUS',url:'./#atlas=alerts'})},waitUntil(){}});}
  await Promise.resolve();assert.equal(notes.length,3);assert.equal(new Set(notes.map(x=>x.tag)).size,3);assert.equal(new Set(notes.map(x=>x.title)).size,3);
 });
+test('Test worker keeps an offline receipt for replay and distinguishes opening from display',async()=>{
+ const handlers={},pendingRows=new Map(),requests=[];let offline=true,pending;
+ const self={registration:{scope:'https://example.test/',showNotification:async()=>{}},addEventListener:(n,f)=>handlers[n]=f,clients:{matchAll:async()=>[],openWindow:async()=>{}}};
+ const ctx={self,URL,Date,AbortController,setTimeout,clearTimeout,fetch:async(url,options)=>{requests.push(JSON.parse(options.body));if(offline)throw Error('OFFLINE');return {ok:true,json:async()=>({recorded:true})};}};
+ vm.createContext(ctx);vm.runInContext(readFileSync(new URL('../push-sw.js',import.meta.url),'utf8').replace('const ATLAS_RECEIPT_CONFIG=null;',"const ATLAS_RECEIPT_CONFIG={url:'https://test.invalid/receipt',key:'PUBLIC'};"),ctx);
+ ctx.atlasReceiptQueue=async change=>{if(change?.add)pendingRows.set(change.add.key,change.add);if(change?.remove)pendingRows.delete(change.remove);return [...pendingRows.values()];};ctx.atlasPushReceipt=async()=>{};ctx.atlasPushTarget=async()=>{};
+ const receipt={id:'11111111-1111-1111-1111-111111111111',token:'22222222-2222-2222-2222-222222222222'};
+ handlers.push({data:{json:()=>({receipt,body:'PRIVATE BODY MUST NOT LEAK'})},waitUntil:p=>pending=p});await pending;assert.equal(pendingRows.size,1);assert.equal(requests[0].event,'received');assert.ok(!JSON.stringify(requests).includes('PRIVATE'));
+ offline=false;handlers.message({data:{type:'atlas-flush-receipts'},waitUntil:p=>pending=p});await pending;assert.equal(pendingRows.size,0);
+ handlers.notificationclick({notification:{close(){},data:{receipt,url:'./'}},waitUntil:p=>pending=p});await pending;assert.equal(requests.at(-1).event,'opened');assert.equal(pendingRows.size,0);
+});
 test('Visuele auto: ontbrekende beoordeling nooit groen, urgentste taak bepaalt kleur',()=>{
  const a=zandbak(scriptUit(leesHtml()));
  const c={km:120000,maintenance:[{part:'engine',dueKm:130000},{part:'engine',dueKm:120000},{part:'tires',dueKm:1,completedAt:'2026-10-01'}]};
