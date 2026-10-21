@@ -74,6 +74,20 @@ test('Telefoonstart begeleidt iPhone, login en geweigerde toestemming afzonderli
  a.location.protocol='https:';a.navigator.userAgent='Desktop';delete a.window.PushManager;assert.equal(a.phoneStartState(),'unsupported');
  for(const lang of ['fr','nl','ar']){a.L=lang;assert.ok(a.phoneGuideText().install.includes('Safari'));assert.ok(a.phoneGuideText().start);}
 });
+test('Handmatige test meldt eerlijk of er nieuw is verzonden, geblokkeerd of mislukt',()=>{
+ const a=zandbak(scriptUit(leesHtml()));
+ for(const lang of ['fr','nl','ar']){
+  a.L=lang;
+  const sent=a.phoneTestResultText({accepted:1});
+  const duplicate=a.phoneTestResultText({duplicate:1});
+  const failed=a.phoneTestResultText({failed:1});
+  assert.notEqual(sent,duplicate);assert.notEqual(sent,failed);
+  assert.ok(!duplicate.includes(a.phoneText().sent));
+ }
+ const source=readFileSync(new URL('../supabase/functions/atlas-push/index.ts',import.meta.url),'utf8');
+ assert.match(source,/manual-test-v2:/);
+ assert.match(source,/Math\.floor\(Date\.now\(\)\/120000\)/);
+});
 test('Start vraagt toestemming vóór netwerk en plant na registratie automatisch test',()=>{
  const code=leesHtml();const flow=code.slice(code.indexOf("on.addEventListener('click',async function(){if(on.disabled)return;var state=phoneStartState()"),code.indexOf("test.addEventListener('click'",code.indexOf('function phonePanel()')));
  assert.ok(flow.indexOf('Notification.requestPermission()')>=0);
@@ -89,10 +103,10 @@ test('Eén bewuste tik registreert en plant test; fouten geven nooit valse ontva
   a.Notification={permission:'default',requestPermission:async()=>{calls.push('permission');return scenario==='denied'?'denied':'granted';}};
   const sub={endpoint:'https://web.push.apple.com/test',toJSON(){return {endpoint:this.endpoint};}};
   a.navigator={userAgent:'iPhone',standalone:true,serviceWorker:{register:async()=>calls.push('worker'),ready:Promise.resolve({pushManager:{getSubscription:async()=>null,subscribe:async()=>sub}})}};
-  a.phoneAPI=async(action)=>{calls.push(action);if(action==='config'&&scenario==='config-fails'||action==='test'&&scenario==='test-fails')throw Error('network');return action==='config'?{publicKey:'YQ'}:{};};
+  a.phoneAPI=async(action)=>{calls.push(action);if(action==='config'&&scenario==='config-fails'||action==='test'&&scenario==='test-fails')throw Error('network');return action==='config'?{publicKey:'YQ'}:action==='test'?{accepted:1}:{};};
   const panel=a.phonePanel(),on=panel.children.find(x=>x.tag==='button'),status=panel.children[2],manage=panel.children.find(x=>x.tag==='details');
   assert.deepEqual(calls,[]);await on.handlers.click();assert.equal(calls[0],'permission');assert.equal(on.disabled,false);
-  if(scenario==='success'){assert.deepEqual(calls,['permission','config','worker','subscribe','test']);assert.equal(status.textContent,a.phoneText().sent);assert.equal(on.hidden,true);assert.equal(manage.hidden,false);}
+  if(scenario==='success'){assert.deepEqual(calls,['permission','config','worker','subscribe','test']);assert.equal(status.textContent,a.phoneTestResultText({accepted:1}));assert.equal(on.hidden,true);assert.equal(manage.hidden,false);}
   if(scenario==='denied'){assert.deepEqual(calls,['permission']);assert.equal(status.textContent,a.phoneText().denied);assert.ok(!on.hidden);}
   if(scenario==='config-fails'){assert.deepEqual(calls,['permission','config']);assert.equal(status.textContent,a.phoneGuideText().error);assert.ok(!on.hidden);}
   if(scenario==='test-fails'){assert.equal(status.textContent,a.phoneGuideText().testError);assert.equal(manage.open,true);assert.equal(on.hidden,true);}

@@ -136,6 +136,14 @@ Deno.serve(async(req:Request)=>{
     if(body.action==='test'){
       const device=check(await db.from('atlas_push_devices').select('*').eq('owner_id',owner).eq('endpoint',body.endpoint).maybeSingle());
       if(!device)return reply({error:'not-found'},404);
+      // In atlas-test, a deliberate manual test must be observable immediately.
+      // A two-minute idempotency bucket prevents double taps from spamming the phone,
+      // while avoiding the confusing old once-per-day limit.
+      if(monitor){
+        const bucket=Math.floor(Date.now()/120000);
+        const result=await send(device,{title:'Atlas TEST · Notification',body:'Atlas · Test de notification / Testmelding',tag:'atlas-manual-test',url:'./#atlas=alerts'},'manual-test-v2:'+bucket);
+        return reply({accepted:Number(result==='accepted'),duplicate:Number(result==='duplicate'),failed:Number(result==='failed'),state:result});
+      }
       const previous=check(await db.from('atlas_push_deliveries').select('device_id').eq('device_id',device.id).eq('delivery_key','test:'+localDay()).maybeSingle());
       if(previous)return reply({error:'daily-test-limit'},429);
       if(!device.test_due_at)check(await db.from('atlas_push_devices').update({test_due_at:new Date(Date.now()+60000).toISOString()}).eq('id',device.id));
