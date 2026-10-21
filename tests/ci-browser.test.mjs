@@ -16,6 +16,7 @@ async function notificationPage(language='fr',pad='/',scanMock=null,extraData={}
     await page.setRequestInterception(true);
     page.on('request',req=>{
       if(req.url().includes('.supabase.co/')){
+        if(req.url().includes('/functions/v1/atlas-push')&&req.method()==='POST'&&JSON.parse(req.postData()||'{}').action==='examples')return req.respond({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify({accepted:3,duplicate:0,failed:0})});
         if(req.url().includes('/functions/v1/atlas-scan')&&scanMock){if(req.method()==='POST'){scanMock.calls++;scanMock.sent=JSON.parse(req.postData());}return req.respond({status:req.method()==='OPTIONS'?200:scanMock.status,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(scanMock.body)});}
         const json=req.url().includes('/rest/v1/atlas')?Object.entries(data).map(([path,value])=>({path,data:value})):req.url().includes('/functions/v1/atlas-push')?{items:[{kind:'documents',label:'Dacia Logan',doc:'inspectionUntil',url:'./#atlas=vehicle&id=c1&section=documents&doc=inspectionUntil'}]}:{};
         return req.respond({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify(json)});
@@ -76,6 +77,14 @@ test('Closed app restores destination saved by background worker, even when laun
   }finally{await page.close();}
 });
 before(B.start);after(B.stop);
+test('Phone example control is test-only and reports acceptance without claiming receipt',async()=>{
+ const {page,fouten}=await notificationPage('nl');try{
+  await page.evaluate(()=>{view='vSet';render();mountPhoneSettings();});
+  if(!process.env.ATLAS_HTML){assert.equal(await page.$('#phoneExamples'),null);return;}
+  let calls=0;page.on('request',request=>{if(request.url().includes('/functions/v1/atlas-push')&&request.method()==='POST'&&JSON.parse(request.postData()||'{}').action==='examples')calls++;});
+  await page.click('#phoneExamples');await page.waitForFunction(()=>document.querySelector('#phoneExampleStatus').textContent.includes('geaccepteerd: 3'));assert.match(await page.$eval('#phoneExampleStatus',e=>e.textContent),/Ontvangst moet je nog bevestigen/);assert.equal(calls,1);assert.deepEqual(fouten,[]);
+ }finally{await page.close();}
+});
 test('Retry after interrupted repair save reuses the same expense and history ids',{skip:!process.env.ATLAS_HTML},async()=>{
  const {page}=await B.open({taal:'fr',gegevens:B.testgegevens()});try{
   await page.waitForFunction(()=>typeof openMaintenanceWarranty==='function');await page.evaluate(()=>openCar(car('c1')));await page.click('#careDone');await page.type('#warrantyAdd input[aria-label="Pièce ou réparation"]','RETRY TEST');await page.click('#replacementInvoice summary');await page.type('#warrantyAdd input[aria-label="Prix payé (DH, facultatif)"]','500');
