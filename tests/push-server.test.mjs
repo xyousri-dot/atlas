@@ -50,6 +50,15 @@ test('Daily dispatcher isolates owners, links real tasks, omits names and preven
  await s.call({action:'dispatch'},'',{'x-atlas-cron-secret':'fake-cron'});assert.equal(s.sent.length,2);
  const list=await (await s.call({action:'reminders'},'owner-b')).json();assert.ok(list.items.every(x=>x.id==='b'));
 });
+test('Maintenance and replacement warranty automatically enter daily dispatch and completed work no longer alerts',async()=>{
+ const s=service();s.tables.atlas_push_devices.push(s.device('a','owner-a'));
+ const data={model:'TEST CAR',km:40000,maintenance:[{id:'m1',label:'Freins TEST',part:'brakes',dueKm:40500}],warranties:[{id:'w1',label:'Batterie TEST',supplier:'Garage TEST',purchased:'2026-01-01',until:'2026-11-01'}]};
+ s.tables.atlas.push({owner_id:'owner-a',path:'vehicles/car1',data});
+ const before=await (await s.call({action:'reminders'})).json();assert.ok(before.items.some(x=>x.kind==='maintenance'));assert.ok(before.items.some(x=>x.url.includes('section=warranty&wid=w1')));
+ const response=await (await s.call({action:'dispatch'},'',{'x-atlas-cron-secret':'fake-cron'})).json();assert.equal(response.accepted,1);assert.match(s.sent[0].payload.body,/garanties 1/);assert.match(s.sent[0].payload.body,/entretien 1/);
+ data.maintenance[0].completedAt='2026-10-18';const after=await (await s.call({action:'reminders'})).json();assert.ok(!after.items.some(x=>x.kind==='maintenance'));assert.ok(after.items.some(x=>x.kind==='warranties'));
+ await s.call({action:'dispatch'},'',{'x-atlas-cron-secret':'fake-cron'});assert.equal(s.sent.length,1);
+});
 test('Scheduler sends delayed test outside daily window and does not send daily reminders early',async()=>{
  const s=service({hour:15}),d=s.device('a','owner-a');d.test_due_at='2026-10-18T00:00:00Z';s.tables.atlas_push_devices.push(d);
  const r=await (await s.call({action:'dispatch'},'',{'x-atlas-cron-secret':'fake-cron'})).json();assert.equal(r.skipped,'outside-morning-window');assert.equal(s.sent.length,1);assert.equal(d.test_due_at,null);

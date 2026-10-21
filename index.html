@@ -970,6 +970,8 @@ input[type="date"]{min-width:0;max-width:100%}
 #notificationWarranty>.card{padding:16px;margin:10px 0;box-shadow:none}
 #notificationWarranty>.card h3{margin:0 0 6px}
 #notificationWarranty>.card p{margin:8px 0}
+#notificationWarranty{border:0;box-shadow:none;padding:0;background:transparent}
+#notificationWarranty>#warrantyAdd{padding:14px;border:1px solid var(--line);border-radius:12px;background:white;margin-bottom:16px}
 #notificationWarranty details,#notificationMaintenance>details{padding:12px 0}
 #notificationWarranty summary,#notificationMaintenance summary{cursor:pointer;min-height:32px}
 /* While entering care details, the vehicle save bar must not cover the form's own save action. */
@@ -8975,7 +8977,7 @@ function vehicleVisual(c){
   info.className='care-selection';
   parts.forEach(function(p){var state=vehiclePartState(c,p.id),b=el('button',null,p.label+' · '+(state.tasks.length?(maintenanceText()[state.status]||p.label):'—')),shape=drawing.querySelector('[data-part="'+p.id+'"]');b.type='button';b.setAttribute('aria-pressed','false');shape.setAttribute('aria-label',b.textContent);var tip=document.createElementNS('http://www.w3.org/2000/svg','title');tip.textContent=b.textContent;shape.prepend(tip);
     function selectPart(){Array.prototype.forEach.call(buttons.children,function(x){x.setAttribute('aria-pressed','false');});drawing.querySelectorAll('.part').forEach(function(x){x.classList.remove('selected');x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');shape.classList.add('selected');shape.setAttribute('aria-pressed','true');info.replaceChildren(el('b',null,p.label));if(!state.tasks.length)info.appendChild(el('p','fine',tx.none));state.tasks.forEach(function(t){info.appendChild(el('p',null,t.label+' — '+maintenanceLabel(Object.assign({task:t},maintenanceStatus(c,t)))));});
-      var completed=(c.maintenance||[]).filter(function(t){return t.completedAt&&(t.part||'other')===p.id;});completed.forEach(function(t){var action=el('button','btn ghost sm',t.label+' · '+({fr:'Facture / garantie',nl:'Factuur / garantie',ar:'فاتورة / ضمان'})[L]);action.type='button';action.onclick=function(){if(typeof openMaintenanceWarranty==='function')openMaintenanceWarranty(c.id,t.id);};info.appendChild(action);});
+      var completed=(c.maintenance||[]).filter(function(t){return t.completedAt&&(t.part||'other')===p.id&&!(c.warranties||[]).some(function(w){return w.maintenanceId===t.id;});});completed.forEach(function(t){var action=el('button','btn ghost sm',t.label+' · '+dShort(t.completedAt));action.type='button';action.onclick=function(){if(typeof openMaintenanceWarranty==='function')openMaintenanceWarranty(c.id,t.id);};info.appendChild(action);});
       if(typeof showPartWarranties==='function')showPartWarranties(c,p.id,info);
       var add=el('button','btn ghost sm',maintenanceText().add);add.type='button';add.onclick=function(){var panel=root.closest('#notificationMaintenance'),form=panel&&Array.from(panel.children).find(function(x){return x.tagName==='DETAILS';});if(!form)return;form.open=true;var choice=form.querySelector('select');if(choice)choice.value=p.id;var input=form.querySelector('input');if(input)input.focus();};info.appendChild(add);
     }
