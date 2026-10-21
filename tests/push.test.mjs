@@ -154,6 +154,13 @@ test('Ontvangstdiagnose onderscheidt push, lokale test en weergavefout zonder pe
  handlers.message({data:{type:'atlas-push-health',local:false},ports:[{postMessage:x=>answers.push(x)}],waitUntil:p=>pending=p});await pending;
  assert.equal(answers[1].local,'not-tested');assert.equal(notes.length,2);
 });
+test('Push display never waits for diagnostic storage; three examples retain distinct titles and tags',async()=>{
+ const handlers={},notes=[],writes=[];const self={registration:{scope:'https://example.test/',showNotification:async(title,options)=>{notes.push({title,...options});}},addEventListener:(name,fn)=>handlers[name]=fn};
+ const ctx={self,URL,Date};vm.createContext(ctx);vm.runInContext(readFileSync(new URL('../push-sw.js',import.meta.url),'utf8'),ctx);
+ ctx.atlasPushReceipt=value=>{writes.push(value);return new Promise(()=>{});};
+ for(let i=0;i<3;i++){handlers.push({data:{json:()=>({title:'Atlas TEST '+i,tag:'example-'+i,body:'FICTITIOUS',url:'./#atlas=alerts'})},waitUntil(){}});}
+ await Promise.resolve();assert.equal(notes.length,3);assert.equal(new Set(notes.map(x=>x.tag)).size,3);assert.equal(new Set(notes.map(x=>x.title)).size,3);
+});
 test('Visuele auto: ontbrekende beoordeling nooit groen, urgentste taak bepaalt kleur',()=>{
  const a=zandbak(scriptUit(leesHtml()));
  const c={km:120000,maintenance:[{part:'engine',dueKm:130000},{part:'engine',dueKm:120000},{part:'tires',dueKm:1,completedAt:'2026-10-01'}]};

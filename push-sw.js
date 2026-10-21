@@ -54,8 +54,10 @@ function atlasPushURL(value,scope){
 self.addEventListener('push',event=>{
   let data={};try{data=event.data?.json()||{};}catch{}
   event.waitUntil((async()=>{
-  const receivedAt=new Date().toISOString();await atlasPushReceipt({receivedAt,state:'received'});
-  try{await self.registration.showNotification('Atlas',{
+  const receivedAt=new Date().toISOString();
+  // Display first: a locked or unavailable diagnostic database must never hold
+  // up the user-visible notification on a background iPhone worker.
+  try{await self.registration.showNotification(typeof data.title==='string'?data.title.slice(0,80):'Atlas',{
     body:typeof data.body==='string'?data.body.slice(0,180):'Ouvrez Atlas pour consulter vos rappels.',
     tag:typeof data.tag==='string'?data.tag:'atlas-reminders',
     icon:new URL('./atlas-icon.svg',self.registration.scope).href,

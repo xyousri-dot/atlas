@@ -14,7 +14,8 @@ async function send(device:any,payload:any,key:string){
   if(claim.error?.code==='23505')return 'duplicate';
   check(claim);
   try{
-    await webpush.sendNotification(device.subscription,JSON.stringify(payload),{TTL:3600,timeout:10000,vapidDetails:{subject:env('VAPID_SUBJECT'),publicKey:env('VAPID_PUBLIC_KEY'),privateKey:env('VAPID_PRIVATE_KEY')}});
+    const testExample=payload.tag?.startsWith('atlas-linked-example-');
+    await webpush.sendNotification(device.subscription,JSON.stringify(payload),{TTL:3600,timeout:10000,...(testExample?{urgency:'high',topic:payload.tag}:{}),vapidDetails:{subject:env('VAPID_SUBJECT'),publicKey:env('VAPID_PUBLIC_KEY'),privateKey:env('VAPID_PRIVATE_KEY')}});
     // Accepted by push provider; NOT proof of phone display/delivery.
     return 'accepted';
   }catch(e:any){
@@ -77,6 +78,7 @@ Deno.serve(async(req:Request)=>{
     }
     // Fixed, clearly labelled examples, available only in the isolated test project.
     if(body.action==='examples'&&env('SUPABASE_URL')==='https://manikkusokwysmdfhxtu.supabase.co'){
+      if(body.example!==undefined&&![0,1,2].includes(body.example))return reply({error:'example'},400);
       const devices=check(await db.from('atlas_push_devices').select('*').eq('owner_id',owner));
       const rows=check(await db.from('atlas').select('path,data').eq('owner_id',owner).limit(1000));
       const vehicle=rows.find(r=>r.path.startsWith('vehicles/'));
@@ -92,8 +94,9 @@ Deno.serve(async(req:Request)=>{
       for(const device of devices){
         if(!validSubscription(device.subscription))continue;
         for(const [i,message] of examples.entries()){
+          if(body.example!==undefined&&body.example!==i)continue;
           if(body.startup===true&&i!==2)continue;
-          results.push(await send(device,{body:(body.startup===true?'TEST OUVERTURE · ':'')+message,tag:'atlas-linked-example-'+i,url:urls[i]},(body.startup===true?'startup-example:':'linked-example:')+localDay()+':'+i));
+          results.push(await send(device,{title:['Atlas TEST · Entretien','Atlas TEST · Assurance','Atlas TEST · Paiement'][i],body:(body.startup===true?'TEST OUVERTURE · ':'')+message,tag:'atlas-linked-example-'+i,url:urls[i]},(body.startup===true?'startup-example:':'linked-example-v2:')+localDay()+':'+i));
         }
       }
       return reply({accepted:results.filter(x=>x==='accepted').length,failed:results.filter(x=>x==='failed').length,duplicate:results.filter(x=>x==='duplicate').length});

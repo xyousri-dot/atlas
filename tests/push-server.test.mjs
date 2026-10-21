@@ -33,7 +33,7 @@ function service({hour=9,providerError=null}={}){
  const now=Array.from({length:24},(_,h)=>Date.parse(`2026-10-18T${String(h).padStart(2,'0')}:05:00Z`)).find(t=>Number(zoneHour.format(new Date(t)))===hour);
  class Clock extends Date{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}}
  const db={from:t=>new Query(t),auth:{getUser:async token=>({data:{user:token==='owner-a'||token==='owner-b'?{id:token}:null},error:null})}};
- const context={...reminders,localDay:()=>reminders.localDay(new Date(now)),Date:Clock,Intl,Request,Response,URL,Map,JSON,encodeURIComponent,Deno:{env:{get:k=>env[k]},serve:f=>{handler=f;}},createClient:()=>db,webpush:{sendNotification:async(s,p)=>{if(providerError)throw providerError;sent.push({endpoint:s.endpoint,payload:JSON.parse(p)});}}};
+ const context={...reminders,localDay:()=>reminders.localDay(new Date(now)),Date:Clock,Intl,Request,Response,URL,Map,JSON,encodeURIComponent,Deno:{env:{get:k=>env[k]},serve:f=>{handler=f;}},createClient:()=>db,webpush:{sendNotification:async(s,p,options)=>{if(providerError)throw providerError;sent.push({endpoint:s.endpoint,payload:JSON.parse(p),options});}}};
  vm.createContext(context);
  const src=readFileSync(new URL('../supabase/functions/atlas-push/index.ts',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.runInContext(stripTypeScriptTypes(src),context);
@@ -41,6 +41,14 @@ function service({hour=9,providerError=null}={}){
  const device=(id,owner)=>({id,owner_id:owner,endpoint:'https://web.push.apple.com/'+id,language:'fr',subscription:{endpoint:'https://web.push.apple.com/'+id,keys:{p256dh:'a'.repeat(87),auth:'b'.repeat(22)}}});
  return {tables,sent,call,device};
 }
+test('Examples can be verified separately, use immediate delivery and distinct topics without bypassing daily limits',async()=>{
+ const s=service();s.tables.atlas_push_devices.push(s.device('a','owner-a'),s.device('b','owner-b'));
+ for(const example of [1,2,0]){const r=await (await s.call({action:'examples',example})).json();assert.equal(r.accepted,1);}
+ assert.equal(s.sent.length,3);assert.equal(new Set(s.sent.map(x=>x.options.topic)).size,3);
+ assert.ok(s.sent.every(x=>x.endpoint.endsWith('/a')&&x.options.urgency==='high'&&x.payload.title.startsWith('Atlas TEST')));
+ assert.equal((await (await s.call({action:'examples',example:1})).json()).duplicate,1);
+ assert.equal((await s.call({action:'examples',example:4})).status,400);
+});
 test('Daily dispatcher isolates owners, links real tasks, omits names and prevents duplicates',async()=>{
  const s=service();s.tables.atlas_push_devices.push(s.device('a','owner-a'),s.device('b','owner-b'));
  s.tables.atlas.push({owner_id:'owner-a',path:'vehicles/a',data:{model:'SECRET MODEL',insuranceUntil:'2026-10-19'}},{owner_id:'owner-b',path:'rentals/b',data:{clientName:'SECRET NAME',from:'2026-10-10',to:'2026-10-17',depart:{},total:500,payments:[]}});
